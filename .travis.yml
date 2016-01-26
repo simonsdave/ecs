@@ -5,14 +5,11 @@ services:
   - couchdb
 install:
   - source cfg4dev
-  - npm i -g raml2md
-  - npm i -g raml2html
   - pip install coveralls
 script:
   - pep8
   - flake8
-  - tor_async_util_nosetests.py --with-coverage --cover-branches --cover-erase --cover-package cloudfeaster_services
+  - tor_async_util_nosetests.py --with-coverage --cover-branches --cover-erase --cover-package ecs
   - coveralls
   - python setup.py sdist --formats=gztar
-  - ./api_docs/build-api-docs.sh -t
-#  - ./dockerfiles/build-docker-images.sh $DOCKER_EMAIL $DOCKER_USERNAME $DOCKER_PASSWORD ./dist/cloudfeaster_services-*.*.*.tar.gz ./api_docs/api_docs.tar
+#  - ./dockerfiles/build-docker-images.sh $DOCKER_EMAIL $DOCKER_USERNAME $DOCKER_PASSWORD ./dist/ecs-*.*.*.tar.gz
