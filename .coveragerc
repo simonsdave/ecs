@@ -1,0 +1,11 @@
+[run]
+branch = True
+include =
+        ./cloudfeaster_services/*
+omit =
+        *tests*
+        *__init__*
+        ./cloudfeaster_services/www/*
+
+[html]
+directory = coverage_report

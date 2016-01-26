@@ -1,0 +1,51 @@
+configure_dev_env()
+{
+    if [ ! -f "$PWD/requirements.txt" ]; then
+        echo "Must source this script from project's root directory"
+        return 1
+    fi
+
+    if [ -d "$PWD/env" ]; then
+        source "$PWD/env/bin/activate"
+    else
+        virtualenv env
+        if [ $? != 0 ]; then
+            echo "error creating virtualenv"
+            return 1
+        fi
+        source "$PWD/env/bin/activate"
+
+        pip install pip==1.5.6
+
+        pip install \
+            --find-links https://github.com/simonsdave/cloudfeaster-python-client/tarball/v0.8.2#egg=cloudfeaster-python-client-0.8.2 \
+            --process-dependency-links \
+            --requirement "$PWD/requirements.txt"
+
+        OSNAME=$(uname -s)
+        case "$OSNAME" in
+            Linux)
+                JQ_URL="https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"
+                ;;
+            Darwin)
+                JQ_URL="https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64"
+                ;;
+            *)
+                echo "Unsupported operating system '$OSNAME'" >&2
+                return 1
+                ;;
+        esac
+
+        curl -s -L --output jq "$JQ_URL"
+        chmod u+x jq
+        mv jq "$PWD/env/bin/."
+
+    fi
+
+    export PATH=$PATH:"$PWD/bin"
+    export PYTHONPATH="$PWD"
+
+    return 0
+}
+
+configure_dev_env

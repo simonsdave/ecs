@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "create raw crawls response",
+    "description": "create raw crawls response",
+    "type": "object",
+    "properties": {
+        "exitCode": {
+            "type": "integer"
+        },
+        "base64EncodedStdOut": {
+            "type": "string"
+        },
+        "base64EncodedStdErr": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "exitCode",
+        "base64EncodedStdOut",
+        "base64EncodedStdErr"
+    ],
+    "additionalProperties": false
+}
