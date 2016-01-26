@@ -28,7 +28,7 @@ class _CommandLineParser(optparse.OptionParser):
             'usage: %prog [options]',
             description=description)
 
-        default = '~/.clf/config'
+        default = '~/.ecs/config'
         help = 'config - default = %s' % default
         self.add_option(
             '--config',
