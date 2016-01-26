@@ -17,10 +17,7 @@ configure_dev_env()
 
         pip install pip==1.5.6
 
-        pip install \
-            --find-links https://github.com/simonsdave/cloudfeaster-python-client/tarball/v0.8.2#egg=cloudfeaster-python-client-0.8.2 \
-            --process-dependency-links \
-            --requirement "$PWD/requirements.txt"
+        pip install --process-dependency-links --requirement "$PWD/requirements.txt"
 
         OSNAME=$(uname -s)
         case "$OSNAME" in

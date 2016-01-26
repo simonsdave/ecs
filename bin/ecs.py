@@ -12,9 +12,9 @@ import tornado.httpclient
 import tornado.httpserver
 import tornado.web
 
-from cloudfeaster_services.ecs.request_handlers import HealthRequestHandler
-from cloudfeaster_services.ecs.request_handlers import NoOpRequestHandler
-from cloudfeaster_services.ecs.request_handlers import CollectionRequestHandler
+from ecs.request_handlers import HealthRequestHandler
+from ecs.request_handlers import NoOpRequestHandler
+from ecs.request_handlers import CollectionRequestHandler
 
 _logger = logging.getLogger(__name__)
 

@@ -27,48 +27,35 @@ reg_ex = re.compile(reg_ex_pattern)
 version = ""
 with open("ecs/__init__.py", "r") as fd:
     for line in fd:
+        print line
         match = reg_ex.match(line)
         if match:
             version = match.group("version")
             break
 if not version:
-    raise Exception("Can't locate project's version number")
+    raise Exception('Can\'t locate project\'s version number')
 
 setup(
-    name="ecs",
+    name='ecs',
     packages=[
-        "ecs",
-        "ecs.crawls",
-        "ecs.spiders",
-        "ecs.users",
+        'ecs',
     ],
     scripts=[
-        "bin/crawls.py",
-        "bin/crawls.sh",
-        "bin/spiders.py",
-        "bin/spiders.sh",
-        "bin/users.py",
-        "bin/users.sh",
+        'bin/ecs.py',
     ],
     install_requires=[
-        "py-bcrypt==0.4",
         # using tornado.curl_httpclient.CurlAsyncHTTPClient
-        "pycurl>=7.19.5.1",
-        "python-dateutil==2.4.2",
-        "tor-async-couchdb==0.40.0",
-        "tor-async-util==1.10.0",
-        "tor-async-fleet==0.8.1",
-        "tornado==4.3",
+        'pycurl>=7.19.5.1',
+        'tor-async-util==1.10.0',
+        'tornado==4.3',
     ],
     dependency_links=[
-        "https://github.com/simonsdave/tor-async-couchdb/tarball/v0.40.0#egg=tor-async-couchdb-0.40.0",
-        "https://github.com/simonsdave/tor-async-fleet/tarball/v0.8.1#egg=tor-async-fleet-0.8.1",
-        "https://github.com/simonsdave/tor-async-util/tarball/v1.10.0#egg=tor-async-util-1.10.0",
+        'https://github.com/simonsdave/tor-async-util/tarball/v1.10.0#egg=tor-async-util-1.10.0',
     ],
     include_package_data=True,
     version=version,
-    description="",
-    author="Dave Simons",
-    author_email="simonsdave@gmail.com",
-    url="https://github.com/simonsdave/ecs",
+    description='',
+    author='Dave Simons',
+    author_email='simonsdave@gmail.com',
+    url='https://github.com/simonsdave/ecs',
 )

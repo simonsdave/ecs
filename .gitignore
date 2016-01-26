@@ -1,7 +1,7 @@
 *.pyc
 dist
 env
-cloudfeaster_services.egg-info
+ecs.egg-info
 .coverage
 coverage_report
 .DS_Store
