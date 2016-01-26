@@ -1,4 +1,9 @@
-# Ephemeral Container Service (ECS)
+# Ephemeral Container Service (ecs)
+[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+![Python 2.7](https://img.shields.io/badge/python-2.7-FFC100.svg?style=flat)
+[![Requirements Status](https://requires.io/github/simonsdave/ecs/requirements.svg?branch=master)](https://requires.io/github/simonsdave/ecs/requirements/?branch=master)
+[![Build Status](https://travis-ci.org/simonsdave/ecs.svg?branch=master)](https://travis-ci.org/simonsdave/ecs)
+[![Coverage Status](https://coveralls.io/repos/github/simonsdave/ecs/badge.svg?branch=master)](https://coveralls.io/github/simonsdave/ecs?branch=master)
 
 ```bash
 > cat ~/.ecs/config
