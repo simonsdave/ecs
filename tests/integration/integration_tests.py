@@ -175,3 +175,62 @@ class HealthTestCase(IntegrationTestCase):
             self.assertEqual(response.status_code, httplib.BAD_REQUEST)
 
         self.setup_env_and_run_func(the_test)
+
+
+class ECSTestCase(IntegrationTestCase):
+    """A collection of integration tests for the /ecs/_health endpoint."""
+
+    def test_happy_path_with_simple_echo(self):
+        def the_test(service_config):
+            url = 'http://%s:%d/v1.0/ecs' % (
+                service_config.ip,
+                service_config.port,
+            )
+            body = {
+                'docker_image': 'ubuntu',
+                'tag': 'latest',
+                'cmd': [
+                    'echo',
+                    'hello world',
+                ]
+            }
+            headers = {
+                'Content-Type': 'application/json',
+            }
+            response = requests.post(url, json=body)
+            self.assertEqual(response.status_code, httplib.CREATED)
+            json_response_body = response.json()
+            self.assertEqual(json_response_body['exitCode'], 0)
+            self.assertEqual(json_response_body['base64EncodedStdOut'].strip(), body['cmd'][1])
+            self.assertEqual(json_response_body['base64EncodedStdErr'].strip(), '')
+
+        self.setup_env_and_run_func(the_test)
+
+    def test_non_zero_exit_code(self):
+        def the_test(service_config):
+            url = 'http://%s:%d/v1.0/ecs' % (
+                service_config.ip,
+                service_config.port,
+            )
+            exit_code = 1
+            body = {
+                'docker_image': 'ubuntu',
+                'tag': 'latest',
+                'cmd': [
+                    'bash',
+                    '-c',
+                    'exit %d' % exit_code,
+                ]
+            }
+            headers = {
+                'Content-Type': 'application/json',
+            }
+            response = requests.post(url, json=body)
+            self.assertEqual(response.status_code, httplib.CREATED)
+            json_response_body = response.json()
+            self.assertEqual(json_response_body['exitCode'], exit_code)
+            self.assertEqual(json_response_body['base64EncodedStdOut'].strip(), '')
+            self.assertEqual(json_response_body['base64EncodedStdErr'].strip(), '')
+
+        self.setup_env_and_run_func(the_test)
+
