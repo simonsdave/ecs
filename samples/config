@@ -1,0 +1,59 @@
+#
+# sample ecs configuration file is usually found @ ~/.ecs/config
+#
+
+#
+# configuration for the ephemeral_container_service.py service
+#
+# instructions to create ephemeral_container_service.py config tar file
+#
+#   >cd ~/.ecs
+#   >tar cvf ecs_config.tar *
+#   a config
+#   >gsutil cp ecs_config.tar gs://ecs-config/ecs_config.tar
+#   Copying file://ecs_config.tar [Content-Type=application/x-tar]...
+#   Uploading   gs://ecs-config/ecs_config.tar:                   2.5 KiB/2.5 KiB
+#   >
+#
+# create signed url to ephemeral_container_service.py config tar
+# file sitting on google cloud storage bucket
+#
+#   >gsutil signurl -p notasecret -d 10m ~/Downloads/*.p12 gs://ecs-config/ecs_config.tar
+#   >
+#
+
+[ecs]
+#
+# address & port define the endpoint on which service listens
+#
+# default values of 127.0.0.1 and 80
+#
+address=0.0.0.0
+port=80
+
+#
+# log_level defines the severity above which messages are written to
+# the service's log. possible values in increasing order of severity are:
+#
+#   DEBUG
+#   INFO
+#   WARNING
+#   ERROR
+#   CRITICAL
+#   FATAL
+#
+# the default value is INFO
+#
+log_level=info
+
+#
+# the vast majority of the service is dedicated to
+# co-ordinating a series of interactions with other services
+# that expose RESTful APIs over HTTP(S). the objective of this
+# configuration option is to put an upper bound on the number
+# of concurrent http requests which can be simultaneously
+# waiting for http responses from other services.
+#
+# the default value is 10
+#
+max_concurrent_executing_http_requests=250
