@@ -5,7 +5,7 @@
 {
   "links": {
     "self": {
-      "href": "http://127.0.0.1:8448/v1.0/ecs/_noop"
+      "href": "http://127.0.0.1:8448/v1.0/_noop"
     }
   }
 }
@@ -17,7 +17,7 @@
   "status": "green",
   "links": {
     "self": {
-      "href": "http://127.0.0.1:8448/v1.0/ecs/_health"
+      "href": "http://127.0.0.1:8448/v1.0/_health"
     }
   }
 }
@@ -33,5 +33,5 @@
         "5"
     ]
 }
-> curl -s -X POST -v -H "Content-Type: application/json" --data-binary @ecs.json http://127.0.0.1:8448/v1.0/ecs | jq
+> curl -s -X POST -v -H "Content-Type: application/json" --data-binary @ecs.json http://127.0.0.1:8448/v1.0/tasks | jq
 ```
