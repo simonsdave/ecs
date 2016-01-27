@@ -177,8 +177,8 @@ class HealthTestCase(IntegrationTestCase):
         self.setup_env_and_run_func(the_test)
 
 
-class ECSTestCase(IntegrationTestCase):
-    """A collection of integration tests for the /_health endpoint."""
+class TasksTestCase(IntegrationTestCase):
+    """A collection of integration tests for the /_tasks endpoint."""
 
     def test_happy_path_with_simple_echo(self):
         def the_test(service_config):
@@ -225,5 +225,62 @@ class ECSTestCase(IntegrationTestCase):
             self.assertEqual(json_response_body['exitCode'], exit_code)
             self.assertEqual(json_response_body['base64EncodedStdOut'].strip(), '')
             self.assertEqual(json_response_body['base64EncodedStdErr'].strip(), '')
+
+        self.setup_env_and_run_func(the_test)
+
+    def test_unknown_docker_image(self):
+        def the_test(service_config):
+            url = 'http://%s:%d/v1.0/tasks' % (
+                service_config.ip,
+                service_config.port,
+            )
+            body = {
+                'docker_image': 'IMAGE_THAT_DOES_NOT_EXIST',
+                'tag': 'latest',
+                'cmd': [
+                    'echo',
+                    'dave was here',
+                ]
+            }
+            response = requests.post(url, json=body)
+            self.assertEqual(response.status_code, httplib.CREATED)
+
+        self.setup_env_and_run_func(the_test)
+
+    def test_bad_request_body(self):
+        def the_test(service_config):
+            bodies = [
+                {
+                    'tag': 'latest',
+                    'cmd': [
+                        'echo',
+                        'dave was here',
+                    ]
+                },
+                {
+                    'docker_image': 'ubuntu',
+                    'cmd': [
+                        'echo',
+                        'dave was here',
+                    ]
+                },
+                {
+                    'docker_image': 'ubuntu',
+                    'tag': 'latest',
+                },
+                {
+                    'docker_image': 'ubuntu',
+                    'tag': 'latest',
+                    'cmd': [
+                    ]
+                },
+            ]
+            for body in bodies:
+                url = 'http://%s:%d/v1.0/tasks' % (
+                    service_config.ip,
+                    service_config.port,
+                )
+                response = requests.post(url, json=body)
+                self.assertEqual(response.status_code, httplib.BAD_REQUEST)
 
         self.setup_env_and_run_func(the_test)
