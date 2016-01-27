@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "create raw crawls response",
-    "description": "create raw crawls response",
+    "title": "create tasks response",
+    "description": "create tasks response",
     "type": "object",
     "properties": {
         "exitCode": {

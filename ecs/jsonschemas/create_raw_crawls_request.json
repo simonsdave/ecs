@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "create scrapes request",
-    "description": "create scrapes request",
+    "title": "create tasks request",
+    "description": "create tasks request",
     "type": "object",
     "properties": {
         "docker_image": {
