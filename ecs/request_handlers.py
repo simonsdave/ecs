@@ -16,7 +16,7 @@ _logger = logging.getLogger(__name__)
 
 class CollectionRequestHandler(tor_async_util.RequestHandler):
 
-    url_spec = r'/v1.0/ecs/?'
+    url_spec = r'/v1.0/tasks/?'
 
     # PDD = Post Debug Details
     PDD_BAD_REQUEST_BODY = 0x0001

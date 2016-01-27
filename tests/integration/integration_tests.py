@@ -182,7 +182,7 @@ class ECSTestCase(IntegrationTestCase):
 
     def test_happy_path_with_simple_echo(self):
         def the_test(service_config):
-            url = 'http://%s:%d/v1.0/ecs' % (
+            url = 'http://%s:%d/v1.0/tasks' % (
                 service_config.ip,
                 service_config.port,
             )
@@ -208,7 +208,7 @@ class ECSTestCase(IntegrationTestCase):
 
     def test_non_zero_exit_code(self):
         def the_test(service_config):
-            url = 'http://%s:%d/v1.0/ecs' % (
+            url = 'http://%s:%d/v1.0/tasks' % (
                 service_config.ip,
                 service_config.port,
             )
