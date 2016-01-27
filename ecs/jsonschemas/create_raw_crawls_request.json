@@ -22,6 +22,7 @@
     },
     "required": [
         "docker_image",
+        "tag",
         "cmd"
     ],
     "additionalProperties": false
