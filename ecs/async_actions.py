@@ -7,11 +7,11 @@ import uuid
 from tor_async_util import AsyncAction
 import tornado.httpclient
 
-from async_docker_remote_api import AsyncImagePuller
-from async_docker_remote_api import AsyncContainerLogFetcher
+from async_docker_remote_api import AsyncImagePull
+from async_docker_remote_api import AsyncContainerLogs
 from async_docker_remote_api import AsyncContainerRunner
-from async_docker_remote_api import AsyncContainerDeleter
-from async_docker_remote_api import AsyncContainerExitWaiter
+from async_docker_remote_api import AsyncContainerDelete
+from async_docker_remote_api import AsyncContainerStatus
 
 _logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to pull image %s:%s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag)
-        aip = AsyncImagePuller(self.docker_image, self.tag)
+        aip = AsyncImagePull(self.docker_image, self.tag)
         aip.pull(self._on_aip_pull_done)
 
     def _on_aip_pull_done(self, is_ok, api):
@@ -81,31 +81,31 @@ class AsyncEndToEndContainerRunner(AsyncAction):
         fmt = '%s - successfully started container running %s:%s - %s - container ID = %s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd, self._container_id)
 
-        fmt = '%s - attempting to wait for container to exit - conatiner ID = %s'
+        fmt = '%s - attempting to get container\'s exit status - conatiner ID = %s'
         _logger.error(fmt, self.cid, self._container_id)
-        acew = AsyncContainerExitWaiter(self._container_id)
-        acew.wait(self._on_acew_wait_done)
+        acs = AsyncContainerStatus(self._container_id)
+        acs.fetch(self._on_acs_fetch_done)
 
-    def _on_acew_wait_done(self, is_ok, exit_code, acew):
+    def _on_acs_fetch_done(self, is_ok, exit_code, acew):
         if not is_ok:
-            fmt = '%s - error waiting for container to exit - conatiner ID = %s'
+            fmt = '%s - error getting container\'s exit status - conatiner ID = %s'
             _logger.error(fmt, self.cid, self._container_id)
             self._call_callback(type(self).CFD_WAITING_FOR_CONTAINER_TO_EXIT)
             return
 
         self._exit_code = exit_code
 
-        fmt = '%s - container exited - conatiner ID = %s'
-        _logger.error(fmt, self.cid, self._container_id)
+        fmt = '%s - got container\'s exit status (%d) - conatiner ID = %s'
+        _logger.error(fmt, self.cid, self._exit_code, self._container_id)
 
-        fmt = '%s - attempting to fetch container\'s stdout and stderr - container ID = %s'
+        fmt = '%s - attempting to fetch container\'s logs - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)
-        aclf = AsyncContainerLogFetcher(self._container_id)
-        aclf.fetch(self._on_aclf_fetch_done)
+        acl = AsyncContainerLogs(self._container_id)
+        acl.fetch(self._on_acl_fetch_done)
 
-    def _on_aclf_fetch_done(self, is_ok, stdout, stderr, aclf):
+    def _on_acl_fetch_done(self, is_ok, stdout, stderr, aclf):
         if not is_ok:
-            fmt = '%s - error fetching container\'s stdout and stderr - container ID = %s'
+            fmt = '%s - error fetching container\'s logs - container ID = %s'
             _logger.error(fmt, self.cid, self._container_id)
             self._call_callback(type(self).CFD_ERROR_FETCHING_CONTAINER_LOGS)
             return
@@ -113,12 +113,12 @@ class AsyncEndToEndContainerRunner(AsyncAction):
         self._stdout = stdout
         self._stderr = stderr
 
-        fmt = '%s - successfully fetched container\'s stdout and stderr - container ID = %s'
+        fmt = '%s - successfully fetched container\'s logs - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)
 
         fmt = '%s - attempting to delete container - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)
-        acd = AsyncContainerDeleter(self._container_id)
+        acd = AsyncContainerDelete(self._container_id)
         acd.delete(self._on_acd_delete_done)
 
     def _on_acd_delete_done(self, is_ok, adc):

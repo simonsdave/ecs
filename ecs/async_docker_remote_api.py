@@ -22,7 +22,7 @@ def _write_http_client_response_to_log(response):
     tor_async_util.write_http_client_response_to_log(_logger, response, 'Remote Docker API')
 
 
-class AsyncImagePuller(tor_async_util.AsyncAction):
+class AsyncImagePull(tor_async_util.AsyncAction):
     """Async'ly pull an image."""
 
     # PFD = Pull Failure Details
@@ -168,7 +168,7 @@ class AsyncContainerRunner(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerDeleter(tor_async_util.AsyncAction):
+class AsyncContainerDelete(tor_async_util.AsyncAction):
     """Async'ly delete a container."""
 
     # RFD = Delete Failure Details
@@ -217,32 +217,34 @@ class AsyncContainerDeleter(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerExitWaiter(tor_async_util.AsyncAction):
-    """Async'ly wait for a container to exit."""
+class AsyncContainerStatus(tor_async_util.AsyncAction):
+    """Async'ly wait for a container to exit and return the
+    container's status.
+    """
 
-    # RFD = Delete Failure Details
-    WFD_OK = 0x0000
-    WFD_ERROR = 0x0080
-    WFD_ERROR_FETCHING_CONTAINER_STATUS = WFD_ERROR | 0x0001
-    WFD_WAITED_TOO_LONG = WFD_ERROR | 0x0002
+    # SFD = Status Failure Details
+    SFD_OK = 0x0000
+    SFD_ERROR = 0x0080
+    SFD_ERROR_FETCHING_CONTAINER_STATUS = SFD_ERROR | 0x0001
+    SFD_WAITED_TOO_LONG = SFD_ERROR | 0x0002
 
-    def __init__(self, container_id, wait_times_in_ms=None, async_state=None):
+    def __init__(self, container_id, async_state=None):
         tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.container_id = container_id
-        self.wait_times_in_ms = wait_times_in_ms if wait_times_in_ms else [250] * 4 * 10 + [1000] * 50 + [2000] * 30
 
-        self.wait_failure_detail = None
+        self.fetch_failure_detail = None
 
+        self._wait_times_in_ms = [250] * 4 * 10 + [1000] * 50 + [2000] * 30
         self._callback = None
 
-    def wait(self, callback):
+    def fetch(self, callback):
         assert self._callback is None
         self._callback = callback
 
-        self._wait()
+        self._fetch()
 
-    def _wait(self):
+    def _fetch(self):
         request = tornado.httpclient.HTTPRequest(
             '%s/containers/%s/json' % (remote_docker_api_endpoint, self.container_id),
             method='GET',
@@ -257,33 +259,33 @@ class AsyncContainerExitWaiter(tor_async_util.AsyncAction):
         _write_http_client_response_to_log(response)
 
         if response.code != httplib.OK:
-            self._call_callback(type(self).WFD_ERROR_FETCHING_CONTAINER_STATUS)
+            self._call_callback(type(self).SFD_ERROR_FETCHING_CONTAINER_STATUS)
             return
 
         response_body = json.loads(response.body)
         state = response_body['State']
         if state['FinishedAt'] != '0001-01-01T00:00:00Z':
-            self._call_callback(type(self).WFD_OK, state['ExitCode'])
+            self._call_callback(type(self).SFD_OK, state['ExitCode'])
             return
 
-        if not self.wait_times_in_ms:
-            self._call_callback(type(self).WFD_WAITED_TOO_LONG)
+        if not self._wait_times_in_ms:
+            self._call_callback(type(self).SFD_WAITED_TOO_LONG)
             return
 
         tornado.ioloop.IOLoop.current().add_timeout(
-            datetime.timedelta(0, self.wait_times_in_ms.pop(0) / 1000.0, 0),
-            self._wait)
+            datetime.timedelta(0, self._wait_times_in_ms.pop(0) / 1000.0, 0),
+            self._fetch)
 
-    def _call_callback(self, wait_failure_detail, exit_code=None):
+    def _call_callback(self, fetch_failure_detail, exit_code=None):
         assert self._callback is not None
-        assert self.wait_failure_detail is None
-        self.wait_failure_detail = wait_failure_detail
-        is_ok = not bool(self.wait_failure_detail & type(self).WFD_ERROR)
+        assert self.fetch_failure_detail is None
+        self.fetch_failure_detail = fetch_failure_detail
+        is_ok = not bool(self.fetch_failure_detail & type(self).SFD_ERROR)
         self._callback(is_ok, exit_code, self)
         self._callback = None
 
 
-class AsyncContainerLogFetcher(tor_async_util.AsyncAction):
+class AsyncContainerLogs(tor_async_util.AsyncAction):
     """Async'ly fetch a container's stdout and stderr.
 
     See API reference
@@ -329,6 +331,8 @@ class AsyncContainerLogFetcher(tor_async_util.AsyncAction):
         if response.code != httplib.OK:
             self._call_callback(type(self).FFD_ERROR_FETCHING_CONTAINER_LOGS)
             return
+
+        # :TODO: sort out what's stderr and what's stdout
 
         # content type = application/octet-stream
         # https://github.com/docker/docker/issues/8223
