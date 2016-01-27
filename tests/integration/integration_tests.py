@@ -194,9 +194,6 @@ class ECSTestCase(IntegrationTestCase):
                     'hello world',
                 ]
             }
-            headers = {
-                'Content-Type': 'application/json',
-            }
             response = requests.post(url, json=body)
             self.assertEqual(response.status_code, httplib.CREATED)
             json_response_body = response.json()
@@ -222,9 +219,6 @@ class ECSTestCase(IntegrationTestCase):
                     'exit %d' % exit_code,
                 ]
             }
-            headers = {
-                'Content-Type': 'application/json',
-            }
             response = requests.post(url, json=body)
             self.assertEqual(response.status_code, httplib.CREATED)
             json_response_body = response.json()
@@ -233,4 +227,3 @@ class ECSTestCase(IntegrationTestCase):
             self.assertEqual(json_response_body['base64EncodedStdErr'].strip(), '')
 
         self.setup_env_and_run_func(the_test)
-
