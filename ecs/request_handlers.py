@@ -79,7 +79,7 @@ class NoOpRequestHandler(tor_async_util.RequestHandler):
 
 class HealthRequestHandler(tor_async_util.RequestHandler):
 
-    url_spec = r'/v1.0/ecs/_health'
+    url_spec = r'/v1.0/_health'
 
     @tornado.web.asynchronous
     def get(self):

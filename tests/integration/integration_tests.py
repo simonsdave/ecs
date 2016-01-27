@@ -130,11 +130,11 @@ class NoOpTestCase(IntegrationTestCase):
 
 
 class HealthTestCase(IntegrationTestCase):
-    """A collection of integration tests for the /ecs/_health endpoint."""
+    """A collection of integration tests for the /_health endpoint."""
 
     def test_happy_path_no_quick_arg(self):
         def the_test(service_config):
-            url = 'http://%s:%d/v1.0/ecs/_health' % (
+            url = 'http://%s:%d/v1.0/_health' % (
                 service_config.ip,
                 service_config.port,
             )
@@ -145,7 +145,7 @@ class HealthTestCase(IntegrationTestCase):
 
     def test_happy_path_quick_arg_is_true(self):
         def the_test(service_config):
-            url = 'http://%s:%d/v1.0/ecs/_health?quick=true' % (
+            url = 'http://%s:%d/v1.0/_health?quick=true' % (
                 service_config.ip,
                 service_config.port,
             )
@@ -156,7 +156,7 @@ class HealthTestCase(IntegrationTestCase):
 
     def test_happy_path_quick_arg_is_false(self):
         def the_test(service_config):
-            url = 'http://%s:%d/v1.0/ecs/_health?quick=false' % (
+            url = 'http://%s:%d/v1.0/_health?quick=false' % (
                 service_config.ip,
                 service_config.port,
             )
@@ -167,7 +167,7 @@ class HealthTestCase(IntegrationTestCase):
 
     def test_happy_path_quick_arg_is_not_boolean(self):
         def the_test(service_config):
-            url = 'http://%s:%d/v1.0/ecs/_health?quick=dave' % (
+            url = 'http://%s:%d/v1.0/_health?quick=dave' % (
                 service_config.ip,
                 service_config.port,
             )
@@ -178,7 +178,7 @@ class HealthTestCase(IntegrationTestCase):
 
 
 class ECSTestCase(IntegrationTestCase):
-    """A collection of integration tests for the /ecs/_health endpoint."""
+    """A collection of integration tests for the /_health endpoint."""
 
     def test_happy_path_with_simple_echo(self):
         def the_test(service_config):
