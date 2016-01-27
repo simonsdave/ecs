@@ -70,7 +70,7 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
 
 class NoOpRequestHandler(tor_async_util.RequestHandler):
 
-    url_spec = r'/v1.0/ecs/_noop'
+    url_spec = r'/v1.0/_noop'
 
     @tornado.web.asynchronous
     def get(self):

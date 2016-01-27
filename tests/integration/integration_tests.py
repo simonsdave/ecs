@@ -81,7 +81,7 @@ class Service(object):
             preexec_fn=os.setsid,
         )
 
-        url = 'http://%s:%d/v1.0/ecs/_noop' % (
+        url = 'http://%s:%d/v1.0/_noop' % (
             self.service_config.ip,
             self.service_config.port,
         )
@@ -115,11 +115,11 @@ class IntegrationTestCase(unittest.TestCase):
 
 
 class NoOpTestCase(IntegrationTestCase):
-    """A collection of integration tests for the /ecs/_noop endpoint."""
+    """A collection of integration tests for the /_noop endpoint."""
 
     def test_happy_path(self):
         def the_test(service_config):
-            url = 'http://%s:%d/v1.0/ecs/_noop' % (
+            url = 'http://%s:%d/v1.0/_noop' % (
                 service_config.ip,
                 service_config.port,
             )
