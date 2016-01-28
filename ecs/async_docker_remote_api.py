@@ -76,14 +76,13 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerRunner(tor_async_util.AsyncAction):
-    """Async'ly run a container."""
+class AsyncContainerCreate(tor_async_util.AsyncAction):
+    """Async'ly create a container."""
 
-    # RFD = Run Failure Details
-    RFD_OK = 0x0000
-    RFD_ERROR = 0x0080
-    RFD_ERROR_CREATING_CONTAINER = RFD_ERROR | 0x0001
-    RFD_ERROR_STARTING_CONTAINER = RFD_ERROR | 0x0002
+    # CFD = Create Failure Details
+    CFD_OK = 0x0000
+    CFD_ERROR = 0x0080
+    CFD_ERROR_CREATING_CONTAINER = CFD_ERROR | 0x0001
 
     def __init__(self, docker_image, tag, cmd, async_state=None):
         tor_async_util.AsyncAction.__init__(self, async_state)
@@ -92,12 +91,11 @@ class AsyncContainerRunner(tor_async_util.AsyncAction):
         self.tag = tag
         self.cmd = cmd
 
-        self.run_failure_detail = None
+        self.create_failure_detail = None
 
-        self._container_id = None
         self._callback = None
 
-    def run(self, callback):
+    def create(self, callback):
         assert self._callback is None
         self._callback = callback
 
@@ -131,40 +129,67 @@ class AsyncContainerRunner(tor_async_util.AsyncAction):
         _write_http_client_response_to_log(response)
 
         if response.code != httplib.CREATED:
-            self._call_callback(type(self).RFD_ERROR_CREATING_CONTAINER)
+            self._call_callback(type(self).CFD_ERROR_CREATING_CONTAINER)
             return
 
         response_body = json.loads(response.body)
-        self._container_id = response_body['Id']
+        self._call_callback(type(self).CFD_OK, response_body['Id'])
+
+    def _call_callback(self, create_failure_detail, container_id=None):
+        assert self._callback is not None
+        assert self.create_failure_detail is None
+        self.create_failure_detail = create_failure_detail
+        is_ok = not bool(self.create_failure_detail & type(self).CFD_ERROR)
+        self._callback(is_ok, container_id, self)
+        self._callback = None
+
+
+class AsyncContainerStart(tor_async_util.AsyncAction):
+    """Async'ly start a container."""
+
+    # SFD = Start Failure Details
+    SFD_OK = 0x0000
+    SFD_ERROR = 0x0080
+    SFD_ERROR_STARTING_CONTAINER = SFD_ERROR | 0x0001
+
+    def __init__(self, container_id, async_state=None):
+        tor_async_util.AsyncAction.__init__(self, async_state)
+
+        self.container_id = container_id
+
+        self.start_failure_detail = None
+
+        self._callback = None
+
+    def start(self, callback):
+        assert self._callback is None
+        self._callback = callback
 
         url_fmt = '%s/containers/%s/start'
         request = tornado.httpclient.HTTPRequest(
-            url_fmt % (remote_docker_api_endpoint, self._container_id),
+            url_fmt % (remote_docker_api_endpoint, self.container_id),
             method='POST',
             allow_nonstandard_methods=True,
             connect_timeout=connect_timeout,
             request_timeout=request_timeout)
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(request, callback=self._on_start_container_http_client_fetch_done)
+        http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
-    def _on_start_container_http_client_fetch_done(self, response):
+    def _on_http_client_fetch_done(self, response):
         _write_http_client_response_to_log(response)
 
         if response.code != httplib.NO_CONTENT:
-            self._call_callback(type(self).RFD_ERROR_STARTING_CONTAINER)
+            self._call_callback(type(self).SFD_ERROR_STARTING_CONTAINER)
             return
 
-        self._call_callback(type(self).RFD_OK)
+        self._call_callback(type(self).SFD_OK)
 
-    def _call_callback(self, run_failure_detail):
+    def _call_callback(self, start_failure_detail):
         assert self._callback is not None
-        assert self.run_failure_detail is None
-        self.run_failure_detail = run_failure_detail
-        is_ok = not bool(self.run_failure_detail & type(self).RFD_ERROR)
-        self._callback(
-            is_ok,
-            self._container_id if is_ok else None,
-            self)
+        assert self.start_failure_detail is None
+        self.start_failure_detail = start_failure_detail
+        is_ok = not bool(self.start_failure_detail & type(self).SFD_ERROR)
+        self._callback(is_ok, self)
         self._callback = None
 
 

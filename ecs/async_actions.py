@@ -9,7 +9,8 @@ import tornado.httpclient
 
 from async_docker_remote_api import AsyncImagePull
 from async_docker_remote_api import AsyncContainerLogs
-from async_docker_remote_api import AsyncContainerRunner
+from async_docker_remote_api import AsyncContainerCreate
+from async_docker_remote_api import AsyncContainerStart
 from async_docker_remote_api import AsyncContainerDelete
 from async_docker_remote_api import AsyncContainerStatus
 
@@ -24,8 +25,9 @@ class AsyncEndToEndContainerRunner(AsyncAction):
     CFD_OK = 0x0000
     CFD_ERROR = 0x0080
     CFD_ERROR_PULLING_IMAGE = CFD_ERROR | 0x0001
-    CFD_ERROR_RUNNING_CONTAINER = CFD_ERROR | 0x0002
-    CFD_WAITING_FOR_CONTAINER_TO_EXIT = CFD_ERROR | 0x0003
+    CFD_ERROR_CREATING_CONTAINER = CFD_ERROR | 0x0002
+    CFD_ERROR_STARTING_CONTAINER = CFD_ERROR | 0x0003
+    CFD_WAITING_FOR_CONTAINER_TO_EXIT = CFD_ERROR | 0x0004
     CFD_ERROR_FETCHING_CONTAINER_LOGS = CFD_ERROR | 0x0003
 
     def __init__(self, docker_image, tag, cmd, async_state=None):
@@ -64,21 +66,36 @@ class AsyncEndToEndContainerRunner(AsyncAction):
         fmt = '%s - successfully pulled image %s:%s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag)
 
-        fmt = '%s - attempting to start container running %s:%s - %s'
+        fmt = '%s - attempting to create container running %s:%s - %s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd)
-        arc = AsyncContainerRunner(self.docker_image, self.tag, self.cmd)
-        arc.run(self._on_arc_run_done)
+        acc = AsyncContainerCreate(self.docker_image, self.tag, self.cmd)
+        acc.create(self._on_acc_create_done)
 
-    def _on_arc_run_done(self, is_ok, container_id, arc):
+    def _on_acc_create_done(self, is_ok, container_id, acc):
         if not is_ok:
-            fmt = '%s - error starting container running %s:%s - %s'
+            fmt = '%s - error creating container running %s:%s - %s'
             _logger.error(fmt, self.cid, self.docker_image, self.tag, self.cmd)
-            self._call_callback(type(self).CFD_ERROR_RUNNING_CONTAINER)
+            self._call_callback(type(self).CFD_ERROR_CREATING_CONTAINER)
             return
 
         self._container_id = container_id
 
-        fmt = '%s - successfully started container running %s:%s - %s - container ID = %s'
+        fmt = '%s - successfully created container %s:%s - %s - container ID = %s'
+        _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd, self._container_id)
+
+        fmt = '%s - attempting to start container - container ID = %s'
+        _logger.info(fmt, self.cid, self._container_id)
+        acs = AsyncContainerStart(self._container_id)
+        acs.start(self._on_acs_start_done)
+
+    def _on_acs_start_done(self, is_ok, acs):
+        if not is_ok:
+            fmt = '%s - error starting container - container ID = %s'
+            _logger.error(fmt, self.cid, self._container_id)
+            self._call_callback(type(self).CFD_ERROR_STARTING_CONTAINER)
+            return
+
+        fmt = '%s - successfully started container - container ID = %s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd, self._container_id)
 
         fmt = '%s - attempting to get container\'s exit status - conatiner ID = %s'
