@@ -96,7 +96,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
             return
 
         fmt = '%s - successfully started container - container ID = %s'
-        _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd, self._container_id)
+        _logger.info(fmt, self.cid, self._container_id)
 
         fmt = '%s - attempting to get container\'s exit status - conatiner ID = %s'
         _logger.error(fmt, self.cid, self._container_id)
