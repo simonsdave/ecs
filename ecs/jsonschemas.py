@@ -12,6 +12,6 @@ def _load_jsonschema(schema_name):
     with open(filename) as fp:
         return json.load(fp)
 
-create_raw_crawls_request = _load_jsonschema('create_raw_crawls_request')
+create_tasks_request = _load_jsonschema('create_tasks_request')
 
-create_raw_crawls_response = _load_jsonschema('create_raw_crawls_response')
+create_tasks_response = _load_jsonschema('create_tasks_response')

@@ -1,5 +1,5 @@
 """This module contains all the request handlers for the
-raw crawls service.
+ephemeral container service.
 """
 
 import httplib
@@ -26,7 +26,7 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
         """This method implements the POST action on the /ecs endpoint."""
-        schema = jsonschemas.create_raw_crawls_request
+        schema = jsonschemas.create_tasks_request
         request_body = self.get_json_request_body(schema=schema)
         if request_body is None:
             self.write_bad_request_response(type(self).PDD_BAD_REQUEST_BODY)
@@ -57,7 +57,7 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
             'base64EncodedStdErr': base64_encoded_stderr,
         }
 
-        schema = jsonschemas.create_raw_crawls_response
+        schema = jsonschemas.create_tasks_response
         if not self.write_and_verify(body, schema):
             self.set_status(httplib.INTERNAL_SERVER_ERROR)
             self.add_debug_details(self.PDD_BAD_RESPONSE_BODY)
