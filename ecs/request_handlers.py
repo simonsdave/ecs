@@ -59,8 +59,8 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
 
         body = {
             'exitCode': exit_code,
-            'base64EncodedStdout': base64.b64encode(stdout),
-            'base64EncodedStderr': base64.b64encode(stderr),
+            'stdout': base64.b64encode(stdout),
+            'stderr': base64.b64encode(stderr),
         }
 
         schema = jsonschemas.create_tasks_response

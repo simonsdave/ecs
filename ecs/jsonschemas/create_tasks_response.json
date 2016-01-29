@@ -7,17 +7,17 @@
         "exitCode": {
             "type": "integer"
         },
-        "base64EncodedStdout": {
+        "stdout": {
             "type": "string"
         },
-        "base64EncodedStderr": {
+        "stderr": {
             "type": "string"
         }
     },
     "required": [
         "exitCode",
-        "base64EncodedStdout",
-        "base64EncodedStderr"
+        "stdout",
+        "stderr"
     ],
     "additionalProperties": false
 }

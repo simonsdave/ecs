@@ -201,10 +201,10 @@ class TasksTestCase(IntegrationTestCase):
             json_response_body = response.json()
             self.assertEqual(json_response_body['exitCode'], 0)
             self.assertEqual(
-                base64.b64decode(json_response_body['base64EncodedStdout']).strip(),
+                base64.b64decode(json_response_body['stdout']).strip(),
                 body['cmd'][1])
             self.assertEqual(
-                json_response_body['base64EncodedStderr'].strip(),
+                json_response_body['stderr'].strip(),
                 '')
 
         self.setup_env_and_run_func(the_test)
@@ -235,8 +235,8 @@ class TasksTestCase(IntegrationTestCase):
             self.assertEqual(response.status_code, httplib.CREATED)
             json_response_body = response.json()
             self.assertEqual(json_response_body['exitCode'], exit_code)
-            self.assertEqual(json_response_body['base64EncodedStdout'].strip(), '')
-            self.assertEqual(json_response_body['base64EncodedStderr'].strip(), '')
+            self.assertEqual(json_response_body['stdout'].strip(), '')
+            self.assertEqual(json_response_body['stderr'].strip(), '')
 
         self.setup_env_and_run_func(the_test)
 
