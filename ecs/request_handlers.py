@@ -10,7 +10,7 @@ import tornado.web
 import tor_async_util
 
 import jsonschemas
-from async_actions import AsyncEndToEndContainerRunner
+import async_actions
 
 _logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
         email = creds.get('email', None)
         username = creds.get('username', None)
         password = creds.get('password', None)
-        acr = AsyncEndToEndContainerRunner(
+        acr = async_actions.AsyncEndToEndContainerRunner(
             docker_image,
             tag,
             cmd,
@@ -89,4 +89,4 @@ class HealthRequestHandler(tor_async_util.RequestHandler):
 
     @tornado.web.asynchronous
     def get(self):
-        tor_async_util.generate_health_check_response(self, tor_async_util.AsyncHealthCheck)
+        tor_async_util.generate_health_check_response(self, async_actions.AsyncHealthChecker)

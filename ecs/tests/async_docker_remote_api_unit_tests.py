@@ -5,29 +5,33 @@ validate the ..async_docker_remote_api module.
 import unittest
 import uuid
 
-from ..async_actions import AsyncContainerStart
-from ..async_actions import AsyncImagePull
+import mock
+
+from ..async_docker_remote_api import AsyncContainerStart
+from ..async_docker_remote_api import AsyncImagePull
+from ..async_docker_remote_api import AsyncHealthChecker
 
 
-class AsyncContainerStartTestCase(unittest.TestCase):
+class AsyncHealthCheckTestCase(unittest.TestCase):
 
     def test_ctr_without_async_state(self):
-        container_id = uuid.uuid4().hex
-
-        acs = AsyncContainerStart(container_id)
-
-        self.assertTrue(acs.container_id is container_id)
-
-        self.assertIsNone(acs.async_state)
+        is_quick = uuid.uuid4().hex
+        ahc = AsyncHealthChecker(is_quick)
+        self.assertTrue(ahc.is_quick is is_quick)
+        self.assertIsNone(ahc.async_state)
 
     def test_ctr_with_async_state(self):
-        container_id = uuid.uuid4().hex
+        is_quick = uuid.uuid4().hex
         async_state = uuid.uuid4().hex
+        ahc = AsyncHealthChecker(is_quick, async_state)
+        self.assertTrue(ahc.is_quick is is_quick)
+        self.assertTrue(ahc.async_state is async_state)
 
-        acs = AsyncContainerStart(container_id, async_state)
-
-        self.assertTrue(acs.container_id is container_id)
-        self.assertTrue(acs.async_state is async_state)
+    def test_quick_check(self):
+        callback = mock.Mock()
+        ahc = AsyncHealthChecker(True)
+        ahc.check(callback)
+        callback.assert_called_once_with(True, None, ahc)
 
 
 class AsyncImagePullTestCase(unittest.TestCase):
@@ -76,3 +80,24 @@ class AsyncImagePullTestCase(unittest.TestCase):
         self.assertTrue(aip.username is username)
         self.assertTrue(aip.password is password)
         self.assertTrue(aip.async_state is async_state)
+
+
+class AsyncContainerStartTestCase(unittest.TestCase):
+
+    def test_ctr_without_async_state(self):
+        container_id = uuid.uuid4().hex
+
+        acs = AsyncContainerStart(container_id)
+
+        self.assertTrue(acs.container_id is container_id)
+
+        self.assertIsNone(acs.async_state)
+
+    def test_ctr_with_async_state(self):
+        container_id = uuid.uuid4().hex
+        async_state = uuid.uuid4().hex
+
+        acs = AsyncContainerStart(container_id, async_state)
+
+        self.assertTrue(acs.container_id is container_id)
+        self.assertTrue(acs.async_state is async_state)

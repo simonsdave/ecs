@@ -1,23 +1,16 @@
 """This module contains async actions."""
 
-import httplib
 import logging
 import uuid
 
-from tor_async_util import AsyncAction
-import tornado.httpclient
+import tor_async_util
 
-from async_docker_remote_api import AsyncImagePull
-from async_docker_remote_api import AsyncContainerLogs
-from async_docker_remote_api import AsyncContainerCreate
-from async_docker_remote_api import AsyncContainerStart
-from async_docker_remote_api import AsyncContainerDelete
-from async_docker_remote_api import AsyncContainerStatus
+import async_docker_remote_api
 
 _logger = logging.getLogger(__name__)
 
 
-class AsyncEndToEndContainerRunner(AsyncAction):
+class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
     """Async'ly ...
     """
 
@@ -38,7 +31,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
                  username,
                  password,
                  async_state=None):
-        AsyncAction.__init__(self, async_state)
+        tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
         self.tag = tag
@@ -63,7 +56,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to pull image %s:%s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag)
-        aip = AsyncImagePull(
+        aip = async_docker_remote_api.AsyncImagePull(
             self.docker_image,
             self.tag,
             self.email,
@@ -83,7 +76,10 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to create container running %s:%s - %s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd)
-        acc = AsyncContainerCreate(self.docker_image, self.tag, self.cmd)
+        acc = async_docker_remote_api.AsyncContainerCreate(
+            self.docker_image,
+            self.tag,
+            self.cmd)
         acc.create(self._on_acc_create_done)
 
     def _on_acc_create_done(self, is_ok, container_id, acc):
@@ -100,7 +96,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to start container - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)
-        acs = AsyncContainerStart(self._container_id)
+        acs = async_docker_remote_api.AsyncContainerStart(self._container_id)
         acs.start(self._on_acs_start_done)
 
     def _on_acs_start_done(self, is_ok, acs):
@@ -115,7 +111,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to get container\'s exit status - conatiner ID = %s'
         _logger.error(fmt, self.cid, self._container_id)
-        acs = AsyncContainerStatus(self._container_id)
+        acs = async_docker_remote_api.AsyncContainerStatus(self._container_id)
         acs.fetch(self._on_acs_fetch_done)
 
     def _on_acs_fetch_done(self, is_ok, exit_code, acew):
@@ -132,7 +128,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to fetch container\'s logs - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)
-        acl = AsyncContainerLogs(self._container_id)
+        acl = async_docker_remote_api.AsyncContainerLogs(self._container_id)
         acl.fetch(self._on_acl_fetch_done)
 
     def _on_acl_fetch_done(self, is_ok, stdout, stderr, aclf):
@@ -150,7 +146,7 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to delete container - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)
-        acd = AsyncContainerDelete(self._container_id)
+        acd = async_docker_remote_api.AsyncContainerDelete(self._container_id)
         acd.delete(self._on_acd_delete_done)
 
     def _on_acd_delete_done(self, is_ok, adc):
@@ -174,23 +170,13 @@ class AsyncEndToEndContainerRunner(AsyncAction):
         self._callback = None
 
 
-class AsyncDockerRemoteAPIHealthChecker(AsyncAction):
-    """Async'ly ...
-    """
+class AsyncHealthChecker(tor_async_util.AsyncAction):
+    """Async'ly check the service's health."""
 
-    # CFD = Create Failure Details
-    CFD_OK = 0x0000
-    CFD_ERROR = 0x0080
-    CFD_ERROR_PULLING_IMAGE = CFD_ERROR | 0x0001
+    def __init__(self, is_quick, async_state=None):
+        tor_async_util.AsyncAction.__init__(self, async_state)
 
-    def __init__(self, docker_image, tag, cmd, async_state=None):
-        AsyncAction.__init__(self, async_state)
-
-        self.docker_image = docker_image
-        self.tag = tag
-        self.cmd = cmd
-
-        self.create_failure_detail = None
+        self.is_quick = is_quick
 
         self._callback = None
 
@@ -198,17 +184,17 @@ class AsyncDockerRemoteAPIHealthChecker(AsyncAction):
         assert self._callback is None
         self._callback = callback
 
-        request = tornado.httpclient.HTTPRequest(
-            'http://127.0.0.1:4243/version',
-            method='GET')
+        if self.is_quick:
+            self._call_callback(True)
+            return
 
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(request, callback=self._on_http_client_fetch_done)
+        ahc = async_docker_remote_api.AsyncHealthChecker(self.is_quick)
+        ahc.check(self._on_docker_remote_api_ahc_fetch_done)
 
-    def _on_http_client_fetch_done(self, response):
-        self._call_callback(response.code == httplib.OK)
+    def _on_docker_remote_api_ahc_fetch_done(self, is_ok, details, ahc):
+        self._call_callback(is_ok, details)
 
-    def _call_callback(self, is_ok):
+    def _call_callback(self, is_ok, details=None):
         assert self._callback is not None
-        self._callback(is_ok, self)
+        self._callback(is_ok, details, self)
         self._callback = None

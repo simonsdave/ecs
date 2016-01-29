@@ -20,7 +20,57 @@ request_timeout = 5 * 60.0
 
 
 def _write_http_client_response_to_log(response):
-    tor_async_util.write_http_client_response_to_log(_logger, response, 'Remote Docker API')
+    tor_async_util.write_http_client_response_to_log(
+        _logger,
+        response,
+        'Remote Docker API')
+
+
+class AsyncHealthChecker(tor_async_util.AsyncAction):
+    """Async'ly check the health of the Docker Remote API."""
+
+    def __init__(self, is_quick, async_state=None):
+        tor_async_util.AsyncAction.__init__(self, async_state)
+
+        self.is_quick = is_quick
+
+        self._callback = None
+
+    def check(self, callback):
+        assert self._callback is None
+        self._callback = callback
+
+        if self.is_quick:
+            self._call_callback(True)
+            return
+
+        request = tornado.httpclient.HTTPRequest(
+            '%s/version' % remote_docker_api_endpoint,
+            method='GET',
+            connect_timeout=connect_timeout,
+            request_timeout=request_timeout)
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_client.fetch(
+            request,
+            callback=self._on_http_client_fetch_done)
+
+    def _on_http_client_fetch_done(self, response):
+        _write_http_client_response_to_log(response)
+
+        if response.code != httplib.OK:
+            self._call_callback(True, False)
+
+        response_body = json.loads(response.body)
+        api_version = response_body['ApiVersion']
+        self._call_callback(True, api_version == '1.18')
+
+    def _call_callback(self, is_ok, docker_remote_api_accessible=None):
+        assert self._callback is not None
+        details = {
+            'Docker Remote API': docker_remote_api_accessible,
+        } if is_ok and docker_remote_api_accessible is not None else None
+        self._callback(is_ok, details, self)
+        self._callback = None
 
 
 class AsyncImagePull(tor_async_util.AsyncAction):
