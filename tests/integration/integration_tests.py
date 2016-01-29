@@ -180,6 +180,36 @@ class HealthTestCase(IntegrationTestCase):
 class TasksTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_tasks endpoint."""
 
+    def _test_happy_path_with_simple_echo(self, trailing_slash):
+        def the_test(service_config):
+            url = 'http://%s:%d/v1.0/tasks%s' % (
+                service_config.ip,
+                service_config.port,
+                '/' if trailing_slash else '',
+            )
+            body = {
+                'docker_image': 'ubuntu',
+                'tag': 'latest',
+                'cmd': [
+                    'echo',
+                    'hello world',
+                ],
+            }
+            response = requests.post(url, json=body)
+            self.assertEqual(response.status_code, httplib.CREATED)
+            json_response_body = response.json()
+            self.assertEqual(json_response_body['exitCode'], 0)
+            self.assertEqual(json_response_body['base64EncodedStdOut'].strip(), body['cmd'][1])
+            self.assertEqual(json_response_body['base64EncodedStdErr'].strip(), '')
+
+        self.setup_env_and_run_func(the_test)
+
+    def test_happy_path_with_simple_echo_with_training_slash(self):
+        self._test_happy_path_with_simple_echo(trailing_slash=True)
+
+    def test_happy_path_with_simple_echo_without_training_slash(self):
+        self._test_happy_path_with_simple_echo(trailing_slash=False)
+
     def test_happy_path_with_simple_echo(self):
         def the_test(service_config):
             url = 'http://%s:%d/v1.0/tasks' % (
