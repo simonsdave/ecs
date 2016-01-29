@@ -1,5 +1,6 @@
 """This module contains async actions against the Docker Remote API."""
 
+import base64
 import datetime
 import httplib
 import json
@@ -30,11 +31,14 @@ class AsyncImagePull(tor_async_util.AsyncAction):
     PFD_ERROR = 0x0080
     PFD_ERROR_PULLING_IMAGE = PFD_ERROR | 0x0001
 
-    def __init__(self, docker_image, tag, async_state=None):
+    def __init__(self, docker_image, tag, email, username, password, async_state=None):
         tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
         self.tag = tag
+        self.email = email
+        self.username = username
+        self.password = password
 
         self.pull_failure_detail = None
 
@@ -44,10 +48,22 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         assert self._callback is None
         self._callback = callback
 
+        headers = {}
+
+        if self.email:
+            fmt = '{"username":"%s","password":"%s","auth":"","email":"%s"}'
+            x_registry_auth_as_str = fmt % (
+                self.username,
+                self.password,
+                self.email,
+            )
+            headers['X-Registry-Auth'] = base64.b64encode(x_registry_auth_as_str)
+
         url_fmt = '%s/images/create?fromImage=%s&tag=%s'
         request = tornado.httpclient.HTTPRequest(
             url_fmt % (remote_docker_api_endpoint, self.docker_image, self.tag),
             method='POST',
+            headers=headers,
             allow_nonstandard_methods=True,
             connect_timeout=connect_timeout,
             request_timeout=request_timeout,

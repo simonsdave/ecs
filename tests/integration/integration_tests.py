@@ -305,6 +305,8 @@ class TasksTestCase(IntegrationTestCase):
                     'cmd': [
                     ]
                 },
+                {
+                },
             ]
             for body in bodies:
                 url = 'http://%s:%d/v1.0/tasks' % (

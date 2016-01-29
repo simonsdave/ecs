@@ -36,7 +36,17 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
         docker_image = request_body['docker_image']
         tag = request_body['tag']
         cmd = request_body['cmd']
-        acr = AsyncEndToEndContainerRunner(docker_image, tag, cmd)
+        creds = request_body.get('creds', {})
+        email = creds.get('email', None)
+        username = creds.get('username', None)
+        password = creds.get('password', None)
+        acr = AsyncEndToEndContainerRunner(
+            docker_image,
+            tag,
+            cmd,
+            email,
+            username,
+            password)
         acr.create(self._on_acr_create_done)
 
     def _on_acr_create_done(self,

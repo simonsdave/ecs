@@ -30,12 +30,22 @@ class AsyncEndToEndContainerRunner(AsyncAction):
     CFD_WAITING_FOR_CONTAINER_TO_EXIT = CFD_ERROR | 0x0004
     CFD_ERROR_FETCHING_CONTAINER_LOGS = CFD_ERROR | 0x0003
 
-    def __init__(self, docker_image, tag, cmd, async_state=None):
+    def __init__(self,
+                 docker_image,
+                 tag,
+                 cmd,
+                 email,
+                 username,
+                 password,
+                 async_state=None):
         AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
         self.tag = tag
         self.cmd = cmd
+        self.email = email
+        self.username = username
+        self.password = password
 
         self.cid = uuid.uuid4().hex
 
@@ -53,7 +63,12 @@ class AsyncEndToEndContainerRunner(AsyncAction):
 
         fmt = '%s - attempting to pull image %s:%s'
         _logger.info(fmt, self.cid, self.docker_image, self.tag)
-        aip = AsyncImagePull(self.docker_image, self.tag)
+        aip = AsyncImagePull(
+            self.docker_image,
+            self.tag,
+            self.email,
+            self.username,
+            self.password)
         aip.pull(self._on_aip_pull_done)
 
     def _on_aip_pull_done(self, is_ok, api):
