@@ -2,6 +2,7 @@
 ephemeral container service.
 """
 
+import base64
 import httplib
 import logging
 
@@ -49,12 +50,7 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
             password)
         acr.create(self._on_acr_create_done)
 
-    def _on_acr_create_done(self,
-                            is_ok,
-                            exit_code,
-                            base64_encoded_stdout,
-                            base64_encoded_stderr,
-                            acr):
+    def _on_acr_create_done(self, is_ok, exit_code, stdout, stderr, acr):
         if not is_ok:
             self.set_status(httplib.INTERNAL_SERVER_ERROR)
             self.add_debug_details(self.PDD_ERROR_CREATING_RAW_CRAWL)
@@ -63,8 +59,8 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
 
         body = {
             'exitCode': exit_code,
-            'base64EncodedStdout': base64_encoded_stdout,
-            'base64EncodedStderr': base64_encoded_stderr,
+            'base64EncodedStdout': base64.b64encode(stdout),
+            'base64EncodedStderr': base64.b64encode(stderr),
         }
 
         schema = jsonschemas.create_tasks_response

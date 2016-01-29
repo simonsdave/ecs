@@ -1,6 +1,7 @@
 """A collection of integration tests for the ephemeral
 container service.
 """
+import base64
 from ConfigParser import ConfigParser
 import httplib
 import os
@@ -199,8 +200,12 @@ class TasksTestCase(IntegrationTestCase):
             self.assertEqual(response.status_code, httplib.CREATED)
             json_response_body = response.json()
             self.assertEqual(json_response_body['exitCode'], 0)
-            self.assertEqual(json_response_body['base64EncodedStdout'].strip(), body['cmd'][1])
-            self.assertEqual(json_response_body['base64EncodedStderr'].strip(), '')
+            self.assertEqual(
+                base64.b64decode(json_response_body['base64EncodedStdout']).strip(),
+                body['cmd'][1])
+            self.assertEqual(
+                json_response_body['base64EncodedStderr'].strip(),
+                '')
 
         self.setup_env_and_run_func(the_test)
 
@@ -209,29 +214,6 @@ class TasksTestCase(IntegrationTestCase):
 
     def test_happy_path_with_simple_echo_without_training_slash(self):
         self._test_happy_path_with_simple_echo(trailing_slash=False)
-
-    def test_happy_path_with_simple_echo(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/tasks' % (
-                service_config.ip,
-                service_config.port,
-            )
-            body = {
-                'docker_image': 'ubuntu',
-                'tag': 'latest',
-                'cmd': [
-                    'echo',
-                    'hello world',
-                ]
-            }
-            response = requests.post(url, json=body)
-            self.assertEqual(response.status_code, httplib.CREATED)
-            json_response_body = response.json()
-            self.assertEqual(json_response_body['exitCode'], 0)
-            self.assertEqual(json_response_body['base64EncodedStdout'].strip(), body['cmd'][1])
-            self.assertEqual(json_response_body['base64EncodedStderr'].strip(), '')
-
-        self.setup_env_and_run_func(the_test)
 
     def test_non_zero_exit_code(self):
         def the_test(service_config):
