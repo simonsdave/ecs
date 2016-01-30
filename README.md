@@ -18,9 +18,6 @@ makes it possible to do this using requests to a RESTful API.
 these building blocks to package [spiders](https://en.wikipedia.org/wiki/Web_crawler)
 in docker images and run those spiders in docker containers on a cluster of docker hosts.
 ECS is a generalization of these basic building blocks.
-Based on an effort to the desire to 
-In addition, [Cloudfeaster](https://github.com/simonsdave/cloudfeaster.git) used
-ran a service on each of the hosts which presented an 
 
 # Functionality
 
