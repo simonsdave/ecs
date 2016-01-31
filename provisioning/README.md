@@ -171,6 +171,7 @@ docs.ecs.cloudfeaster.com.crt
 * add rate limiting to nginx configuration
 * [nginx/nginx.site](nginx/nginx.site) has references to cloudfeaster - need to change this to support any organization
 * put 'correct' TLS configuration in nginx
+* require TLS client cert in [nginx/nginx.site](nginx/nginx.site)
 * use [Let's Encrypt](https://letsencrypt.org/) to automate the generation of certs?
 * use [Let's Encrypt](https://letsencrypt.org/) to automate the renewal of certs?
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
