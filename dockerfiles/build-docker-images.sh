@@ -12,8 +12,15 @@ else
     VERBOSE=0
 fi
 
+if [ "-p" == "${1:-}" ]; then
+    PUSH_TO_DOCKERHUB=1
+    shift
+else
+    PUSH_TO_DOCKERHUB=0
+fi
+
 if [ $# != 5 ]; then
-    echo "usage: `basename $0` [-v] <email> <username> <password> <services-tar-gz> <api-docs-tar>" >&2
+    echo "usage: `basename $0` [-v] [-p] <email> <username> <password> <services-tar-gz> <api-docs-tar>" >&2
     exit 1
 fi
 
@@ -40,26 +47,32 @@ fi
 sudo docker login --email="$EMAIL" --username="$USERNAME" --password="$PASSWORD"
 
 #
-# build nginx image
+# build & optionally push nginx image
 #
 IMAGENAME=$USERNAME/ecs-nginx
 sudo docker build -t $IMAGENAME "$SCRIPT_DIR_NAME/nginx"
-sudo docker push $IMAGENAME
+if [ $PUSH_TO_DOCKERHUB == 1 ]; then
+    sudo docker push $IMAGENAME
+fi
 
 #
-# build api docs image
+# build & optionally push api docs image
 #
 cp "$API_DOCS_TAR" "$SCRIPT_DIR_NAME/apidocs/api_docs.tar"
 IMAGENAME=$USERNAME/ecs-apidocs
 sudo docker build -t $IMAGENAME "$SCRIPT_DIR_NAME/apidocs"
-sudo docker push $IMAGENAME
+if [ $PUSH_TO_DOCKERHUB == 1 ]; then
+    sudo docker push $IMAGENAME
+fi
 
 #
-# build services image
+# build & optionally push services image
 #
 cp "$SERVICES_TAR_GZ" "$SCRIPT_DIR_NAME/services/services.tar.gz"
 IMAGENAME=$USERNAME/ecs-services
 sudo docker build -t $IMAGENAME "$SCRIPT_DIR_NAME/services"
-sudo docker push $IMAGENAME
+if [ $PUSH_TO_DOCKERHUB == 1 ]; then
+    sudo docker push $IMAGENAME
+fi
 
 exit 0
