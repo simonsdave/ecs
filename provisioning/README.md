@@ -122,7 +122,7 @@ URL HTTP Method Expiration  Signed URL
 gs://ecs-config/nginx_config.tar    GET 2016-01-31 08:16:36 https://storage.googleapis.com/ecs-config/nginx_config.tar?GoogleAccessId=656919253436-u9d6m6bgqampj6ojgvpaso04kas424nj@developer.gserviceaccount.com&Expires=1454246196&Signature=YpirLJL7SF7JmOQktdRLDbYO%2Bs8CbXRLl%2BeML%2B2eTb2LBDKjp4qs%2FfI2%2B534puJhTK%2BLPsr2FaT1fBvF0jB0csnXMKsH3AZZoNI70hlImNKQGtOqnqIw633curNfVntj8J8jPjZA5%2BxCAhxAUL4ZTFaalNdZK59qp5D60A7LeB2ykyeZr5ml%2BKXwz9OW0UtQNTzcAQK7uV8NRSWi7Cc0xuBM0X0qOPMOAT%2FPrCwY3Npt3VmE45QfNCnMNDYxY8LkRBg1knsaGqT9UGke4P%2Bwj7f8f%2BEMNq4ORXZtsUxLkTIfG9qgktvczDeZB4uXLyv%2B9FadguU6Fg456ygt9CeauQ%3D%3D
 ```
 
-## Spin Up The Services
+## Spin Up Containers
 
 ```bash
 > sudo docker run -d --name=apidocs simonsdave/ecs-apidocs nginx
@@ -152,3 +152,26 @@ docs.ecs.cloudfeaster.com.key
 api.ecs.cloudfeaster.com.crt
 docs.ecs.cloudfeaster.com.crt
 ```
+
+## Manually Exploring Endpoints
+
+```bash
+> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1 | jq
+> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/random | jq
+> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0 | jq
+> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_health | jq
+> curl -s --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_health?quick=false | jq
+> curl --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop | jq
+```
+
+## To-Do
+
+* fix /_health endpoint when docker report api red & overall is green
+* ecs container needs access to docker remote API on docker host
+* add rate limiting to nginx configuration
+* [nginx/nginx.site](nginx/nginx.site) has references to cloudfeaster - need to change this to support any organization
+* put 'correct' TLS configuration in nginx
+* use [Let's Encrypt](https://letsencrypt.org/) to automate the generation of certs?
+* use [Let's Encrypt](https://letsencrypt.org/) to automate the renewal of certs?
+* how should we describe the resources required by 1/ ecs service 2/ apidocs service
+* ```curl --insecure -s -v -H 'Host: docs.ecs.cloudfeaster.com' https://127.0.0.1/random``` should generate ecs "branded" 404 page

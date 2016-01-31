@@ -52,7 +52,7 @@ server {
 
     server_tokens off;
 
-    location /v1.0 {
+    location / {
 
         proxy_pass            http://ecs;
         proxy_read_timeout    10m;
