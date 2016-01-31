@@ -2,6 +2,10 @@
 #
 #   sudo docker build -t simonsdave/ecs-services .
 #
+# to run the image
+#
+#   sudo docker run -d --name=ecs simonsdave/ecs-services ephemeral_container_service.sh <config file url>
+#
 # for testing/debugging
 #
 #   sudo docker run -i -t simonsdave/ecs-services /bin/bash

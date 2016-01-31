@@ -1,18 +1,18 @@
 # to build the image
 #
-#   docker build -t simonsdave/ecs-apidocs .
+#   sudo docker build -t simonsdave/ecs-apidocs .
 #
 # to run the image
 #
-#   docker run -d -p 80:80 simonsdave/ecs-apidocs nginx
+#   sudo docker run -d --name=apidocs simonsdave/ecs-apidocs nginx
 #
 # for testing/debugging
 #
-#   docker run -i -t simonsdave/ecs-apidocs /bin/bash
+#   sudo docker run -i -t simonsdave/ecs-apidocs /bin/bash
 #
 # to push to dockerhub
 #
-#   docker push simonsdave/ecs-apidocs
+#   sudo docker push simonsdave/ecs-apidocs
 #
 FROM ubuntu:14.04
 

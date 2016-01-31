@@ -1,18 +1,18 @@
 # to build the image
 #
-#   docker build -t simonsdave/ecs-nginx .
+#   sudo docker build -t simonsdave/ecs-nginx .
 #
 # to run the image
 #
-#   docker run -d -p 80:80 -p 443:443 --link ecs:ecs --link apidocs:apidocs simonsdave/ecs-nginx nginx.sh <config-tar-file-url>
+#   sudo docker run -d -p 80:80 -p 443:443 --link ecs:ecs --link apidocs:apidocs simonsdave/ecs-nginx nginx.sh <config-tar-file-url>
 #
 # for testing/debugging
 #
-#   docker run -i -t --link ecs:ecs --link apidocs:apidocs simonsdave/ecs-nginx /bin/bash
+#   sudo docker run -i -t --link ecs:ecs --link apidocs:apidocs simonsdave/ecs-nginx /bin/bash
 #
 # to push to dockerhub
 #
-#   docker push simonsdave/ecs-nginx
+#   sudo docker push simonsdave/ecs-nginx
 #
 FROM ubuntu:14.04
 
