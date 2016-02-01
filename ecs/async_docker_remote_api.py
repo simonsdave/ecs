@@ -12,7 +12,7 @@ import tornado.ioloop
 
 _logger = logging.getLogger(__name__)
 
-remote_docker_api_endpoint = 'http://127.0.0.1:4243'
+remote_docker_api_endpoint = 'http://172.17.42.1:4243'
 
 connect_timeout = 10.0
 
