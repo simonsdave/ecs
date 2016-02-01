@@ -1,3 +1,32 @@
+# http://nginx.org/en/docs/http/ngx_http_limit_req_module.html
+# binary ip address = 4-bytes (see http://nginx.org/en/docs/http/ngx_http_limit_conn_module.html)
+# so a 1k zone can store 1024 / 4 = 256 entries
+# assuming round-robin layer 5 (tcp) load balancing in front of
+# each machine frontend'ed with this nginx instance, think of
+# these resource limits as applying just to this one machine so
+# while a 1 request per second rate might seem long, with 10
+# machines in the cluster the actual rate at the cluster level
+# (ie from the user's POV) is 10 x 1 r/s
+#
+# together limit_req and limit_conn provide some basic resource
+# management/protection of backend services from undesired request
+# patterns. we're not really too concerned about requests for
+# api docs as this should be super light but we are concerned
+# about things like # of concurrent spiders executing as each
+# spider is relatively heavy. limit_conn and limit_req provide
+# protection against individual client abuse.
+# reference - see "limits" section of https://www.nginx.com/blog/tuning-nginx/
+#
+# for improved resource management it would be better to use
+# the max_conns setting but that's only available in the nginx
+# commerical version. so, it's probably better to look toward
+# iptables (https://help.ubuntu.com/community/IptablesHowTo)
+limit_req_zone $binary_remote_addr zone=docs_per_ip_rate_limit:1m rate=10r/s;
+limit_req_zone $binary_remote_addr zone=ecs_per_ip_rate_limit:100k rate=1r/s;
+
+limit_conn_zone $binary_remote_addr zone=docs_per_ip_conn_limit:1m;
+limit_conn_zone $binary_remote_addr zone=ecs_per_ip_conn_limit:100k;
+
 server {
     listen          80;
     server_name     docs.ecs.cloudfeaster.com;
@@ -5,6 +34,9 @@ server {
 }
 
 server {
+    limit_req zone=docs_per_ip_rate_limit;
+    limit_conn docs_per_ip_conn_limit 10;
+
     listen          443 ssl;
     server_name     docs.ecs.cloudfeaster.com;
 
@@ -37,6 +69,9 @@ server {
 }
 
 server {
+    limit_req zone=ecs_per_ip_rate_limit;
+    limit_conn ecs_per_ip_conn_limit 25;
+
     listen          443 ssl;
     server_name     api.ecs.cloudfeaster.com;
 

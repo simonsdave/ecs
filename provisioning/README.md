@@ -143,7 +143,7 @@ config
 URL HTTP Method Expiration  Signed URL
 gs://ecs-config/nginx_config.tar    GET 2016-02-05 08:42:51 https://storage.googleapis.com/ecs-config/nginx_config.tar?GoogleAccessId=656919253436-u9d6m6bgqampj6ojgvpaso04kas424nj@developer.gserviceaccount.com&Expires=1454679771&Signature=IG8LGOvz8FXFWW2K%2BuMeTm4qcz7a4yRlccz%2BQJXJ0Ch17%2FzTM7RXc3zFoNepfYCrLRJocW7l%2FkopgTi6x1%2BdQbpc2uAH0P93mwzSHroFYSADsM7%2BFd5OyyNpV20xsFPpGkRGIDCFE4wg9QU%2FrWjFbrgei63Pe8AbD6ZUsin5n4r5lSEgayv%2Bld3cp6TKd8F5JoXJ6zyq8J296BpsjRYPUYlUOe9cU1x3YvVJVCQhO6x%2BFpvR3847ClVBK9TGbCnl2BVFi183A4qSz2Kfzn8zazRUCQdo8c0EGEqilOXgDSSjNLVIOlERKKccaVY0Bih8oZki%2Bv46VFLPc6vTfdLORQ%3D%3D 
 >
-> sudo docker run -d -p 80:80 -p 443:443 --link ecs:ecs --link apidocs:apidocs simonsdave/ecs-nginx nginx.sh 'https://storage.googleapis.com/ecs-config/nginx_config.tar?GoogleAccessId=656919253436-u9d6m6bgqampj6ojgvpaso04kas424nj@developer.gserviceaccount.com&Expires=1454679771&Signature=IG8LGOvz8FXFWW2K%2BuMeTm4qcz7a4yRlccz%2BQJXJ0Ch17%2FzTM7RXc3zFoNepfYCrLRJocW7l%2FkopgTi6x1%2BdQbpc2uAH0P93mwzSHroFYSADsM7%2BFd5OyyNpV20xsFPpGkRGIDCFE4wg9QU%2FrWjFbrgei63Pe8AbD6ZUsin5n4r5lSEgayv%2Bld3cp6TKd8F5JoXJ6zyq8J296BpsjRYPUYlUOe9cU1x3YvVJVCQhO6x%2BFpvR3847ClVBK9TGbCnl2BVFi183A4qSz2Kfzn8zazRUCQdo8c0EGEqilOXgDSSjNLVIOlERKKccaVY0Bih8oZki%2Bv46VFLPc6vTfdLORQ%3D%3D'
+> sudo docker run -d --name=nginx -p 80:80 -p 443:443 --link ecs:ecs --link apidocs:apidocs simonsdave/ecs-nginx nginx.sh 'https://storage.googleapis.com/ecs-config/nginx_config.tar?GoogleAccessId=656919253436-u9d6m6bgqampj6ojgvpaso04kas424nj@developer.gserviceaccount.com&Expires=1454679771&Signature=IG8LGOvz8FXFWW2K%2BuMeTm4qcz7a4yRlccz%2BQJXJ0Ch17%2FzTM7RXc3zFoNepfYCrLRJocW7l%2FkopgTi6x1%2BdQbpc2uAH0P93mwzSHroFYSADsM7%2BFd5OyyNpV20xsFPpGkRGIDCFE4wg9QU%2FrWjFbrgei63Pe8AbD6ZUsin5n4r5lSEgayv%2Bld3cp6TKd8F5JoXJ6zyq8J296BpsjRYPUYlUOe9cU1x3YvVJVCQhO6x%2BFpvR3847ClVBK9TGbCnl2BVFi183A4qSz2Kfzn8zazRUCQdo8c0EGEqilOXgDSSjNLVIOlERKKccaVY0Bih8oZki%2Bv46VFLPc6vTfdLORQ%3D%3D'
 8523d7fb97652af14f37ff19a58e8c394cd7d080a0998ae2d21b275024d78a2c
 >  
 > sudo docker logs 8523d7fb97652af14f37ff19a58e8c394cd7d080a0998ae2d21b275024d78a2c
@@ -160,8 +160,14 @@ docs.ecs.cloudfeaster.com.crt
 > curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/random | jq
 > curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0 | jq
 > curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_health | jq
-> curl -s --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_health?quick=false | jq
-> curl --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop | jq
+> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_health?quick=false | jq
+> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop | jq
+```
+
+Exploring rate limiting
+```bash
+> sudo apt-get install -y apache2-utils
+> for i in `seq 100`; do sleep .25; curl -o /dev/null -s -w %{http_code}\\n --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop; done
 ```
 
 ## To-Do
