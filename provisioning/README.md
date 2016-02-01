@@ -172,7 +172,6 @@ Exploring rate limiting
 
 ## To-Do
 
-* ecs container needs access to docker remote API on docker host
 * docs need /_noop and /_health endpoints
 * fix /_health endpoint when docker report api red & overall is green
 * add rate limiting to nginx configuration
