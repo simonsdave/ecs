@@ -11,10 +11,10 @@ apt-get update -y
 
 #
 # install docker and configure docker's remote API
-# to listen on http://127.0.0.1:4243
+# to listen on http://172.17.42.1:4243
 #
 apt-get install -y docker.io
-sed -i -e 's/#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"/DOCKER_OPTS="-H tcp:\/\/127.0.0.1:4243 -H unix:\/\/\/var\/run\/docker.sock"/g' /etc/default/docker
+sed -i -e 's/#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"/DOCKER_OPTS="-H tcp:\/\/172.17.42.1:4243 -H unix:\/\/\/var\/run\/docker.sock"/g' /etc/default/docker
 
 apt-get install -y git
 apt-get install -y python-virtualenv
