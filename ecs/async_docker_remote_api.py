@@ -59,6 +59,7 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
 
         if response.code != httplib.OK:
             self._call_callback(True, False)
+            return
 
         response_body = json.loads(response.body)
         api_version = response_body['ApiVersion']
