@@ -173,8 +173,7 @@ Exploring rate limiting
 ## To-Do
 
 * docs need /_noop and /_health endpoints
-* fix /_health endpoint when docker report api red & overall is green
-* add rate limiting to nginx configuration
+* add iptables rate limiting
 * [nginx/nginx.site](nginx/nginx.site) has references to cloudfeaster - need to change this to support any organization
 * put 'correct' TLS configuration in nginx
 * require TLS client cert in [nginx/nginx.site](nginx/nginx.site)

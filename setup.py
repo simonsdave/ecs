@@ -47,11 +47,11 @@ setup(
     install_requires=[
         # using tornado.curl_httpclient.CurlAsyncHTTPClient
         'pycurl>=7.19.5.1',
-        'tor-async-util==1.10.0',
+        'tor-async-util==1.11.0',
         'tornado==4.3',
     ],
     dependency_links=[
-        'https://github.com/simonsdave/tor-async-util/tarball/v1.10.0#egg=tor-async-util-1.10.0',
+        'https://github.com/simonsdave/tor-async-util/tarball/v1.11.0#egg=tor-async-util-1.11.0',
     ],
     include_package_data=True,
     version=version,
