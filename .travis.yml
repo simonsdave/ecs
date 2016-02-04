@@ -7,6 +7,8 @@ services:
 install:
   - source cfg4dev
   - pip install coveralls
+  - npm i -g raml2md
+  - npm i -g raml2html
 script:
   - pep8
   - flake8
