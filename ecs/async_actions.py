@@ -110,7 +110,7 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
         _logger.info(fmt, self.cid, self._container_id)
 
         fmt = '%s - attempting to get container\'s exit status - conatiner ID = %s'
-        _logger.error(fmt, self.cid, self._container_id)
+        _logger.info(fmt, self.cid, self._container_id)
         acs = async_docker_remote_api.AsyncContainerStatus(self._container_id)
         acs.fetch(self._on_acs_fetch_done)
 
@@ -124,7 +124,7 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
         self._exit_code = exit_code
 
         fmt = '%s - got container\'s exit status (%d) - conatiner ID = %s'
-        _logger.error(fmt, self.cid, self._exit_code, self._container_id)
+        _logger.info(fmt, self.cid, self._exit_code, self._container_id)
 
         fmt = '%s - attempting to fetch container\'s logs - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)
