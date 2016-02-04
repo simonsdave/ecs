@@ -11,6 +11,7 @@ import tempfile
 import time
 import unittest
 
+from nose.plugins.attrib import attr
 from tor_async_util.nose_plugins import FileCapture
 import requests
 
@@ -106,6 +107,7 @@ class Service(object):
             self._process = None
 
 
+@attr('integration')
 class IntegrationTestCase(unittest.TestCase):
     """An abstract base class for all integration tests."""
 
@@ -115,6 +117,7 @@ class IntegrationTestCase(unittest.TestCase):
                 the_test_func(service_config)
 
 
+@attr('integration')
 class NoOpTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_noop endpoint."""
 
@@ -130,6 +133,7 @@ class NoOpTestCase(IntegrationTestCase):
         self.setup_env_and_run_func(the_test)
 
 
+@attr('integration')
 class HealthTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_health endpoint."""
 
@@ -178,6 +182,7 @@ class HealthTestCase(IntegrationTestCase):
         self.setup_env_and_run_func(the_test)
 
 
+@attr('integration')
 class TasksTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_tasks endpoint."""
 
