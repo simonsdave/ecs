@@ -9,6 +9,7 @@ import uuid
 
 import mock
 
+from ..async_docker_remote_api import AsyncContainerCreate
 from ..async_docker_remote_api import AsyncContainerStart
 from ..async_docker_remote_api import AsyncImagePull
 from ..async_docker_remote_api import AsyncHealthChecker
@@ -195,6 +196,75 @@ class AsyncImagePullTestCase(unittest.TestCase):
             aip.pull(callback)
             callback.assert_called_once_with(True, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_OK)
+
+
+class AsyncContainerCreateTestCase(unittest.TestCase):
+
+    def test_ctr_without_async_state(self):
+        docker_image = uuid.uuid4().hex
+        tag = uuid.uuid4().hex
+        cmd = uuid.uuid4().hex
+
+        acc = AsyncContainerCreate(docker_image, tag, cmd)
+
+        self.assertTrue(acc.docker_image is docker_image)
+        self.assertTrue(acc.tag is tag)
+        self.assertTrue(acc.cmd is cmd)
+        self.assertIsNone(acc.async_state)
+
+    def test_ctr_with_async_state(self):
+        docker_image = uuid.uuid4().hex
+        tag = uuid.uuid4().hex
+        cmd = uuid.uuid4().hex
+        async_state = uuid.uuid4().hex
+
+        acc = AsyncContainerCreate(docker_image, tag, cmd, async_state)
+
+        self.assertTrue(acc.docker_image is docker_image)
+        self.assertTrue(acc.tag is tag)
+        self.assertTrue(acc.cmd is cmd)
+        self.assertTrue(acc.async_state is async_state)
+
+    def test_create_error(self):
+        response = mock.Mock(
+            code=httplib.NOT_FOUND,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acc = AsyncContainerCreate(
+                docker_image=uuid.uuid4().hex,
+                tag=uuid.uuid4().hex,
+                cmd=uuid.uuid4().hex)
+            acc.create(callback)
+            callback.assert_called_once_with(False, None, acc)
+            self.assertEqual(
+                acc.create_failure_detail,
+                type(acc).CFD_ERROR_CREATING_CONTAINER)
+
+    def test_happy_path(self):
+        response = mock.Mock(
+            code=httplib.CREATED,
+            body=json.dumps({'Id': uuid.uuid4().hex}),
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acc = AsyncContainerCreate(
+                docker_image=uuid.uuid4().hex,
+                tag=uuid.uuid4().hex,
+                cmd=uuid.uuid4().hex)
+            acc.create(callback)
+            callback.assert_called_once_with(
+                True,
+                json.loads(response.body)['Id'],
+                acc)
+            self.assertEqual(acc.create_failure_detail, type(acc).CFD_OK)
 
 
 class AsyncContainerStartTestCase(unittest.TestCase):
