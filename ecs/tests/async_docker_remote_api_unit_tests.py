@@ -10,6 +10,7 @@ import uuid
 import mock
 
 from ..async_docker_remote_api import AsyncContainerCreate
+from ..async_docker_remote_api import AsyncContainerDelete
 from ..async_docker_remote_api import AsyncContainerStart
 from ..async_docker_remote_api import AsyncImagePull
 from ..async_docker_remote_api import AsyncHealthChecker
@@ -318,3 +319,55 @@ class AsyncContainerStartTestCase(unittest.TestCase):
             acs.start(callback)
             callback.assert_called_once_with(True, acs)
             self.assertEqual(acs.start_failure_detail, type(acs).SFD_OK)
+
+
+class AsyncContainerDeleteTestCase(unittest.TestCase):
+
+    def test_ctr_without_async_state(self):
+        container_id = uuid.uuid4().hex
+
+        acd = AsyncContainerDelete(container_id)
+
+        self.assertTrue(acd.container_id is container_id)
+        self.assertIsNone(acd.async_state)
+
+    def test_ctr_with_async_state(self):
+        container_id = uuid.uuid4().hex
+        async_state = uuid.uuid4().hex
+
+        acd = AsyncContainerDelete(container_id, async_state)
+
+        self.assertTrue(acd.container_id is container_id)
+        self.assertTrue(acd.async_state is async_state)
+
+    def test_delete_error(self):
+        response = mock.Mock(
+            code=httplib.NOT_FOUND,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acd = AsyncContainerDelete(container_id=uuid.uuid4().hex)
+            acd.delete(callback)
+            callback.assert_called_once_with(False, acd)
+            self.assertEqual(
+                acd.delete_failure_detail,
+                type(acd).DFD_ERROR_DELETING_CONTAINER)
+
+    def test_happy_path(self):
+        response = mock.Mock(
+            code=httplib.NO_CONTENT,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acd = AsyncContainerDelete(container_id=uuid.uuid4().hex)
+            acd.delete(callback)
+            callback.assert_called_once_with(True, acd)
+            self.assertEqual(acd.delete_failure_detail, type(acd).DFD_OK)
