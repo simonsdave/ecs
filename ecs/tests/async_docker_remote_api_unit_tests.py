@@ -12,6 +12,7 @@ import mock
 from ..async_docker_remote_api import AsyncContainerCreate
 from ..async_docker_remote_api import AsyncContainerDelete
 from ..async_docker_remote_api import AsyncContainerStart
+from ..async_docker_remote_api import AsyncContainerStatus
 from ..async_docker_remote_api import AsyncImagePull
 from ..async_docker_remote_api import AsyncHealthChecker
 
@@ -371,3 +372,44 @@ class AsyncContainerDeleteTestCase(unittest.TestCase):
             acd.delete(callback)
             callback.assert_called_once_with(True, acd)
             self.assertEqual(acd.delete_failure_detail, type(acd).DFD_OK)
+
+
+class AsyncContainerStatusTestCase(unittest.TestCase):
+
+    def test_ctr_without_async_state(self):
+        container_id = uuid.uuid4().hex
+
+        acs = AsyncContainerStatus(container_id)
+
+        self.assertTrue(acs.container_id is container_id)
+        self.assertIsNone(acs.async_state)
+
+    def test_ctr_with_async_state(self):
+        container_id = uuid.uuid4().hex
+        async_state = uuid.uuid4().hex
+
+        acs = AsyncContainerStatus(container_id, async_state)
+
+        self.assertTrue(acs.container_id is container_id)
+        self.assertTrue(acs.async_state is async_state)
+
+    def test_happy_path(self):
+        exit_code = 5
+        response = mock.Mock(
+            code=httplib.OK,
+            body=json.dumps({
+                'State': {
+                    'FinishedAt': '9999-01-01T00:00:00Z',
+                    'ExitCode': exit_code,
+                },
+            }),
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acs = AsyncContainerStatus(container_id=uuid.uuid4().hex)
+            acs.fetch(callback)
+            callback.assert_called_once_with(True, exit_code, acs)
+            self.assertEqual(acs.fetch_failure_detail, type(acs).SFD_OK)
