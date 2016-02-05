@@ -386,7 +386,8 @@ class AsyncContainerLogs(tor_async_util.AsyncAction):
     # FFD = Delete Failure Details
     FFD_OK = 0x0000
     FFD_ERROR = 0x0080
-    FFD_ERROR_FETCHING_CONTAINER_LOGS = FFD_ERROR | 0x0001
+    FFD_CONTAINER_NOT_FOUND = 0x0001
+    FFD_ERROR_FETCHING_CONTAINER_LOGS = FFD_ERROR | 0x0002
 
     def __init__(self, container_id, async_state=None):
         tor_async_util.AsyncAction.__init__(self, async_state)
@@ -417,6 +418,10 @@ class AsyncContainerLogs(tor_async_util.AsyncAction):
 
     def _on_http_client_fetch_done(self, response):
         _write_http_client_response_to_log(response)
+
+        if response.code == httplib.NOT_FOUND:
+            self._call_callback(type(self).FFD_CONTAINER_NOT_FOUND)
+            return
 
         if response.code != httplib.OK:
             self._call_callback(type(self).FFD_ERROR_FETCHING_CONTAINER_LOGS)

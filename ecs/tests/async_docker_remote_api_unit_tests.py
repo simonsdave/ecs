@@ -434,3 +434,53 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
 
         self.assertTrue(acl.container_id is container_id)
         self.assertTrue(acl.async_state is async_state)
+
+    def test_container_not_found(self):
+        response = mock.Mock(
+            code=httplib.NOT_FOUND,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
+            acl.fetch(callback)
+            callback.assert_called_once_with(True, None, None, acl)
+            self.assertEqual(acl.fetch_failure_detail, type(acl).FFD_CONTAINER_NOT_FOUND)
+
+    def test_error_on_fetch(self):
+        response = mock.Mock(
+            code=httplib.INTERNAL_SERVER_ERROR,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
+            acl.fetch(callback)
+            callback.assert_called_once_with(False, None, None, acl)
+            self.assertEqual(acl.fetch_failure_detail, type(acl).FFD_ERROR_FETCHING_CONTAINER_LOGS)
+
+    def test_happy_path(self):
+        header = '-' * 8
+        stdout = 'something'
+        stderr = 'out'
+        # :TODO: sort out the stderr thing
+        stderr = ''
+        response = mock.Mock(
+            code=httplib.OK,
+            body=header + stdout + stderr,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
+            acl.fetch(callback)
+            callback.assert_called_once_with(True, stdout, stderr, acl)
+            self.assertEqual(acl.fetch_failure_detail, type(acl).FFD_OK)
