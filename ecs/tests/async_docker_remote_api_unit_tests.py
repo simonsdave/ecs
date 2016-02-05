@@ -156,6 +156,46 @@ class AsyncImagePullTestCase(unittest.TestCase):
         self.assertTrue(aip.password is password)
         self.assertTrue(aip.async_state is async_state)
 
+    def test_error_pulling_image(self):
+        response = mock.Mock(
+            code=httplib.NOT_FOUND,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            aip = AsyncImagePull(
+                docker_image=uuid.uuid4().hex,
+                tag=uuid.uuid4().hex,
+                email=uuid.uuid4().hex,
+                username=uuid.uuid4().hex,
+                password=uuid.uuid4().hex)
+            aip.pull(callback)
+            callback.assert_called_once_with(False, aip)
+            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_ERROR_PULLING_IMAGE)
+
+    def test_happy_path(self):
+        response = mock.Mock(
+            code=httplib.OK,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            aip = AsyncImagePull(
+                docker_image=uuid.uuid4().hex,
+                tag=uuid.uuid4().hex,
+                email=uuid.uuid4().hex,
+                username=uuid.uuid4().hex,
+                password=uuid.uuid4().hex)
+            aip.pull(callback)
+            callback.assert_called_once_with(True, aip)
+            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_OK)
+
 
 class AsyncContainerStartTestCase(unittest.TestCase):
 
