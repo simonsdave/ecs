@@ -11,6 +11,7 @@ import mock
 
 from ..async_docker_remote_api import AsyncContainerCreate
 from ..async_docker_remote_api import AsyncContainerDelete
+from ..async_docker_remote_api import AsyncContainerLogs
 from ..async_docker_remote_api import AsyncContainerStart
 from ..async_docker_remote_api import AsyncContainerStatus
 from ..async_docker_remote_api import AsyncImagePull
@@ -413,3 +414,23 @@ class AsyncContainerStatusTestCase(unittest.TestCase):
             acs.fetch(callback)
             callback.assert_called_once_with(True, exit_code, acs)
             self.assertEqual(acs.fetch_failure_detail, type(acs).SFD_OK)
+
+
+class AsyncContainerLogsTestCase(unittest.TestCase):
+
+    def test_ctr_without_async_state(self):
+        container_id = uuid.uuid4().hex
+
+        acl = AsyncContainerLogs(container_id)
+
+        self.assertTrue(acl.container_id is container_id)
+        self.assertIsNone(acl.async_state)
+
+    def test_ctr_with_async_state(self):
+        container_id = uuid.uuid4().hex
+        async_state = uuid.uuid4().hex
+
+        acl = AsyncContainerLogs(container_id, async_state)
+
+        self.assertTrue(acl.container_id is container_id)
+        self.assertTrue(acl.async_state is async_state)
