@@ -286,3 +286,35 @@ class AsyncContainerStartTestCase(unittest.TestCase):
 
         self.assertTrue(acs.container_id is container_id)
         self.assertTrue(acs.async_state is async_state)
+
+    def test_start_error(self):
+        response = mock.Mock(
+            code=httplib.NOT_FOUND,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acs = AsyncContainerStart(container_id=uuid.uuid4().hex)
+            acs.start(callback)
+            callback.assert_called_once_with(False, acs)
+            self.assertEqual(
+                acs.start_failure_detail,
+                type(acs).SFD_ERROR_STARTING_CONTAINER)
+
+    def test_happy_path(self):
+        response = mock.Mock(
+            code=httplib.NO_CONTENT,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response):
+            callback = mock.Mock()
+            acs = AsyncContainerStart(container_id=uuid.uuid4().hex)
+            acs.start(callback)
+            callback.assert_called_once_with(True, acs)
+            self.assertEqual(acs.start_failure_detail, type(acs).SFD_OK)
