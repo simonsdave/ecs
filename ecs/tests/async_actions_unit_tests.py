@@ -298,6 +298,57 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                             aetecr.create_failure_detail,
                             type(aetecr).CFD_WAITING_FOR_CONTAINER_TO_EXIT)
 
+    def test_error_getting_container_logs(self):
+        with AsyncImagePullPatcher(is_ok=True):
+            with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
+                with AsyncContainerStartPatcher(is_ok=True):
+                    with AsyncContainerStatusPatcher(is_ok=True, exit_code=0):
+                        with AsyncContainerLogsPatcher(is_ok=False):
+                            callback = mock.Mock()
+                            aetecr = AsyncEndToEndContainerRunner(
+                                docker_image=uuid.uuid4().hex,
+                                tag=uuid.uuid4().hex,
+                                cmd=uuid.uuid4().hex,
+                                email=uuid.uuid4().hex,
+                                username=uuid.uuid4().hex,
+                                password=uuid.uuid4().hex)
+                            aetecr.create(callback)
+                            callback.assert_called_once_with(
+                                False,
+                                None,
+                                None,
+                                None,
+                                aetecr)
+                            self.assertEqual(
+                                aetecr.create_failure_detail,
+                                type(aetecr).CFD_ERROR_FETCHING_CONTAINER_LOGS)
+
+    def test_error_deleting_container(self):
+        with AsyncImagePullPatcher(is_ok=True):
+            with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
+                with AsyncContainerStartPatcher(is_ok=True):
+                    with AsyncContainerStatusPatcher(is_ok=True, exit_code=0):
+                        with AsyncContainerLogsPatcher(is_ok=True, stdout='', stderr=''):
+                            with AsyncContainerDeletePatcher(is_ok=False):
+                                callback = mock.Mock()
+                                aetecr = AsyncEndToEndContainerRunner(
+                                    docker_image=uuid.uuid4().hex,
+                                    tag=uuid.uuid4().hex,
+                                    cmd=uuid.uuid4().hex,
+                                    email=uuid.uuid4().hex,
+                                    username=uuid.uuid4().hex,
+                                    password=uuid.uuid4().hex)
+                                aetecr.create(callback)
+                                callback.assert_called_once_with(
+                                    False,
+                                    None,
+                                    None,
+                                    None,
+                                    aetecr)
+                                self.assertEqual(
+                                    aetecr.create_failure_detail,
+                                    type(aetecr).CFD_ERROR_DELETING_CONTAINER)
+
     def test_happy_path(self):
         exit_code = 0
         stdout = uuid.uuid4().hex

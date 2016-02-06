@@ -21,7 +21,8 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
     CFD_ERROR_CREATING_CONTAINER = CFD_ERROR | 0x0002
     CFD_ERROR_STARTING_CONTAINER = CFD_ERROR | 0x0003
     CFD_WAITING_FOR_CONTAINER_TO_EXIT = CFD_ERROR | 0x0004
-    CFD_ERROR_FETCHING_CONTAINER_LOGS = CFD_ERROR | 0x0003
+    CFD_ERROR_FETCHING_CONTAINER_LOGS = CFD_ERROR | 0x0005
+    CFD_ERROR_DELETING_CONTAINER = CFD_ERROR | 0x0006
 
     def __init__(self,
                  docker_image,
@@ -153,7 +154,7 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
         if not is_ok:
             fmt = '%s - error deleting container - container ID = %s'
             _logger.error(fmt, self.cid, self._container_id)
-            self._call_callback(type(self).CFD_ERROR_RUNNING_CONTAINER)
+            self._call_callback(type(self).CFD_ERROR_DELETING_CONTAINER)
             return
 
         fmt = '%s - successfully deleted container - container ID = %s'
