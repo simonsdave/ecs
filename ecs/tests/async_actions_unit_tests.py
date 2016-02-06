@@ -11,6 +11,7 @@ import mock
 
 from ..async_actions import AsyncEndToEndContainerRunner
 from ..async_actions import AsyncHealthChecker
+from .. import async_docker_remote_api   # noqa
 
 
 class Patcher(object):
@@ -42,6 +43,114 @@ class AsyncHTTPClientPatcher(Patcher):
         patcher = mock.patch(
             'tornado.httpclient.AsyncHTTPClient.fetch',
             fetch_patch)
+
+        Patcher.__init__(self, patcher)
+
+
+class AsyncImagePullPatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    async_docker_remote_api.AsyncImagePull.pull().
+    """
+
+    def __init__(self, is_ok):
+
+        def pull_patch(aip, callback):
+            callback(is_ok, aip)
+
+        patcher = mock.patch(
+            __name__ + '.async_docker_remote_api.AsyncImagePull.pull',
+            pull_patch)
+
+        Patcher.__init__(self, patcher)
+
+
+class AsyncContainerCreatePatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    async_docker_remote_api.AsyncContainerCreate.create().
+    """
+
+    def __init__(self, is_ok, container_id=None):
+
+        def create_patch(acc, callback):
+            callback(is_ok, container_id, acc)
+
+        patcher = mock.patch(
+            __name__ + '.async_docker_remote_api.AsyncContainerCreate.create',
+            create_patch)
+
+        Patcher.__init__(self, patcher)
+
+
+class AsyncContainerStartPatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    async_docker_remote_api.AsyncContainerStart.start().
+    """
+
+    def __init__(self, is_ok):
+
+        def start_patch(acs, callback):
+            callback(is_ok, acs)
+
+        patcher = mock.patch(
+            __name__ + '.async_docker_remote_api.AsyncContainerStart.start',
+            start_patch)
+
+        Patcher.__init__(self, patcher)
+
+
+class AsyncContainerStatusPatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    async_docker_remote_api.AsyncContainerStatus.fetch().
+    """
+
+    def __init__(self, is_ok, exit_code=None):
+
+        def fetch_patch(acs, callback):
+            callback(is_ok, exit_code, acs)
+
+        patcher = mock.patch(
+            __name__ + '.async_docker_remote_api.AsyncContainerStatus.fetch',
+            fetch_patch)
+
+        Patcher.__init__(self, patcher)
+
+
+class AsyncContainerLogsPatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    async_docker_remote_api.AsyncContainerLogs.fetch().
+    """
+
+    def __init__(self, is_ok, stdout=None, stderr=None):
+
+        def fetch_patch(acl, callback):
+            callback(is_ok, stdout, stderr, acl)
+
+        patcher = mock.patch(
+            __name__ + '.async_docker_remote_api.AsyncContainerLogs.fetch',
+            fetch_patch)
+
+        Patcher.__init__(self, patcher)
+
+
+class AsyncContainerDeletePatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    async_docker_remote_api.AsyncContainerDelete.fetch().
+    """
+
+    def __init__(self, is_ok):
+
+        def delete_patch(acd, callback):
+            callback(is_ok, acd)
+
+        patcher = mock.patch(
+            __name__ + '.async_docker_remote_api.AsyncContainerDelete.delete',
+            delete_patch)
 
         Patcher.__init__(self, patcher)
 
@@ -98,6 +207,32 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
         self.assertTrue(aetecr.username is username)
         self.assertTrue(aetecr.password is password)
         self.assertTrue(aetecr.async_state is async_state)
+
+    def test_happy_path(self):
+        exit_code = 0
+        stdout = uuid.uuid4().hex
+        stderr = uuid.uuid4().hex
+        with AsyncImagePullPatcher(is_ok=True):
+            with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
+                with AsyncContainerStartPatcher(is_ok=True):
+                    with AsyncContainerStatusPatcher(is_ok=True, exit_code=exit_code):
+                        with AsyncContainerLogsPatcher(is_ok=True, stdout=stdout, stderr=stderr):
+                            with AsyncContainerDeletePatcher(is_ok=True):
+                                callback = mock.Mock()
+                                aetecr = AsyncEndToEndContainerRunner(
+                                    docker_image=uuid.uuid4().hex,
+                                    tag=uuid.uuid4().hex,
+                                    cmd=uuid.uuid4().hex,
+                                    email=uuid.uuid4().hex,
+                                    username=uuid.uuid4().hex,
+                                    password=uuid.uuid4().hex)
+                                aetecr.create(callback)
+                                callback.assert_called_once_with(
+                                    True,
+                                    exit_code,
+                                    stdout,
+                                    stderr,
+                                    aetecr)
 
 
 class AsyncHealthCheckerTestCase(unittest.TestCase):
