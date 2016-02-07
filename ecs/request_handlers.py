@@ -15,7 +15,7 @@ import async_actions
 _logger = logging.getLogger(__name__)
 
 
-class CollectionRequestHandler(tor_async_util.RequestHandler):
+class TasksRequestHandler(tor_async_util.RequestHandler):
 
     url_spec = r'/v1.0/tasks/?'
 
@@ -27,27 +27,20 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
         """This method implements the POST action on the /ecs endpoint."""
-        schema = jsonschemas.create_tasks_request
-        request_body = self.get_json_request_body(schema=schema)
+        request_body = self.get_json_request_body(schema=jsonschemas.create_tasks_request)
         if request_body is None:
             self.write_bad_request_response(type(self).PDD_BAD_REQUEST_BODY)
             self.finish()
             return
 
-        docker_image = request_body['docker_image']
-        tag = request_body['tag']
-        cmd = request_body['cmd']
         creds = request_body.get('creds', {})
-        email = creds.get('email', None)
-        username = creds.get('username', None)
-        password = creds.get('password', None)
         acr = async_actions.AsyncEndToEndContainerRunner(
-            docker_image,
-            tag,
-            cmd,
-            email,
-            username,
-            password)
+            request_body['docker_image'],
+            request_body['tag'],
+            request_body['cmd'],
+            creds.get('email', None),
+            creds.get('username', None),
+            creds.get('password', None))
         acr.create(self._on_acr_create_done)
 
     def _on_acr_create_done(self, is_ok, exit_code, stdout, stderr, acr):
@@ -63,8 +56,7 @@ class CollectionRequestHandler(tor_async_util.RequestHandler):
             'stderr': base64.b64encode(stderr),
         }
 
-        schema = jsonschemas.create_tasks_response
-        if not self.write_and_verify(body, schema):
+        if not self.write_and_verify(body, jsonschemas.create_tasks_response):
             self.set_status(httplib.INTERNAL_SERVER_ERROR)
             self.add_debug_details(self.PDD_BAD_RESPONSE_BODY)
             self.finish()

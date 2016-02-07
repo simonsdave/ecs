@@ -14,7 +14,7 @@ import tornado.web
 
 from ecs.request_handlers import HealthRequestHandler
 from ecs.request_handlers import NoOpRequestHandler
-from ecs.request_handlers import CollectionRequestHandler
+from ecs.request_handlers import TasksRequestHandler
 
 _logger = logging.getLogger(__name__)
 
@@ -94,8 +94,8 @@ if __name__ == '__main__':
 
     handlers = [
         (
-            CollectionRequestHandler.url_spec,
-            CollectionRequestHandler
+            TasksRequestHandler.url_spec,
+            TasksRequestHandler
         ),
         (
             NoOpRequestHandler.url_spec,
