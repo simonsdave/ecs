@@ -6,3 +6,184 @@ documentation:
   - title: Overview
     content: |
       * ...
+  - title: Key Concepts
+    content: |
+      * task packaged inside a docker container
+      * emphemeral = short lived, no state
+
+/tasks:
+  displayName: Tasks
+  description: |
+    The ```/tasks``` endpoint enables creation and execution of tasks
+  post:
+    description: |
+      Create and execute a task.
+
+      ##### Authentication
+        * None
+
+      ##### Performance Expectations
+        * 99% of the time &lt;&nbsp;nnn ms
+
+      ##### Example
+      ```bash
+      >cat echo.json
+      {
+        "docker_image": "ubuntu",
+        "tag": "latest",
+        "cmd": [
+          "echo",
+          "hello world!!!"
+        ]
+      }
+      >curl \
+        -s \
+        -X POST \
+        -H "Content-Type: application/json" \
+        --data-binary @echo.json \
+        http://127.0.0.1:8445/v1.0/tasks | \
+        jq
+      {
+        "stdout": "aGVsbG8gd29ybGQhISEK",
+        "stderr": "",
+        "exitCode": 0
+      }
+      > python
+      Python 2.7.6 (default, Jun 22 2015, 17:58:13)
+      [GCC 4.8.2] on linux2
+      Type "help", "copyright", "credits" or "license" for more information.
+      >>> import base64
+      >>> base64.b64decode('aGVsbG8gd29ybGQhISEK')
+      'hello world!!!\n'
+      >>>
+      ```
+    responses:
+      200:
+        description:
+          Success!
+        body:
+          application/json:
+            schema: !include ../ecs/jsonschemas/create_tasks_request.json
+      400:
+        description:
+          Bad request.
+
+  /_noop:
+    description: |
+      The ```/_noop``` endpoint is intended to be used
+      for assessing a deployment's performance.
+    get:
+      description: |
+        The endpoint always returns 200 OK after doing nothing ie. it's a no-op.
+        The intended purpose of this endpoint is to measure how long it takes
+        for a caller and the service to establish a secure connection
+        and complete a request/response roundtrip.
+
+        ##### Authentication
+          * None
+
+        ##### Example
+        ```bash
+        >curl \
+          -s \
+          -o /dev/null \
+          -w %{http_code}\\n \
+          http://127.0.0.1:8445/v1.0/_noop
+        200
+        >
+        ```
+      responses:
+        200:
+          description:
+            200 OK is always returned by this endpoint.
+          body:
+            application/json:
+
+  /_health:
+    description: |
+      An HTTP GET to the ```/_health``` endpoint returns a JSON document
+      which describes the health of the service.
+    get:
+      description: |
+        The JSON document returned by an HTTP GET to the ```/_health```
+        endpoint and the HTTP status code describe the health of the service.
+        An HTTP status code of 200 OK is healthy and anything else is unhealthy.
+        The top level "status" property in the JSON document will be "green" if the service
+        is healthy and "red" if there's a problem.
+        The "details" property of the JSON document contains a red/green style health entry
+        for each service's components.
+        The overall health is "red" if any of the dependant services are unhealthy.
+
+        Two types of health check are possible. A quick health check
+        does not confirm the health of all service components and will
+        respond quickly. A comprehensive health check does check
+        all service components. The ```quick``` query string parameter
+        takes a boolean value to determine if a quick or comprehensive
+        health check is performed.
+
+        ##### Authentication
+          * None (for now)
+
+        ##### Usage Expectations
+          * the external monitoring service will perform a quick health check every minute
+          * the external monitoring service will perform a comprehensive health check 5 minutes
+          * a load balancer sitting in front of the app tier will repeatedly and
+            frequently issue a quick health check
+
+        ##### Performance Expectations
+          * quick - 99% of the time &lt;&nbsp;50 ms
+          * comprehensive - 99% of the time &lt;&nbsp;3,050 ms
+            (note 3,050 is determined by taking the default value for the
+            ```max_time_in_ms_to_wait_for_component_health_checks```
+            configuration option and adding 50 ms ie. changing the
+            configuration option can be used to change the performance
+            characteristics of the endpoint)
+
+        ##### Example
+        For example, below a sample of a healthy response to a request
+        for a quick health check.
+
+        ```bash
+        >curl \
+          -s \
+          http://127.0.0.1:8445/v1.0/_health?quick=false | \
+          jq
+        {
+          "status": "green",
+          "details": {
+            "docker remote api": {
+              "status": "green",
+              "details": {
+                "connectivity": "green",
+                "api version": "green"
+              }
+            }
+          },
+          "links": {
+            "self": {
+              "href": "http://127.0.0.1:8445/v1.0/_health"
+            }
+          }
+        }
+        >
+        ```
+
+      queryParameters:
+        quick:
+          displayName: quick
+          type: boolean
+          description:
+            Determines if a quick or deep health check is performed.
+            quick is true by default.
+          example: true
+          required: false
+      responses:
+        200:
+          description:
+            When everything is green a 200 OK is returned.
+        500:
+          description:
+            something super nasty happened inside the service
+        503:
+          description:
+            When something is red a 503 service unavailable is returned.
