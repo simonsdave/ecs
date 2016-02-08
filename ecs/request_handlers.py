@@ -45,8 +45,8 @@ class TasksRequestHandler(tor_async_util.RequestHandler):
 
     def _on_acr_create_done(self, is_ok, exit_code, stdout, stderr, acr):
         if not is_ok:
-            self.set_status(httplib.INTERNAL_SERVER_ERROR)
             self.add_debug_details(self.PDD_ERROR_CREATING_RAW_CRAWL)
+            self.write_error(httplib.INTERNAL_SERVER_ERROR)
             self.finish()
             return
 
@@ -57,8 +57,8 @@ class TasksRequestHandler(tor_async_util.RequestHandler):
         }
 
         if not self.write_and_verify(body, jsonschemas.create_tasks_response):
-            self.set_status(httplib.INTERNAL_SERVER_ERROR)
             self.add_debug_details(self.PDD_BAD_RESPONSE_BODY)
+            self.write_error(httplib.INTERNAL_SERVER_ERROR)
             self.finish()
             return
 
