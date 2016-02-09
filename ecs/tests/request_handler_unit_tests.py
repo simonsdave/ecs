@@ -6,7 +6,6 @@ import base64
 import httplib
 import json
 import re
-import unittest
 import uuid
 
 import mock
@@ -14,7 +13,7 @@ import tor_async_util
 import tornado.testing
 import tornado.web
 
-from ..async_actions import AsyncEndToEndContainerRunner
+from ..async_actions import AsyncEndToEndContainerRunner     # noqa
 from ..request_handlers import HealthRequestHandler
 from ..request_handlers import NoOpRequestHandler
 from ..request_handlers import TasksRequestHandler
