@@ -39,14 +39,38 @@ class AsyncHttpClientFetchPatcher(Patcher):
     tornado.httpclient.HTTPRequest.fetch().
     """
 
-    def __init__(self, response):
+    def __init__(self, *args, **kwargs):
 
         def fetch_patch(*args, **kwargs):
-            kwargs['callback'](response)
+            kwargs['callback'](self._responses.pop(0))
 
         patcher = mock.patch(
             'tornado.httpclient.AsyncHTTPClient.fetch',
             fetch_patch)
+
+        Patcher.__init__(self, patcher)
+
+        response = kwargs.get('response', None)
+        if response is not None:
+            self._responses = [response]
+        else:
+            self._responses = kwargs['responses'][:]
+
+
+class AsyncActionIOLoopAddTimeoutPatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    tornado.httpclient.HTTPRequest.fetch().
+    """
+
+    def __init__(self):
+
+        def add_timeout_patch(io_loop, deadline, callback, *args, **kwargs):
+            callback(*args, **kwargs)
+
+        patcher = mock.patch(
+            'tornado.ioloop.IOLoop.add_timeout',
+            add_timeout_patch)
 
         Patcher.__init__(self, patcher)
 
@@ -70,7 +94,7 @@ class AsyncHealthCheckTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             ahc = AsyncHealthChecker()
             ahc.check(callback)
@@ -84,7 +108,7 @@ class AsyncHealthCheckTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             ahc = AsyncHealthChecker()
             ahc.check(callback)
@@ -102,7 +126,7 @@ class AsyncHealthCheckTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             ahc = AsyncHealthChecker()
             ahc.check(callback)
@@ -168,7 +192,7 @@ class AsyncImagePullTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             aip = AsyncImagePull(
                 docker_image=uuid.uuid4().hex,
@@ -188,7 +212,7 @@ class AsyncImagePullTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             aip = AsyncImagePull(
                 docker_image=uuid.uuid4().hex,
@@ -236,7 +260,7 @@ class AsyncContainerCreateTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acc = AsyncContainerCreate(
                 docker_image=uuid.uuid4().hex,
@@ -256,7 +280,7 @@ class AsyncContainerCreateTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acc = AsyncContainerCreate(
                 docker_image=uuid.uuid4().hex,
@@ -298,7 +322,7 @@ class AsyncContainerStartTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acs = AsyncContainerStart(container_id=uuid.uuid4().hex)
             acs.start(callback)
@@ -315,7 +339,7 @@ class AsyncContainerStartTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acs = AsyncContainerStart(container_id=uuid.uuid4().hex)
             acs.start(callback)
@@ -350,7 +374,7 @@ class AsyncContainerDeleteTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acd = AsyncContainerDelete(container_id=uuid.uuid4().hex)
             acd.delete(callback)
@@ -367,7 +391,7 @@ class AsyncContainerDeleteTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acd = AsyncContainerDelete(container_id=uuid.uuid4().hex)
             acd.delete(callback)
@@ -394,6 +418,44 @@ class AsyncContainerStatusTestCase(unittest.TestCase):
         self.assertTrue(acs.container_id is container_id)
         self.assertTrue(acs.async_state is async_state)
 
+    def test_error_fetching_container_status(self):
+        response = mock.Mock(
+            code=httplib.INTERNAL_SERVER_ERROR,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        with AsyncHttpClientFetchPatcher(response=response):
+            callback = mock.Mock()
+            acs = AsyncContainerStatus(container_id=uuid.uuid4().hex)
+            acs.fetch(callback)
+            callback.assert_called_once_with(False, None, acs)
+            self.assertEqual(
+                acs.fetch_failure_detail,
+                type(acs).SFD_ERROR_FETCHING_CONTAINER_STATUS)
+
+    def test_waited_too_long_for_container_to_exit(self):
+        responses = [mock.Mock(
+            code=httplib.OK,
+            body=json.dumps({
+                'State': {
+                    'FinishedAt': '0001-01-01T00:00:00Z',
+                    'ExitCode': 0,
+                },
+            }),
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))] * 1000
+        with AsyncHttpClientFetchPatcher(responses=responses):
+            with AsyncActionIOLoopAddTimeoutPatcher():
+                callback = mock.Mock()
+                acs = AsyncContainerStatus(container_id=uuid.uuid4().hex)
+                acs.fetch(callback)
+                callback.assert_called_once_with(False, None, acs)
+                self.assertEqual(acs.fetch_failure_detail, type(acs).SFD_WAITED_TOO_LONG)
+
     def test_happy_path(self):
         exit_code = 5
         response = mock.Mock(
@@ -408,7 +470,7 @@ class AsyncContainerStatusTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acs = AsyncContainerStatus(container_id=uuid.uuid4().hex)
             acs.fetch(callback)
@@ -443,7 +505,7 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)
@@ -458,7 +520,7 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)
@@ -478,7 +540,7 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response):
+        with AsyncHttpClientFetchPatcher(response=response):
             callback = mock.Mock()
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)
