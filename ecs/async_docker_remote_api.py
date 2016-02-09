@@ -80,7 +80,7 @@ class AsyncImagePull(tor_async_util.AsyncAction):
     PFD_ERROR = 0x0080
     PFD_ERROR_PULLING_IMAGE = PFD_ERROR | 0x0001
 
-    def __init__(self, docker_image, tag, email, username, password, async_state=None):
+    def __init__(self, docker_image, tag, email=None, username=None, password=None, async_state=None):
         tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
