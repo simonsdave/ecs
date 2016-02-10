@@ -16,6 +16,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 ## Operations
 
 * create CoreOS ```cloud-config``` and provisioning scripts
+* support client cert for authentication and authorization
 * add instrumentation using ?DataDog?
 * [nginx.site](https://github.com/simonsdave/ecs/blob/master/dockerfiles/nginx/nginx.site)
   contains references to ```cloudfeaster.com``` - what should happen 1/ rename nginx.site 
