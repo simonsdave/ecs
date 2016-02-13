@@ -57,3 +57,9 @@ log_level=info
 # the default value is 10
 #
 max_concurrent_executing_http_requests=250
+
+#
+# this configuration option defines the endpoint ecs uses
+# to talk with the Docker Remote API
+#
+docker_remote_api=http://172.17.42.1:4243

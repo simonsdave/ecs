@@ -15,6 +15,7 @@ import tornado.web
 from ecs.request_handlers import HealthRequestHandler
 from ecs.request_handlers import NoOpRequestHandler
 from ecs.request_handlers import TasksRequestHandler
+from ecs import async_docker_remote_api
 
 _logger = logging.getLogger(__name__)
 
@@ -122,6 +123,11 @@ if __name__ == '__main__':
         'port',
         80)
 
+    async_docker_remote_api.remote_docker_api_endpoint = tor_async_util.Config.instance.get(
+        config_section,
+        'docker_remote_api',
+        'http://172.17.42.1:4243')
+
     #
     # log a startup message - note this is done before
     # starting the http listener in case the listener
@@ -130,9 +136,10 @@ if __name__ == '__main__':
     # to have this basic info available
     #
     fmt = (
-        'read config from \'{config_file}[{config_section}]\' '
-        'and now listening on http://{address}:{port:d} '
-        'with logging level set to {logging_level}'
+        'read config from \'{config_file}[{config_section}]\', '
+        'listening on http://{address}:{port:d} '
+        'with logging level set to {logging_level} and '
+        'talking to the Docker Remote API on {docker_remote_api}'
     )
     args = {
         'config_file': tor_async_util.Config.instance.config_file,
@@ -140,6 +147,7 @@ if __name__ == '__main__':
         'address': address,
         'port': port,
         'logging_level': logging.getLevelName(logging.getLogger().getEffectiveLevel()),
+        'docker_remote_api': async_docker_remote_api.remote_docker_api_endpoint,
     }
     _logger.info(fmt.format(**args))
 
