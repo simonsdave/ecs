@@ -41,7 +41,7 @@ class ServiceConfig(object):
         cp.set(section, 'port', self.port)
         cp.set(section, 'log_level', 'info')
         cp.set(section, 'max_concurrent_executing_http_requests', '250')
-        cp.set(section, 'docker_remote_api', 'http://127.0.0.1:4243')
+        cp.set(section, 'docker_remote_api', 'http://172.17.42.1:4243')
 
         self.filename = tempfile.mktemp()
         with open(self.filename, 'w+') as fp:
