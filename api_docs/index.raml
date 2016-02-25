@@ -83,20 +83,21 @@ documentation:
 
       ##### Example
       ```bash
-      >curl \
-        -s \
-        -o /dev/null \
-        -w %{http_code}\\n \
-        http://127.0.0.1:8445/v1.0/_version
-      200
+      >curl -s http://127.0.0.1:8448/v1.0/_version | jq
+      {
+        "version": "0.8.0",
+        "links": {
+          "self": {
+            "href": "http://127.0.0.1:8448/v1.0/_version"
+          }
+        }
+      }
       >
       ```
     responses:
       200:
         description:
           200 OK is always returned by this endpoint.
-        body:
-          application/json:
 
 
 /_noop:
