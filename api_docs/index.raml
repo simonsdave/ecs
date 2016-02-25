@@ -68,6 +68,36 @@ documentation:
         description:
           Bad request.
 
+/_version:
+  description: |
+    The ```/_version``` endpoint reports
+    returns the ECS' version.
+  get:
+    description: |
+      The endpoint always returns 200 OK and includes the services'
+      version number in the body.
+
+      ##### Authentication
+        * None
+
+      ##### Example
+      ```bash
+      >curl \
+        -s \
+        -o /dev/null \
+        -w %{http_code}\\n \
+        http://127.0.0.1:8445/v1.0/_version
+      200
+      >
+      ```
+    responses:
+      200:
+        description:
+          200 OK is always returned by this endpoint.
+        body:
+          application/json:
+
+
 /_noop:
   description: |
     The ```/_noop``` endpoint is intended to be used
