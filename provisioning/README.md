@@ -67,6 +67,7 @@ address=0.0.0.0
 port=80
 log_level=info
 max_concurrent_executing_http_requests=250
+docker_remote_api=http://172.17.42.1:4243
 > tar cvf ecs_config.tar config
 config
 > gsutil cp ecs_config.tar gs://ecs-config/ecs_config.tar
@@ -169,15 +170,3 @@ Exploring rate limiting
 > sudo apt-get install -y apache2-utils
 > for i in `seq 100`; do sleep .25; curl -o /dev/null -s -w %{http_code}\\n --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop; done
 ```
-
-## To-Do
-
-* docs need /_noop and /_health endpoints
-* add iptables rate limiting
-* [nginx/nginx.site](nginx/nginx.site) has references to cloudfeaster - need to change this to support any organization
-* put 'correct' TLS configuration in nginx
-* require TLS client cert in [nginx/nginx.site](nginx/nginx.site)
-* use [Let's Encrypt](https://letsencrypt.org/) to automate the generation of certs?
-* use [Let's Encrypt](https://letsencrypt.org/) to automate the renewal of certs?
-* how should we describe the resources required by 1/ ecs service 2/ apidocs service
-* ```curl --insecure -s -v -H 'Host: docs.ecs.cloudfeaster.com' https://127.0.0.1/random``` should generate ecs "branded" 404 page

@@ -12,6 +12,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
+* ```curl --insecure -s -v -H 'Host: docs.ecs.cloudfeaster.com' https://127.0.0.1/random``` should generate ecs "branded" 404 page
 
 ## Operations
 
@@ -23,6 +24,13 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   to nginx.site.template and %DOMAIN% all cloudfeaster.com references 2/ change
   [nginx.sh](https://github.com/simonsdave/ecs/blob/master/dockerfiles/nginx/nginx.sh)
   to dynamically replace all %DOMAIN% references
+* add iptables rate limiting - why?
+* [nginx/nginx.site](nginx/nginx.site) has references to cloudfeaster - need to change this to support any organization
+* put 'correct' TLS configuration in nginx
+* require TLS client cert in [nginx/nginx.site](nginx/nginx.site)
+* use [Let's Encrypt](https://letsencrypt.org/) to automate the generation of certs?
+* use [Let's Encrypt](https://letsencrypt.org/) to automate the renewal of certs?
+* how should we describe the resources required by 1/ ecs service 2/ apidocs service
 
 ## Performance
 
