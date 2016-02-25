@@ -14,9 +14,11 @@ import tornado.testing
 import tornado.web
 
 from ..async_actions import AsyncEndToEndContainerRunner     # noqa
+import ecs
 from ..request_handlers import HealthRequestHandler
 from ..request_handlers import NoOpRequestHandler
 from ..request_handlers import TasksRequestHandler
+from ..request_handlers import VersionRequestHandler
 
 
 class Patcher(object):
@@ -239,6 +241,40 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
                 'stderr': base64.b64encode(stderr),
             }
             self.assertJsonDocumentResponse(response, expected_body)
+
+
+class VersionRequestHandlerTestCase(AsyncRequestHandlerTestCase):
+    """Unit tests for NoOpRequestHandler"""
+
+    def get_app(self):
+        handlers = [
+            (
+                VersionRequestHandler.url_spec,
+                VersionRequestHandler
+            ),
+        ]
+        return tornado.web.Application(handlers=handlers)
+
+    def test_happy_path(self):
+        response = self.fetch('/v1.0/_version', method='GET')
+
+        self.assertEqual(response.code, httplib.OK)
+
+        self.assertNoDebugDetail(response)
+
+        self.assertEqual(
+            response.headers['location'],
+            response.effective_url)
+
+        expected_response_body = {
+            'version': ecs.__version__,
+            'links': {
+                'self': {
+                    'href': response.effective_url,
+                },
+            },
+        }
+        self.assertJsonDocumentResponse(response, expected_response_body)
 
 
 class NoOpRequestHandlerTestCase(AsyncRequestHandlerTestCase):

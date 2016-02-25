@@ -9,6 +9,7 @@ import logging
 import tornado.web
 import tor_async_util
 
+import ecs
 import jsonschemas
 import async_actions
 
@@ -64,6 +65,15 @@ class TasksRequestHandler(tor_async_util.RequestHandler):
 
         self.set_status(httplib.CREATED)
         self.finish()
+
+
+class VersionRequestHandler(tor_async_util.RequestHandler):
+
+    url_spec = r'/v1.0/_version'
+
+    @tornado.web.asynchronous
+    def get(self):
+        tor_async_util.generate_version_response(self, ecs.__version__)
 
 
 class NoOpRequestHandler(tor_async_util.RequestHandler):

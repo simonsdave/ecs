@@ -15,6 +15,7 @@ import tornado.web
 from ecs.request_handlers import HealthRequestHandler
 from ecs.request_handlers import NoOpRequestHandler
 from ecs.request_handlers import TasksRequestHandler
+from ecs.request_handlers import VersionRequestHandler
 from ecs import async_docker_remote_api
 
 _logger = logging.getLogger(__name__)
@@ -97,6 +98,10 @@ if __name__ == '__main__':
         (
             TasksRequestHandler.url_spec,
             TasksRequestHandler
+        ),
+        (
+            VersionRequestHandler.url_spec,
+            VersionRequestHandler
         ),
         (
             NoOpRequestHandler.url_spec,
