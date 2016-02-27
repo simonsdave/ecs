@@ -77,6 +77,7 @@ html_to_raml() {
             exit 1
         fi
         sudo cp "$HTML" "$DEPLOYMENT_HTML"
+        echo "Find API docs @ http://127.0.0.1:$(cat /etc/nginx/sites-enabled/default | grep listen | sed -e 's|^\s*listen\s*||g' | sed -e 's|\s*;\s*$||g')"
     fi
 
     return 0
