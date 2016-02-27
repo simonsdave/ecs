@@ -52,4 +52,16 @@ apt-get update && apt-get install google-cloud-sdk
 cp /vagrant/.vimrc ~vagrant/.vimrc
 chown vagrant:vagrant ~vagrant/.vimrc
 
+echo 'export VISUAL=vim' >> ~vagrant/.profile
+echo 'export EDITOR="$VISUAL"' >> ~vagrant/.profile
+
+set -x
+
+if [ $# == 2 ]; then
+    su - vagrant -c "git config --global user.name \"${1:-}\""
+    su - vagrant -c "git config --global user.email \"${2:-}\""
+fi
+
+set +x
+
 exit 0
