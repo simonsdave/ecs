@@ -15,6 +15,8 @@ from nose.plugins.attrib import attr
 from tor_async_util.nose_plugins import FileCapture
 import requests
 
+import ecs
+
 
 class ServiceConfig(object):
     """This context manager encapsulates the details of creating a
@@ -132,6 +134,33 @@ class NoOpTestCase(IntegrationTestCase):
             self.assertEqual(response.status_code, httplib.OK)
 
         self.setup_env_and_run_func(the_test)
+
+
+@attr('integration')
+class VersionTestCase(IntegrationTestCase):
+    """A collection of integration tests for the /_version endpoint."""
+
+    def test_happy_path_no_quick_arg(self):
+        def the_test(service_config):
+            url = 'http://%s:%d/v1.0/_version' % (
+                service_config.ip,
+                service_config.port,
+            )
+            response = requests.get(url)
+            self.assertEqual(response.status_code, httplib.OK)
+
+            expected_response = {
+                'version': ecs.__version__,
+                'links': {
+                    'self': {
+                        'href': url,
+                    }
+                }
+            }
+            self.assertEqual(expected_response, response.json())
+
+        self.setup_env_and_run_func(the_test)
+
 
 
 @attr('integration')
