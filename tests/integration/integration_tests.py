@@ -162,7 +162,6 @@ class VersionTestCase(IntegrationTestCase):
         self.setup_env_and_run_func(the_test)
 
 
-
 @attr('integration')
 class HealthTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_health endpoint."""
