@@ -5,11 +5,53 @@ version: v99.999
 documentation:
   - title: Overview
     content: |
-      * ...
-  - title: Key Concepts
+      The Ephemeral Container Service (ECS) was born out of
+      the [Cloudfeaster](https://github.com/simonsdave/cloudfeaster.git) project.
+      [Docker](https://www.docker.com/) makes it easy to package
+      short lived (aka ephemeral) tasks in a docker image and run
+      those tasks using
+      the [Docker Remote API](https://docs.docker.com/engine/reference/api/docker_remote_api/).
+      ECS adds a service on top these building blocks that allows ephemeral tasks
+      to be run on a cluster of [CoreOS](https://coreos.com/) machines using a RESTful API.
+
+  - title: Security
     content: |
-      * task packaged inside a docker container
-      * emphemeral = short lived, no state
+      In-transit - All communication with an ECS deployment is done over SSL/TLS.
+      The ECS runs on a cluster of [CoreOS](https://coreos.com/) machines
+      with a layer 5 (TCP) load balancer running in front of the cluster.
+      Layer 5 load balancing is required because [nginx](http://nginx.org)
+      is used to terminate SSL/TLS on each node in the cluster.
+
+      At-rest - The ECS does not persist any data.
+
+      Authentication ...
+
+      Authorization - the ECS is intended to be used a low level, utility service
+      sitting behind a higher level abstractions that implements authorization.
+      As such, the ECS has no authorization.
+      As soon as a requestor is authenticated they are able to access
+      any of ECS' endpoints.
+
+  - title: Performance Expectations
+    content: |
+      In the API docs you'll notice a *Performance Expectations* section for
+      endpoint operations. These performance expectations describe the expected
+      time to perform the requested operation **after** the request has reached
+      the service code which implements the operation. In order to estimate expected
+      time to perform an operation from your infrastructure, record the time it
+      takes to send repeated requests to the ```/_noop``` endpoint and
+      add this ```/_noop``` time to the performance expectation described in the
+      API docs.
+
+  - title: Scaling
+    content: |
+      The ECS runs on a cluster of [CoreOS](https://coreos.com/) machines
+      with a layer 5 load balancer running in front of the cluster.
+      Each node in the cluster runs the ECS service and schedules tasks
+      on that node.
+      From an ECS point of view, there are no dependancies between nodes and
+      as such the ECS cluster is intended to scale horizontally to accommadate
+      a broad variety of workloads.
 
 /tasks:
   displayName: Tasks
@@ -41,7 +83,7 @@ documentation:
         -X POST \
         -H "Content-Type: application/json" \
         --data-binary @echo.json \
-        http://127.0.0.1:8445/v1.0/tasks | \
+        $ECS_ENDPOINT/v1.0/tasks | \
         jq
       {
         "stdout": "aGVsbG8gd29ybGQhISEK",
@@ -61,9 +103,6 @@ documentation:
       200:
         description:
           Success!
-        body:
-          application/json:
-            schema: !include ../ecs/jsonschemas/create_tasks_request.json
       400:
         description:
           Bad request.
@@ -81,14 +120,17 @@ documentation:
       ##### Authentication
         * None
 
+      ##### Performance Expectations
+        * 99% of the time &lt;&nbsp;50&nbsp;ms
+
       ##### Example
       ```bash
-      >curl -s http://127.0.0.1:8448/v1.0/_version | jq
+      >curl -s $ECS_ENDPOINT/v1.0/_version | jq
       {
         "version": "0.8.0",
         "links": {
           "self": {
-            "href": "http://127.0.0.1:8448/v1.0/_version"
+            "href": "$ECS_ENDPOINT/v1.0/_version"
           }
         }
       }
@@ -115,13 +157,16 @@ documentation:
       ##### Authentication
         * None
 
+      ##### Performance Expectations
+        * 99% of the time &lt;&nbsp;50&nbsp;ms
+
       ##### Example
       ```bash
       >curl \
         -s \
         -o /dev/null \
         -w %{http_code}\\n \
-        http://127.0.0.1:8445/v1.0/_noop
+        $ECS_ENDPOINT/v1.0/_noop
       200
       >
       ```
@@ -129,8 +174,6 @@ documentation:
       200:
         description:
           200 OK is always returned by this endpoint.
-        body:
-          application/json:
 
 /_health:
   displayName: Health
@@ -165,7 +208,7 @@ documentation:
           frequently issue a quick health check
 
       ##### Performance Expectations
-        * quick - 99% of the time &lt;&nbsp;50 ms
+        * quick - 99% of the time &lt;&nbsp;50&nbsp;ms
         * comprehensive - 99% of the time &lt;&nbsp;3,050 ms
           (note 3,050 is determined by taking the default value for the
           ```max_time_in_ms_to_wait_for_component_health_checks```
@@ -180,7 +223,7 @@ documentation:
       ```bash
       >curl \
         -s \
-        http://127.0.0.1:8445/v1.0/_health?quick=false | \
+        $ECS_ENDPOINT/v1.0/_health?quick=false | \
         jq
       {
         "status": "green",
@@ -195,7 +238,7 @@ documentation:
         },
         "links": {
           "self": {
-            "href": "http://127.0.0.1:8445/v1.0/_health"
+            "href": "$ECS_ENDPOINT/v1.0/_health"
           }
         }
       }
