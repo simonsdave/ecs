@@ -38,6 +38,7 @@ apt-get install -y nginx
 cp /vagrant/nginx.site /etc/nginx/sites-available/default
 mkdir -p /usr/share/nginx/ecs/html
 chown root:root /usr/share/nginx/ecs/html
+service nginx restart
 
 curl -s -L --output /etc/jq 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64'
 chown root.root /etc/jq
