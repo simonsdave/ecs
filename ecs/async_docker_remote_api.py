@@ -126,6 +126,14 @@ class AsyncImagePull(tor_async_util.AsyncAction):
     def _on_http_client_fetch_done(self, response):
         _write_http_client_response_to_log(response)
 
+        if response.code == httplib.NOT_FOUND:
+            # 404 means not authorized - weird!!!
+            pass
+
+        if response.code == httplib.INTERNAL_SERVER_ERROR:
+            # 500 means image not found - weird!!!
+            pass
+
         if response.code != httplib.OK:
             self._call_callback(type(self).PFD_ERROR_PULLING_IMAGE)
             return
