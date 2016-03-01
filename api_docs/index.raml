@@ -86,6 +86,9 @@ documentation:
         * 99% of the time &lt;&nbsp;nnn ms
 
       ##### Example
+      Below is a "hello world" style example of how to run a super simple task
+      against a public repo.
+
       ```bash
       >cat echo.json
       {
@@ -108,15 +111,30 @@ documentation:
         "stderr": "",
         "exitCode": 0
       }
-      > python
-      Python 2.7.6 (default, Jun 22 2015, 17:58:13)
-      [GCC 4.8.2] on linux2
-      Type "help", "copyright", "credits" or "license" for more information.
-      >>> import base64
-      >>> base64.b64decode('aGVsbG8gd29ybGQhISEK')
+      >echo aGVsbG8gd29ybGQhISEK | base64 --decode
       'hello world!!!\n'
-      >>>
+      >
       ```
+
+      The json doc below illustrates how the hello world example request
+      payload is modified if the task needs to be run against a private repo.
+
+      ```json
+      {
+        "docker_image": "ubuntu",
+        "tag": "latest",
+        "cmd": [
+          "echo",
+          "hello world!!!"
+        ],
+        "creds": {
+          "username": "something",
+          "email": "something@example.com",
+          "password": "password"
+        }
+      }
+      ```
+
     responses:
       200:
         description:
