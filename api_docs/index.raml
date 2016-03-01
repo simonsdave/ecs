@@ -16,17 +16,21 @@ documentation:
 
   - title: Security
     content: |
-      In-transit - All communication with an ECS deployment is done over SSL/TLS.
+      ##### In-transit
+      All communication with an ECS deployment is done over SSL/TLS.
       The ECS runs on a cluster of [CoreOS](https://coreos.com/) machines
       with a layer 5 (TCP) load balancer running in front of the cluster.
       Layer 5 load balancing is required because [nginx](http://nginx.org)
       is used to terminate SSL/TLS on each node in the cluster.
 
-      At-rest - The ECS does not persist any data.
+      ##### At-rest
+      The ECS does not persist any data.
 
-      Authentication ...
+      ##### Authentication
+      ...
 
-      Authorization - the ECS is intended to be used a low level, utility service
+      ##### Authorization
+      The ECS is intended to be used a low level, utility service
       sitting behind a higher level abstractions that implements authorization.
       As such, the ECS has no authorization.
       As soon as a requestor is authenticated they are able to access
