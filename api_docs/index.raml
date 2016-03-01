@@ -32,7 +32,7 @@ documentation:
       As soon as a requestor is authenticated they are able to access
       any of ECS' endpoints.
 
-  - title: Performance Expectations
+  - title: Performance
     content: |
       In the API docs you'll notice a *Performance Expectations* section for
       endpoint operations. These performance expectations describe the expected
@@ -52,6 +52,20 @@ documentation:
       From an ECS point of view, there are no dependancies between nodes and
       as such the ECS cluster is intended to scale horizontally to accommadate
       a broad variety of workloads.
+
+  - title: Endpoint Documentation Conventions
+    content: |
+      The remainder of this page contains detailed endpoint documentation.
+      There are a few conventions used in the endpoint documentation that
+      are worth describing.
+      * by default ```ephemeral_container_service.py``` starts on
+        ```http://127.0.0.1:8448``` in a development environment; in the
+        endpoint samples you should notice endpoint URLs start with
+        the environment varilable ```ECS_ENDPOINT```; the rational here
+        is that after setting the ```ECS_ENDPOINT``` environment variable
+        you should be able to copy and paste all the sample requests
+        regardless of the ip/port on which ```ephemeral_container_service.py```
+        is listening.
 
 /tasks:
   displayName: Tasks
