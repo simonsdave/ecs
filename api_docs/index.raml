@@ -16,23 +16,27 @@ documentation:
 
   - title: Security
     content: |
-      In-transit - All communication with an ECS deployment is done over SSL/TLS.
+      ##### In-transit
+      All communication with an ECS deployment is done over SSL/TLS.
       The ECS runs on a cluster of [CoreOS](https://coreos.com/) machines
       with a layer 5 (TCP) load balancer running in front of the cluster.
       Layer 5 load balancing is required because [nginx](http://nginx.org)
       is used to terminate SSL/TLS on each node in the cluster.
 
-      At-rest - The ECS does not persist any data.
+      ##### At-rest
+      The ECS does not persist any data.
 
-      Authentication ...
+      ##### Authentication
+      ...
 
-      Authorization - the ECS is intended to be used a low level, utility service
+      ##### Authorization
+      The ECS is intended to be used a low level, utility service
       sitting behind a higher level abstractions that implements authorization.
       As such, the ECS has no authorization.
       As soon as a requestor is authenticated they are able to access
       any of ECS' endpoints.
 
-  - title: Performance Expectations
+  - title: Performance
     content: |
       In the API docs you'll notice a *Performance Expectations* section for
       endpoint operations. These performance expectations describe the expected
@@ -53,6 +57,20 @@ documentation:
       as such the ECS cluster is intended to scale horizontally to accommadate
       a broad variety of workloads.
 
+  - title: Endpoint Documentation Conventions
+    content: |
+      The remainder of this page contains detailed endpoint documentation.
+      There are a few conventions used in the endpoint documentation that
+      are worth describing.
+      * by default ```ephemeral_container_service.py``` starts on
+        ```http://127.0.0.1:8448``` in a development environment; in the
+        endpoint samples you should notice endpoint URLs start with
+        the environment varilable ```ECS_ENDPOINT```; the rational here
+        is that after setting the ```ECS_ENDPOINT``` environment variable
+        you should be able to copy and paste all the sample requests
+        regardless of the ip/port on which ```ephemeral_container_service.py```
+        is listening.
+
 /tasks:
   displayName: Tasks
   description: |
@@ -68,6 +86,9 @@ documentation:
         * 99% of the time &lt;&nbsp;nnn ms
 
       ##### Example
+      Below is a "hello world" style example of how to run a super simple task
+      against a public repo.
+
       ```bash
       >cat echo.json
       {
@@ -90,15 +111,30 @@ documentation:
         "stderr": "",
         "exitCode": 0
       }
-      > python
-      Python 2.7.6 (default, Jun 22 2015, 17:58:13)
-      [GCC 4.8.2] on linux2
-      Type "help", "copyright", "credits" or "license" for more information.
-      >>> import base64
-      >>> base64.b64decode('aGVsbG8gd29ybGQhISEK')
+      >echo aGVsbG8gd29ybGQhISEK | base64 --decode
       'hello world!!!\n'
-      >>>
+      >
       ```
+
+      The json doc below illustrates how the hello world example request
+      payload is modified if the task needs to be run against a private repo.
+
+      ```json
+      {
+        "docker_image": "ubuntu",
+        "tag": "latest",
+        "cmd": [
+          "echo",
+          "hello world!!!"
+        ],
+        "creds": {
+          "username": "something",
+          "email": "something@example.com",
+          "password": "password"
+        }
+      }
+      ```
+
     responses:
       200:
         description:
