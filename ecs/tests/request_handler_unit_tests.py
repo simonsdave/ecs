@@ -60,10 +60,15 @@ class AsyncEndToEndContainerRunnerPatcher(Patcher):
     AsyncEndToEndContainerRunner.create().
     """
 
-    def __init__(self, is_ok, exit_code=None, stdout=None, stderr=None):
+    def __init__(self,
+                 is_ok,
+                 is_image_found=None,
+                 exit_code=None,
+                 stdout=None,
+                 stderr=None):
 
         def create_patch(acr, callback):
-            callback(is_ok, exit_code, stdout, stderr, acr)
+            callback(is_ok, is_image_found, exit_code, stdout, stderr, acr)
 
         patcher = mock.patch(
             __name__ + '.AsyncEndToEndContainerRunner.create',
@@ -187,7 +192,11 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
         exit_code = 45
         stdout = uuid.uuid4().hex
         stderr = uuid.uuid4().hex
-        with AsyncEndToEndContainerRunnerPatcher(is_ok=True, exit_code=exit_code, stdout=stdout, stderr=stderr):
+        with AsyncEndToEndContainerRunnerPatcher(is_ok=True,
+                                                 is_image_found=True,
+                                                 exit_code=exit_code,
+                                                 stdout=stdout,
+                                                 stderr=stderr):
             with WriteAndVerifyPatcher(is_ok=False):
                 headers = {
                     'Content-Type': 'application/json; charset=utf-8',
@@ -214,7 +223,11 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
         exit_code = 45
         stdout = uuid.uuid4().hex
         stderr = uuid.uuid4().hex
-        with AsyncEndToEndContainerRunnerPatcher(is_ok=True, exit_code=exit_code, stdout=stdout, stderr=stderr):
+        with AsyncEndToEndContainerRunnerPatcher(is_ok=True,
+                                                 is_image_found=True,
+                                                 exit_code=exit_code,
+                                                 stdout=stdout,
+                                                 stderr=stderr):
             headers = {
                 'Content-Type': 'application/json; charset=utf-8',
             }

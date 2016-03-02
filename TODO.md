@@ -4,7 +4,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ## Functional
 
-* need authentication for ```/_health``` endpoint
 * sort out ```AsyncContainerLogs``` correctly fetching stdout & stderr
   using a single call to the Docker Remote API - think this mostly comes
   down to sorting out how to interpret the 8-byte header in the response
@@ -17,8 +16,10 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 ## Operations
 
 * create CoreOS ```cloud-config``` and provisioning scripts
-* support client cert for authentication and authorization
-* add instrumentation using ?DataDog?
+* use basic auth implemented in nginx
+    * http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
+    * https://www.digitalocean.com/community/tutorials/how-to-set-up-http-authentication-with-nginx-on-ubuntu-12-10
+* add instrumentation using ?DataDog? ?SignalFX?
 * [nginx.site](https://github.com/simonsdave/ecs/blob/master/dockerfiles/nginx/nginx.site)
   contains references to ```cloudfeaster.com``` - what should happen 1/ rename nginx.site 
   to nginx.site.template and %DOMAIN% all cloudfeaster.com references 2/ change
@@ -27,9 +28,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * add iptables rate limiting - why?
 * [nginx/nginx.site](nginx/nginx.site) has references to cloudfeaster - need to change this to support any organization
 * put 'correct' TLS configuration in nginx
-* require TLS client cert in [nginx/nginx.site](nginx/nginx.site)
-* use [Let's Encrypt](https://letsencrypt.org/) to automate the generation of certs?
-* use [Let's Encrypt](https://letsencrypt.org/) to automate the renewal of certs?
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 
 ## Performance
@@ -45,8 +43,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ## API Documentation
 
-* more samples
-* add performance expectations
+* add actual performance expectations numbers
 
 ## CI
 

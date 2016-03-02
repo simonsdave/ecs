@@ -18,11 +18,12 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
     CFD_OK = 0x0000
     CFD_ERROR = 0x0080
     CFD_ERROR_PULLING_IMAGE = CFD_ERROR | 0x0001
-    CFD_ERROR_CREATING_CONTAINER = CFD_ERROR | 0x0002
-    CFD_ERROR_STARTING_CONTAINER = CFD_ERROR | 0x0003
-    CFD_WAITING_FOR_CONTAINER_TO_EXIT = CFD_ERROR | 0x0004
-    CFD_ERROR_FETCHING_CONTAINER_LOGS = CFD_ERROR | 0x0005
-    CFD_ERROR_DELETING_CONTAINER = CFD_ERROR | 0x0006
+    CFD_IMAGE_NOT_FOUND = 0x0002
+    CFD_ERROR_CREATING_CONTAINER = CFD_ERROR | 0x0003
+    CFD_ERROR_STARTING_CONTAINER = CFD_ERROR | 0x0004
+    CFD_WAITING_FOR_CONTAINER_TO_EXIT = CFD_ERROR | 0x0005
+    CFD_ERROR_FETCHING_CONTAINER_LOGS = CFD_ERROR | 0x0006
+    CFD_ERROR_DELETING_CONTAINER = CFD_ERROR | 0x0007
 
     def __init__(self,
                  docker_image,
@@ -65,11 +66,17 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
             self.password)
         aip.pull(self._on_aip_pull_done)
 
-    def _on_aip_pull_done(self, is_ok, api):
+    def _on_aip_pull_done(self, is_ok, is_image_found, api):
         if not is_ok:
             fmt = '%s - error pulling image %s:%s'
             _logger.error(fmt, self.cid, self.docker_image, self.tag)
             self._call_callback(type(self).CFD_ERROR_PULLING_IMAGE)
+            return
+
+        if not is_image_found:
+            fmt = '%s - could not find image %s:%s'
+            _logger.info(fmt, self.cid, self.docker_image, self.tag)
+            self._call_callback(type(self).CFD_IMAGE_NOT_FOUND)
             return
 
         fmt = '%s - successfully pulled image %s:%s'
@@ -167,7 +174,8 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
         assert self.create_failure_detail is None
         self.create_failure_detail = create_failure_detail
         is_ok = not bool(self.create_failure_detail & type(self).CFD_ERROR)
-        self._callback(is_ok, exit_code, stdout, stderr, self)
+        is_image_found = self.create_failure_detail != type(self).CFD_IMAGE_NOT_FOUND if is_ok else None
+        self._callback(is_ok, is_image_found, exit_code, stdout, stderr, self)
         self._callback = None
 
 

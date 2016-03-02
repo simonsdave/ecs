@@ -23,7 +23,8 @@ class TasksRequestHandler(tor_async_util.RequestHandler):
     # PDD = Post Debug Details
     PDD_BAD_REQUEST_BODY = 0x0001
     PDD_ERROR_CREATING_RAW_CRAWL = 0x0002
-    PDD_BAD_RESPONSE_BODY = 0x0003
+    PDD_IMAGE_NOT_FOUND = 0x0003
+    PDD_BAD_RESPONSE_BODY = 0x0004
 
     @tornado.web.asynchronous
     def post(self):
@@ -44,10 +45,16 @@ class TasksRequestHandler(tor_async_util.RequestHandler):
             creds.get('password', None))
         acr.create(self._on_acr_create_done)
 
-    def _on_acr_create_done(self, is_ok, exit_code, stdout, stderr, acr):
+    def _on_acr_create_done(self, is_ok, is_image_found, exit_code, stdout, stderr, acr):
         if not is_ok:
             self.add_debug_details(self.PDD_ERROR_CREATING_RAW_CRAWL)
             self.write_error(httplib.INTERNAL_SERVER_ERROR)
+            self.finish()
+            return
+
+        if not is_image_found:
+            self.add_debug_details(self.PDD_IMAGE_NOT_FOUND)
+            self.write_error(httplib.NOT_FOUND)
             self.finish()
             return
 

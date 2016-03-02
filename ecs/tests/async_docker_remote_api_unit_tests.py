@@ -201,7 +201,7 @@ class AsyncImagePullTestCase(unittest.TestCase):
                 username=uuid.uuid4().hex,
                 password=uuid.uuid4().hex)
             aip.pull(callback)
-            callback.assert_called_once_with(False, aip)
+            callback.assert_called_once_with(False, None, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_ERROR_PULLING_IMAGE)
 
     def test_happy_path_with_creds(self):
@@ -221,7 +221,7 @@ class AsyncImagePullTestCase(unittest.TestCase):
                 username=uuid.uuid4().hex,
                 password=uuid.uuid4().hex)
             aip.pull(callback)
-            callback.assert_called_once_with(True, aip)
+            callback.assert_called_once_with(True, True, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_OK)
 
     def test_happy_path_no_creds(self):
@@ -238,7 +238,7 @@ class AsyncImagePullTestCase(unittest.TestCase):
                 docker_image=uuid.uuid4().hex,
                 tag=uuid.uuid4().hex)
             aip.pull(callback)
-            callback.assert_called_once_with(True, aip)
+            callback.assert_called_once_with(True, True, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_OK)
 
 
@@ -527,7 +527,9 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)
             callback.assert_called_once_with(True, None, None, acl)
-            self.assertEqual(acl.fetch_failure_detail, type(acl).FFD_CONTAINER_NOT_FOUND)
+            self.assertEqual(
+                acl.fetch_failure_detail,
+                type(acl).FFD_CONTAINER_NOT_FOUND)
 
     def test_error_on_fetch(self):
         response = mock.Mock(
@@ -542,7 +544,9 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)
             callback.assert_called_once_with(False, None, None, acl)
-            self.assertEqual(acl.fetch_failure_detail, type(acl).FFD_ERROR_FETCHING_CONTAINER_LOGS)
+            self.assertEqual(
+                acl.fetch_failure_detail,
+                type(acl).FFD_ERROR_FETCHING_CONTAINER_LOGS)
 
     def test_happy_path(self):
         header = '-' * 8

@@ -79,8 +79,15 @@ class AsyncImagePull(tor_async_util.AsyncAction):
     PFD_OK = 0x0000
     PFD_ERROR = 0x0080
     PFD_ERROR_PULLING_IMAGE = PFD_ERROR | 0x0001
+    PFD_IMAGE_NOT_FOUND = 0x0002
 
-    def __init__(self, docker_image, tag, email=None, username=None, password=None, async_state=None):
+    def __init__(self,
+                 docker_image,
+                 tag,
+                 email=None,
+                 username=None,
+                 password=None,
+                 async_state=None):
         tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
@@ -90,6 +97,8 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         self.password = password
 
         self.pull_failure_detail = None
+
+        self._image_not_found = False
 
         self._callback = None
 
@@ -121,18 +130,51 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
     def _on_chunk(self, chunk):
-        pass
+        #
+        # would be more helpful of the docker remote API made it
+        # easier to determine if an image had been found but it
+        # appears as though parsing chunk messages is the most
+        # reliable route.
+        #
+        if not isinstance(chunk, str):
+            return
+
+        #
+        # the not found error will be raised by the docker remote
+        # API under one of two conditions 1/ the image really can't
+        # be found or 2/ the request isn't authorized to access
+        # the image
+        #
+        expected_error_fmt = 'Error: image %s:%s not found'
+        expected_error = expected_error_fmt % (self.docker_image, self.tag)
+        if 0 <= chunk.find(expected_error):
+            self._image_not_found = True
+            return
+
+        #
+        # invalid image names generate a message that starts with
+        # 'Invalid namespace name' or 'Invalid repository name' and
+        # we'll treat this as an image
+        # not found
+        #
+        if chunk.strip().startswith('Invalid namespace name'):
+            self._image_not_found = True
+            return
+
+        if chunk.strip().startswith('Invalid repository name'):
+            self._image_not_found = True
+            return
 
     def _on_http_client_fetch_done(self, response):
         _write_http_client_response_to_log(response)
 
-        if response.code == httplib.NOT_FOUND:
-            # 404 means not authorized - weird!!!
-            pass
-
-        if response.code == httplib.INTERNAL_SERVER_ERROR:
-            # 500 means image not found - weird!!!
-            pass
+        #
+        # see '_on_chunk()' for the comments on why this is the
+        # first statement to be executed in this method
+        #
+        if self._image_not_found:
+            self._call_callback(type(self).PFD_IMAGE_NOT_FOUND)
+            return
 
         if response.code != httplib.OK:
             self._call_callback(type(self).PFD_ERROR_PULLING_IMAGE)
@@ -145,7 +187,8 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         assert self.pull_failure_detail is None
         self.pull_failure_detail = pull_failure_detail
         is_ok = not bool(self.pull_failure_detail & type(self).PFD_ERROR)
-        self._callback(is_ok, self)
+        is_image_found = self.pull_failure_detail != type(self).PFD_IMAGE_NOT_FOUND if is_ok else None
+        self._callback(is_ok, is_image_found, self)
         self._callback = None
 
 

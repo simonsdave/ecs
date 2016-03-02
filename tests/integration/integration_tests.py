@@ -274,7 +274,6 @@ class TasksTestCase(IntegrationTestCase):
 
         self.setup_env_and_run_func(the_test)
 
-    @unittest.skip('skipping because do not currently detect unknown image')
     def test_unknown_docker_image(self):
         def the_test(service_config):
             url = 'http://%s:%d/v1.0/tasks' % (
@@ -282,7 +281,7 @@ class TasksTestCase(IntegrationTestCase):
                 service_config.port,
             )
             body = {
-                'docker_image': 'IMAGE_THAT_DOES_NOT_EXIST',
+                'docker_image': 'bindle/berry',
                 'tag': 'latest',
                 'cmd': [
                     'echo',
@@ -290,7 +289,26 @@ class TasksTestCase(IntegrationTestCase):
                 ]
             }
             response = requests.post(url, json=body)
-            self.assertEqual(response.status_code, httplib.CREATED)
+            self.assertEqual(response.status_code, httplib.NOT_FOUND)
+
+        self.setup_env_and_run_func(the_test)
+
+    def test_invalid_docker_image_name(self):
+        def the_test(service_config):
+            url = 'http://%s:%d/v1.0/tasks' % (
+                service_config.ip,
+                service_config.port,
+            )
+            body = {
+                'docker_image': 'IMAGE_NAME_IS_INVALID',
+                'tag': 'latest',
+                'cmd': [
+                    'echo',
+                    'dave was here',
+                ]
+            }
+            response = requests.post(url, json=body)
+            self.assertEqual(response.status_code, httplib.NOT_FOUND)
 
         self.setup_env_and_run_func(the_test)
 
