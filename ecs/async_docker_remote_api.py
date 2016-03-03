@@ -131,15 +131,6 @@ class AsyncImagePull(tor_async_util.AsyncAction):
 
     def _on_chunk(self, chunk):
         #
-        # would be more helpful of the docker remote API made it
-        # easier to determine if an image had been found but it
-        # appears as though parsing chunk messages is the most
-        # reliable route.
-        #
-        if not isinstance(chunk, str):
-            return
-
-        #
         # the not found error will be raised by the docker remote
         # API under one of two conditions 1/ the image really can't
         # be found or 2/ the request isn't authorized to access
