@@ -188,6 +188,33 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
 
             self.assertEmptyJsonDocumentResponse(response)
 
+    def test_image_not_found(self):
+        with AsyncEndToEndContainerRunnerPatcher(is_ok=True, is_image_found=False):
+            headers = {
+                'Content-Type': 'application/json; charset=utf-8',
+            }
+            body = {
+                'docker_image': uuid.uuid4().hex,
+                'tag': uuid.uuid4().hex,
+                'cmd': [
+                    'echo',
+                    'hello world!!!',
+                ],
+            }
+            response = self.fetch(
+                '/v1.0/tasks',
+                method='POST',
+                headers=headers,
+                body=json.dumps(body))
+
+            self.assertEqual(response.code, httplib.NOT_FOUND)
+
+            self.assertDebugDetail(
+                response,
+                TasksRequestHandler.PDD_IMAGE_NOT_FOUND)
+
+            self.assertEmptyJsonDocumentResponse(response)
+
     def test_response_body_error(self):
         exit_code = 45
         stdout = uuid.uuid4().hex

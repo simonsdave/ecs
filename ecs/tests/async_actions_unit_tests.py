@@ -230,6 +230,28 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                 aetecr.create_failure_detail,
                 type(aetecr).CFD_ERROR_PULLING_IMAGE)
 
+    def test_image_not_found(self):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=False):
+            callback = mock.Mock()
+            aetecr = AsyncEndToEndContainerRunner(
+                docker_image=uuid.uuid4().hex,
+                tag=uuid.uuid4().hex,
+                cmd=uuid.uuid4().hex,
+                email=uuid.uuid4().hex,
+                username=uuid.uuid4().hex,
+                password=uuid.uuid4().hex)
+            aetecr.create(callback)
+            callback.assert_called_once_with(
+                True,
+                False,
+                None,
+                None,
+                None,
+                aetecr)
+            self.assertEqual(
+                aetecr.create_failure_detail,
+                type(aetecr).CFD_IMAGE_NOT_FOUND)
+
     def test_error_creating_container(self):
         with AsyncImagePullPatcher(is_ok=True, is_image_found=True):
             with AsyncContainerCreatePatcher(is_ok=False):
