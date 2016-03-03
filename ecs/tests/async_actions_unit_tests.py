@@ -53,10 +53,10 @@ class AsyncImagePullPatcher(Patcher):
     async_docker_remote_api.AsyncImagePull.pull().
     """
 
-    def __init__(self, is_ok):
+    def __init__(self, is_ok, is_image_found):
 
         def pull_patch(aip, callback):
-            callback(is_ok, aip)
+            callback(is_ok, is_image_found, aip)
 
         patcher = mock.patch(
             __name__ + '.async_docker_remote_api.AsyncImagePull.pull',
@@ -209,7 +209,7 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
         self.assertTrue(aetecr.async_state is async_state)
 
     def test_error_pulling_image(self):
-        with AsyncImagePullPatcher(is_ok=False):
+        with AsyncImagePullPatcher(is_ok=False, is_image_found=None):
             callback = mock.Mock()
             aetecr = AsyncEndToEndContainerRunner(
                 docker_image=uuid.uuid4().hex,
@@ -224,13 +224,36 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                 None,
                 None,
                 None,
+                None,
                 aetecr)
             self.assertEqual(
                 aetecr.create_failure_detail,
                 type(aetecr).CFD_ERROR_PULLING_IMAGE)
 
+    def test_image_not_found(self):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=False):
+            callback = mock.Mock()
+            aetecr = AsyncEndToEndContainerRunner(
+                docker_image=uuid.uuid4().hex,
+                tag=uuid.uuid4().hex,
+                cmd=uuid.uuid4().hex,
+                email=uuid.uuid4().hex,
+                username=uuid.uuid4().hex,
+                password=uuid.uuid4().hex)
+            aetecr.create(callback)
+            callback.assert_called_once_with(
+                True,
+                False,
+                None,
+                None,
+                None,
+                aetecr)
+            self.assertEqual(
+                aetecr.create_failure_detail,
+                type(aetecr).CFD_IMAGE_NOT_FOUND)
+
     def test_error_creating_container(self):
-        with AsyncImagePullPatcher(is_ok=True):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=True):
             with AsyncContainerCreatePatcher(is_ok=False):
                 callback = mock.Mock()
                 aetecr = AsyncEndToEndContainerRunner(
@@ -246,13 +269,14 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                     None,
                     None,
                     None,
+                    None,
                     aetecr)
                 self.assertEqual(
                     aetecr.create_failure_detail,
                     type(aetecr).CFD_ERROR_CREATING_CONTAINER)
 
     def test_error_starting_container(self):
-        with AsyncImagePullPatcher(is_ok=True):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=True):
             with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
                 with AsyncContainerStartPatcher(is_ok=False):
                     callback = mock.Mock()
@@ -269,13 +293,14 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                         None,
                         None,
                         None,
+                        None,
                         aetecr)
                     self.assertEqual(
                         aetecr.create_failure_detail,
                         type(aetecr).CFD_ERROR_STARTING_CONTAINER)
 
     def test_error_getting_container_status(self):
-        with AsyncImagePullPatcher(is_ok=True):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=True):
             with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
                 with AsyncContainerStartPatcher(is_ok=True):
                     with AsyncContainerStatusPatcher(is_ok=False):
@@ -293,13 +318,14 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                             None,
                             None,
                             None,
+                            None,
                             aetecr)
                         self.assertEqual(
                             aetecr.create_failure_detail,
                             type(aetecr).CFD_WAITING_FOR_CONTAINER_TO_EXIT)
 
     def test_error_getting_container_logs(self):
-        with AsyncImagePullPatcher(is_ok=True):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=True):
             with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
                 with AsyncContainerStartPatcher(is_ok=True):
                     with AsyncContainerStatusPatcher(is_ok=True, exit_code=0):
@@ -318,13 +344,14 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                                 None,
                                 None,
                                 None,
+                                None,
                                 aetecr)
                             self.assertEqual(
                                 aetecr.create_failure_detail,
                                 type(aetecr).CFD_ERROR_FETCHING_CONTAINER_LOGS)
 
     def test_error_deleting_container(self):
-        with AsyncImagePullPatcher(is_ok=True):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=True):
             with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
                 with AsyncContainerStartPatcher(is_ok=True):
                     with AsyncContainerStatusPatcher(is_ok=True, exit_code=0):
@@ -344,6 +371,7 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                                     None,
                                     None,
                                     None,
+                                    None,
                                     aetecr)
                                 self.assertEqual(
                                     aetecr.create_failure_detail,
@@ -353,7 +381,7 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
         exit_code = 0
         stdout = uuid.uuid4().hex
         stderr = uuid.uuid4().hex
-        with AsyncImagePullPatcher(is_ok=True):
+        with AsyncImagePullPatcher(is_ok=True, is_image_found=True):
             with AsyncContainerCreatePatcher(is_ok=True, container_id=uuid.uuid4().hex):
                 with AsyncContainerStartPatcher(is_ok=True):
                     with AsyncContainerStatusPatcher(is_ok=True, exit_code=exit_code):
@@ -369,6 +397,7 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                                     password=uuid.uuid4().hex)
                                 aetecr.create(callback)
                                 callback.assert_called_once_with(
+                                    True,
                                     True,
                                     exit_code,
                                     stdout,
