@@ -130,7 +130,6 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
     def _on_chunk(self, chunk):
-        _logger.info(">>>%s<<<" % chunk)
         #
         # would be more helpful of the docker remote API made it
         # easier to determine if an image had been found but it
