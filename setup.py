@@ -42,7 +42,6 @@ setup(
     ],
     scripts=[
         'bin/ephemeral_container_service.py',
-        'bin/ephemeral_container_service.sh',
     ],
     install_requires=[
         # using tornado.curl_httpclient.CurlAsyncHTTPClient
@@ -55,7 +54,7 @@ setup(
     ],
     include_package_data=True,
     version=version,
-    description='',
+    description='Ephemeral Container Service',
     author='Dave Simons',
     author_email='simonsdave@gmail.com',
     url='https://github.com/simonsdave/ecs',

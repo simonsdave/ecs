@@ -1,3 +1,21 @@
+#
+# this file is a template for an nginx configuration file. to
+# create an actual nginx configuration file the following variables
+# need to be replaced
+#
+#   %API_DOCS_DOMAIN_NAME%
+#   %API_DOMAIN_NAME%
+#
+# in addition, the following keys and certs are expected to be
+# volume mapped into the container running nginx
+#
+#   /etc/nginx/ssl/docs.crt
+#   /etc/nginx/ssl/docs.key
+#   /etc/nginx/ssl/api.crt
+#   /etc/nginx/ssl/api.key
+#
+
+#
 # http://nginx.org/en/docs/http/ngx_http_limit_req_module.html
 # binary ip address = 4-bytes (see http://nginx.org/en/docs/http/ngx_http_limit_conn_module.html)
 # so a 1k zone can store 1024 / 4 = 256 entries
@@ -21,6 +39,7 @@
 # the max_conns setting but that's only available in the nginx
 # commerical version. so, it's probably better to look toward
 # iptables (https://help.ubuntu.com/community/IptablesHowTo)
+#
 limit_req_zone $binary_remote_addr zone=docs_per_ip_rate_limit:1m rate=10r/s;
 limit_req_zone $binary_remote_addr zone=ecs_per_ip_rate_limit:100k rate=1r/s;
 
@@ -29,7 +48,7 @@ limit_conn_zone $binary_remote_addr zone=ecs_per_ip_conn_limit:100k;
 
 server {
     listen          80;
-    server_name     %API_DOCS_SERVER_NAME%;
+    server_name     %API_DOCS_DOMAIN_NAME%;
     return          301 https://$host$request_uri;
 }
 
@@ -38,7 +57,7 @@ server {
     limit_conn docs_per_ip_conn_limit 10;
 
     listen          443 ssl;
-    server_name     %API_DOCS_SERVER_NAME%;
+    server_name     %API_DOCS_DOMAIN_NAME%;
 
     ssl on;
     ssl_certificate /etc/nginx/ssl/docs.crt;
@@ -73,7 +92,7 @@ server {
     limit_conn ecs_per_ip_conn_limit 25;
 
     listen          443 ssl;
-    server_name     %API_SERVER_NAME%;
+    server_name     %API_DOMAIN_NAME%;
 
     ssl on;
     ssl_certificate /etc/nginx/ssl/api.crt;
