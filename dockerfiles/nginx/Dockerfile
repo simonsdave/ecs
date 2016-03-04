@@ -23,7 +23,7 @@ RUN apt-get install -y nginx
 RUN apt-get install -y curl
 
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-ADD nginx.site /etc/nginx/sites-available/default
+ADD nginx.site.template /etc/nginx/sites-available/default.template
 ADD nginx.sh /usr/local/bin/nginx.sh
 RUN mkdir -p /etc/nginx/ssl
 

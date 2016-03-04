@@ -1,0 +1,134 @@
+#cloud-config
+#
+# This file was created following these instructions
+#
+#   https://coreos.com/os/docs/latest/booting-on-google-compute-engine.html
+#   https://coreos.com/fleet/docs/latest/deployment-and-configuration.html
+#   https://coreos.com/os/docs/latest/cloud-config.html
+#
+# This file is a template. In order for this template to be used as a
+# real cloud-config the following variables need to be replaced:
+#
+#   %DISCOVERY_TOKEN%
+#
+# If changes are made to this file, the file can be validated
+# using https://coreos.com/validate/
+#
+
+coreos:
+  etcd2:
+    # generate a new token for each unique cluster from
+    #   curl -w "\n" 'https://discovery.etcd.io/new?size=1'
+    discovery: %DISCOVERY_TOKEN%
+    # multi-region and multi-cloud deployments need to use $public_ipv4
+    advertise-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    # listen on both the official ports and the legacy ports
+    # legacy ports can be omitted if your application doesn't depend on them
+    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+    listen-peer-urls: http://$private_ipv4:2380
+  units:
+    - name: etcd2.service
+      command: start
+    - name: fleet.socket
+      command: start
+      drop-ins:
+      - name: 30-ListenStream.conf
+        content: |
+          [Socket]
+          ListenStream=49153
+    - name: fleet.service
+      command: start
+    - name: apidocs.service
+      command: start
+      content: |
+        [Unit]
+        Description=API Docs Service
+        After=docker.service
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        TimeoutStartSec=0
+        ExecStartPre=-/usr/bin/docker kill apidocs
+        ExecStartPre=-/usr/bin/docker rm apidocs
+        ExecStartPre=/usr/bin/docker pull simonsdave/ecs-apidocs
+        ExecStart=/usr/bin/docker run --name=apidocs simonsdave/ecs-apidocs nginx
+        ExecStop=/usr/bin/docker stop apidocs
+
+        [X-Fleet]
+        Global=true
+    - name: tasks.service
+      command: start
+      content: |
+        [Unit]
+        Description=Tasks Service
+        After=docker.service
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        TimeoutStartSec=0
+        ExecStartPre=-/usr/bin/docker kill tasks
+        ExecStartPre=-/usr/bin/docker rm tasks
+        ExecStartPre=/usr/bin/docker pull simonsdave/ecs-services
+        ExecStart=/usr/bin/docker run --name=tasks -v /.ecs/config:/root/.ecs/config simonsdave/ecs-services ephemeral_container_service.py
+        ExecStop=/usr/bin/docker stop tasks
+
+        [X-Fleet]
+        Global=true
+    - name: nginx.service
+      command: start
+      content: |
+        [Unit]
+        Description=Nginx Service
+        After=docker.service apidocs.service tasks.service
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        TimeoutStartSec=0
+        ExecStartPre=-/usr/bin/docker kill nginx
+        ExecStartPre=-/usr/bin/docker rm nginx
+        ExecStartPre=/usr/bin/docker pull simonsdave/ecs-nginx
+        ExecStart=/usr/bin/docker run --name=nginx -p 80:80 -p 443:443 --link apidocs:apidocs --link tasks:tasks -v /etc/ssl/certs/docs.cloudfeaster.com.crt:/etc/nginx/ssl/docs.crt  -v /etc/ssl/certs/docs.cloudfeaster.com.key:/etc/nginx/ssl/docs.key -v /etc/ssl/certs/api.cloudfeaster.com.crt:/etc/nginx/ssl/api.crt -v /etc/ssl/certs/api.cloudfeaster.com.key:/etc/nginx/ssl/api.key simonsdave/ecs-nginx nginx.sh docs.ecs.cloudfeaster.com api.ecs.cloudfeaster.com
+        ExecStop=/usr/bin/docker stop nginx
+
+        [X-Fleet]
+        Global=true
+write_files:
+  - path: /etc/ssl/certs/docs.cloudfeaster.com.crt
+    owner: root:root
+    permissions: 0644
+    content: |
+      -----BEGIN CERTIFICATE-----
+      ...
+      -----END CERTIFICATE-----
+  - path: /etc/ssl/certs/docs.cloudfeaster.com.key
+    owner: root:root
+    permissions: 0644
+    content: |
+      -----BEGIN RSA PRIVATE KEY-----
+      ...
+      -----END RSA PRIVATE KEY-----
+  - path: /etc/ssl/certs/api.cloudfeaster.com.crt
+    owner: root:root
+    permissions: 0644
+    content: |
+      -----BEGIN CERTIFICATE-----
+      ...
+      -----END CERTIFICATE-----
+  - path: /etc/ssl/certs/api.cloudfeaster.com.key
+    owner: root:root
+    permissions: 0644
+    content: |
+      -----BEGIN RSA PRIVATE KEY-----
+      ...
+      -----END RSA PRIVATE KEY-----
+  - path: /.ecs/config
+    owner: root:root
+    permissions: 0644
+    content: |
+      [ecs]
+      address=0.0.0.0
+      port=80
+      log_level=info
+      max_concurrent_executing_http_requests=250
+      docker_remote_api=http://172.17.42.1:4243

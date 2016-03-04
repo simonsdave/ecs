@@ -10,7 +10,7 @@ else
     VERBOSE=0
 fi
 
-if [ $# != 1 ]; then
+if [ $# != 2 ]; then
     echo "usage: `basename $0` [-v] <config-tar-file-url>" >&2
     exit 1
 fi
