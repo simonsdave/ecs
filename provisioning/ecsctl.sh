@@ -232,8 +232,6 @@ get_all_node_names() {
 deployment_create_node() {
     echo_if_verbose "Starting new node" "blue"
 
-    set -x
-
     local CLOUD_CONFIG=$(platform_safe_mktemp)
     local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
 
@@ -269,8 +267,6 @@ deployment_create_node() {
         echo_to_stderr "Error adding node '$INSTANCE_NAME' to target pool '$TARGET_POOL_NAME'"
         exit 1
     fi
-
-    set +x
 
     echo_if_verbose "Successfully started node '$INSTANCE_NAME'"
 
