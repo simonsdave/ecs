@@ -62,7 +62,7 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
 
         details = {
             'connectivity': True,
-            'api version': response_body['ApiVersion'] == '1.18',
+            'api version': response_body['ApiVersion'].startswith('1.18')
         }
         self._call_callback(details)
 
