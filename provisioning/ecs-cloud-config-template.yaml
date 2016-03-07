@@ -28,6 +28,25 @@ coreos:
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$private_ipv4:2380
   units:
+    #
+    # this next section is as per
+    #
+    #   https://coreos.com/os/docs/latest/customizing-docker.html#enable-the-remote-api-on-a-new-socket
+    #
+    - name: docker-tcp.socket
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Docker Socket for the API
+
+        [Socket]
+        ListenStream=2375
+        BindIPv6Only=both
+        Service=docker.service
+
+        [Install]
+        WantedBy=sockets.target
     - name: etcd2.service
       command: start
     - name: fleet.socket
@@ -88,39 +107,35 @@ coreos:
         ExecStartPre=-/usr/bin/docker kill nginx
         ExecStartPre=-/usr/bin/docker rm nginx
         ExecStartPre=/usr/bin/docker pull simonsdave/ecs-nginx
-        ExecStart=/usr/bin/docker run --name=nginx -p 80:80 -p 443:443 --link apidocs:apidocs --link tasks:tasks -v /etc/ssl/certs/docs.cloudfeaster.com.crt:/etc/nginx/ssl/docs.crt  -v /etc/ssl/certs/docs.cloudfeaster.com.key:/etc/nginx/ssl/docs.key -v /etc/ssl/certs/api.cloudfeaster.com.crt:/etc/nginx/ssl/api.crt -v /etc/ssl/certs/api.cloudfeaster.com.key:/etc/nginx/ssl/api.key simonsdave/ecs-nginx nginx.sh docs.ecs.cloudfeaster.com api.ecs.cloudfeaster.com
+        ExecStart=/usr/bin/docker run --name=nginx -p 80:80 -p 443:443 --link apidocs:apidocs --link tasks:tasks -v /etc/ssl/certs/docs.ecs.cloudfeaster.com.crt:/etc/nginx/ssl/docs.crt  -v /etc/ssl/certs/docs.ecs.cloudfeaster.com.key:/etc/nginx/ssl/docs.key -v /etc/ssl/certs/api.ecs.cloudfeaster.com.crt:/etc/nginx/ssl/api.crt -v /etc/ssl/certs/api.ecs.cloudfeaster.com.key:/etc/nginx/ssl/api.key simonsdave/ecs-nginx nginx.sh docs.ecs.cloudfeaster.com api.ecs.cloudfeaster.com
         ExecStop=/usr/bin/docker stop nginx
 
         [X-Fleet]
         Global=true
 write_files:
-  - path: /etc/ssl/certs/docs.cloudfeaster.com.crt
+  - path: /etc/ssl/certs/docs.ecs.cloudfeaster.com.crt
     owner: root:root
     permissions: 0644
     content: |
       -----BEGIN CERTIFICATE-----
-      ...
       -----END CERTIFICATE-----
-  - path: /etc/ssl/certs/docs.cloudfeaster.com.key
+  - path: /etc/ssl/certs/docs.ecs.cloudfeaster.com.key
     owner: root:root
     permissions: 0644
     content: |
       -----BEGIN RSA PRIVATE KEY-----
-      ...
       -----END RSA PRIVATE KEY-----
-  - path: /etc/ssl/certs/api.cloudfeaster.com.crt
+  - path: /etc/ssl/certs/api.ecs.cloudfeaster.com.crt
     owner: root:root
     permissions: 0644
     content: |
       -----BEGIN CERTIFICATE-----
-      ...
       -----END CERTIFICATE-----
-  - path: /etc/ssl/certs/api.cloudfeaster.com.key
+  - path: /etc/ssl/certs/api.ecs.cloudfeaster.com.key
     owner: root:root
     permissions: 0644
     content: |
       -----BEGIN RSA PRIVATE KEY-----
-      ...
       -----END RSA PRIVATE KEY-----
   - path: /.ecs/config
     owner: root:root
@@ -131,4 +146,4 @@ write_files:
       port=80
       log_level=info
       max_concurrent_executing_http_requests=250
-      docker_remote_api=http://172.17.42.1:4243
+      docker_remote_api=http://172.17.42.1:2375
