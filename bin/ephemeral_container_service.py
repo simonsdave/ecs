@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""This service implements a service with a RESTful API
-that allows callers to ...
-"""
+"""Mainline for the ECS."""
 
 import logging
 import optparse
@@ -22,13 +20,13 @@ _logger = logging.getLogger(__name__)
 
 
 class _CommandLineParser(optparse.OptionParser):
-    """Used to parse a service's command line arguments."""
+    """Used to parse command line arguments."""
 
-    def __init__(self, description):
+    def __init__(self):
         optparse.OptionParser.__init__(
             self,
             'usage: %prog [options]',
-            description=description)
+            description='This service implements ECS\' RESTful API')
 
         default = '~/.ecs/config'
         help = 'config - default = %s' % default
@@ -45,11 +43,7 @@ if __name__ == '__main__':
     #
     # parse command line args ...
     #
-    description = (
-        'This service exposes a RESTful API that enables '
-        '... '
-    )
-    clp = _CommandLineParser(description)
+    clp = _CommandLineParser()
     (clo, cla) = clp.parse_args()
 
     #
