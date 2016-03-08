@@ -27,7 +27,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 </html>
 ```
 
-* limit "size" of acceptable inbound payload
+* [limit "size" of acceptable inbound payload](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
 
 ## Operations
 
