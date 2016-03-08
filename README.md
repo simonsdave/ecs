@@ -5,8 +5,6 @@
 [![Build Status](https://travis-ci.org/simonsdave/ecs.svg?branch=master)](https://travis-ci.org/simonsdave/ecs)
 [![Coverage Status](https://coveralls.io/repos/github/simonsdave/ecs/badge.svg?branch=master)](https://coveralls.io/github/simonsdave/ecs?branch=master)
 
-# History/Background
-
 The Ephemeral Container Service (ECS) was born out of
 the [Cloudfeaster](https://github.com/simonsdave/cloudfeaster.git) project.
 [Docker](https://www.docker.com/) makes it easy to package
@@ -18,11 +16,6 @@ makes it possible to do this using requests to a RESTful API.
 these building blocks to package [spiders](https://en.wikipedia.org/wiki/Web_crawler)
 in docker images and run those spiders in docker containers on a cluster of docker hosts.
 ECS is a generalization of these basic building blocks.
-
-# Functionality
-
-* simple RESTful API with ```/tasks```, ```/_noop``` and ```/_health``` endpoints
-* RESTful requests serviced by a cluster of docker hosts running CoreOS
 
 # Next Steps
 

@@ -60,6 +60,7 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
 
         response_body = json.loads(response.body)
 
+# "ApiVersion": "1.20"
         details = {
             'connectivity': True,
             'api version': response_body['ApiVersion'].startswith('1.18')
