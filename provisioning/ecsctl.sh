@@ -229,8 +229,13 @@ get_all_node_names() {
     gcloud compute instances list | awk -v pattern="$PATTERN" '$1 ~ pattern {print $1}'
 }
 
-deployment_create_node() {
-    echo_if_verbose "Starting new node" "blue"
+deployment_create_cloud_config() {
+	local DOCS_DOMAIN=${1:-}
+	local API_DOMAIN=${2:-}
+	local DOCS_CERT=${3:-}
+	local DOCS_KEY=${4:-}
+	local API_CERT=${5:-}
+	local API_KEY=${6:-}
 
     local CLOUD_CONFIG=$(platform_safe_mktemp)
     local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
@@ -241,9 +246,45 @@ deployment_create_node() {
     # which is interpreted in a special manner by the "s" command:-(
     local SED_SCRIPT_1=$(platform_safe_mktemp)
     echo "s|%DISCOVERY_TOKEN%|$DISCOVERY_TOKEN|g" >> "$SED_SCRIPT_1"
+    echo "s|%DOCS_DOMAIN%|$DOCS_DOMAIN|g" >> "$SED_SCRIPT_1"
+    echo "s|%API_DOMAIN%|$API_DOMAIN|g" >> "$SED_SCRIPT_1"
     local SED_SCRIPT_2=$(platform_safe_mktemp)
     cat "$SED_SCRIPT_1" | sed -e 's/&/\\\&/g' > "$SED_SCRIPT_2"
     cat "$CLOUD_CONFIG_TEMPLATE" | sed -f "$SED_SCRIPT_2" > "$CLOUD_CONFIG"
+
+    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %API_CERT% "$API_CERT"
+    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %API_KEY% "$API_KEY"
+
+    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %DOCS_CERT% "$DOCS_CERT"
+    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %DOCS_KEY% "$DOCS_KEY"
+
+    echo $CLOUD_CONFIG
+}
+
+deployment_insert_cert_or_key_into_cloud_config() { 
+	local CLOUD_CONFIG=${1:-}
+	local VARIABLE=${2:-}
+	local CERT_OR_KEY=${3:-}
+
+    local TEMP_CERT_CONFIG_DIR=$(platform_safe_mktemp_directory)
+    pushd $TEMP_CERT_CONFIG_DIR > /dev/null
+
+    local INDENT=$(grep ^\\s*$VARIABLE\\s*$ "$CLOUD_CONFIG" | sed -e "s|$VARIABLE\s*$||g")
+    local INDENTED_CERT=$(platform_safe_mktemp)
+    sed "s/^/$INDENT/" < "$CERT_OR_KEY" > "$INDENTED_CERT"
+    csplit --quiet - /^\\s*$VARIABLE\\s*$/ < "$CLOUD_CONFIG"
+    tail -n +2 xx01 > xx02
+    cat xx00 "$INDENTED_CERT" xx02 > "$CLOUD_CONFIG"
+
+    popd > /dev/null
+
+    rm -rf "$TEMP_CERT_CONFIG_DIR"
+}
+
+deployment_create_node() {
+    echo_if_verbose "Starting new node" "blue"
+
+	local CLOUD_CONFIG=${1:-}
 
     INSTANCE_NAME="$INSTANCE_NAME_PREFIX-$(python -c 'import uuid; print uuid.uuid4().hex')"
 
@@ -294,9 +335,11 @@ deployment_delete_node() {
 deployment_create() {
     echo_if_verbose "Creating Deployment" "yellow"
 
+    local CLOUD_CONFIG=$(deployment_create_cloud_config "$@")
+
 	deployment_create_network
 
-	deployment_create_node
+	deployment_create_node "$CLOUD_CONFIG"
 }
 
 deployment_inspect() {
@@ -319,10 +362,10 @@ deployment_delete() {
 }
 
 deployment_usage() {
-    echo "usage: `basename $0` [-v] dep <env_name> <command> ..."
+    echo "usage: `basename $0` [-v] dep <command> ..."
     echo ""
     echo "The most commonly used dep commands are:"
-    echo "  create       spin up a CLF deployment"
+    echo "  create       spin up an ECS deployment"
     echo "  inspect      inspect the details of a previously created deployment"
     echo "  remove       remove a previously created deployment"
 }
@@ -332,12 +375,12 @@ deployment_cmd() {
     shift
     case "$COMMAND" in
         CR|CREATE)
-            if [ $# != 0 ]; then
-                echo "usage: `basename $0` [-v] deploy create"
+            if [ $# != 6 ]; then
+                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key>"
                 exit 1
             fi
 
-			deployment_create
+	 		deployment_create "$@"
             ;;
 
         INS|INSPECT)

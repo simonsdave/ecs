@@ -17,35 +17,28 @@ the [Google Developer Console](https://console.developers.google.com/project)
 
 * ```gcloud config set compute/zone us-central1-a```
 
-* if a service account doesn't exists create one and
-then [generate a new P12 key](https://cloud.google.com/storage/docs/authentication?hl=en#generating-a-private-key)
+## Create SSL/TLS certs
 
-## Create TLS certs
+* create api and docs SSL/TLS certs
 
-* create api and docs TLS certs
+## Choose Domain Names
 
-> QUESTION - can [Let's Encrypt](https://letsencrypt.org/) be used to automate the
-> generation of certs?
+* for api and docs
 
-### Detour = self-signed SSL certs
+## Spin up a deployment
+
+* ...
 
 ```bash
-> openssl genrsa -des3 -passout pass:password -out api.ecs.cloudfeaster.com.key 2048
-> openssl req -new -batch -key api.ecs.cloudfeaster.com.key -passin pass:password -out api.ecs.cloudfeaster.com.csr
-> mv api.ecs.cloudfeaster.com.key api.ecs.cloudfeaster.com.key.org
-> openssl rsa -in api.ecs.cloudfeaster.com.key.org -passin pass:password -out api.ecs.cloudfeaster.com.key
-> openssl x509 -req -days 365 -in api.ecs.cloudfeaster.com.csr -signkey api.ecs.cloudfeaster.com.key -out api.ecs.cloudfeaster.com.crt
+> ./ecsctl.sh -v dep create docs.ecs.cloudfeaster.com api.ecs.cloudfeaster.com /vagrant/docs.ecs.cloudfeaster.com.crt /vagrant/docs.ecs.cloudfeaster.com.key /vagrant/api.ecs.cloudfeaster.com.crt /vagrant/api.ecs.cloudfeaster.com.key
 >
-> openssl genrsa -des3 -passout pass:password -out docs.ecs.cloudfeaster.com.key 2048
-> openssl req -new -batch -key docs.ecs.cloudfeaster.com.key -passin pass:password -out docs.ecs.cloudfeaster.com.csr
-> mv docs.ecs.cloudfeaster.com.key docs.ecs.cloudfeaster.com.key.org
-> openssl rsa -in docs.ecs.cloudfeaster.com.key.org -passin pass:password -out docs.ecs.cloudfeaster.com.key
-> rm docs.ecs.cloudfeaster.com.key.org
-> openssl x509 -req -days 365 -in docs.ecs.cloudfeaster.com.csr -signkey docs.ecs.cloudfeaster.com.key -out docs.ecs.cloudfeaster.com.crt
 ```
 
+## Configure DNS
 
-## Manually Exploring Endpoints
+* ...
+
+## Exploring Endpoints
 
 ```bash
 > curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1 | jq
@@ -56,7 +49,7 @@ then [generate a new P12 key](https://cloud.google.com/storage/docs/authenticati
 > curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop | jq
 ```
 
-Exploring rate limiting
+## Exploring Rate Limiting
 ```bash
 > sudo apt-get install -y apache2-utils
 > for i in `seq 100`; do sleep .25; curl -o /dev/null -s -w %{http_code}\\n --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop; done
