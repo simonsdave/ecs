@@ -24,8 +24,7 @@ ECS is a generalization of these basic building blocks.
 * simple RESTful API with ```/tasks```, ```/_noop``` and ```/_health``` endpoints
 * RESTful requests serviced by a cluster of docker hosts running CoreOS
 
-# Other
+# Next Steps
 
-* [API](docs/api.md)
-* [sample config](samples/config) for [ephemeral_container_service.py](bin/ephemeral_container_service.py)
-* [contributing](docs/contributing.md)
+* [spin up a development environment](dev_env)
+* [provision a cluster](docs/provisioning.md)
