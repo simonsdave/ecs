@@ -6,6 +6,7 @@ import httplib
 import json
 import logging
 
+import semantic_version
 import tor_async_util
 import tornado.httpclient
 import tornado.ioloop
@@ -60,10 +61,13 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
 
         response_body = json.loads(response.body)
 
-# "ApiVersion": "1.20"
+        api_version = semantic_version.Version(response_body['ApiVersion'], partial=True)
+        min_api_version = semantic_version.Version('1.18', partial=True)
+        max_api_version = semantic_version.Version('1.20', partial=True)
+        api_version_ok = (min_api_version <= api_version) and (api_version <= max_api_version)
         details = {
             'connectivity': True,
-            'api version': response_body['ApiVersion'].startswith('1.18')
+            'api version': api_version_ok,
         }
         self._call_callback(details)
 

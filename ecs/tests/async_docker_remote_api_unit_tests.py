@@ -123,41 +123,31 @@ class AsyncHealthCheckTestCase(unittest.TestCase):
             }
             callback.assert_called_once_with(expected_response, ahc)
 
-    def test_happy_path_001(self):
-        response = mock.Mock(
-            code=httplib.OK,
-            body=json.dumps({'ApiVersion': '1.18'}),
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response=response):
-            callback = mock.Mock()
-            ahc = AsyncHealthChecker()
-            ahc.check(callback)
-            expected_response = {
-                'connectivity': True,
-                'api version': True,
-            }
-            callback.assert_called_once_with(expected_response, ahc)
-
-    def test_happy_path_002(self):
-        response = mock.Mock(
-            code=httplib.OK,
-            body=json.dumps({'ApiVersion': '1.18.3'}),
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response=response):
-            callback = mock.Mock()
-            ahc = AsyncHealthChecker()
-            ahc.check(callback)
-            expected_response = {
-                'connectivity': True,
-                'api version': True,
-            }
-            callback.assert_called_once_with(expected_response, ahc)
+    def test_happy_path(self):
+        versions = {
+            '1.17': False,
+            '1.18': True,
+            '1.19': True,
+            '1.20': True,
+            '1.21': False,
+        }
+        for (version, version_ok) in versions.iteritems():
+            response = mock.Mock(
+                code=httplib.OK,
+                body=json.dumps({'ApiVersion': version}),
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET'))
+            with AsyncHttpClientFetchPatcher(response=response):
+                callback = mock.Mock()
+                ahc = AsyncHealthChecker()
+                ahc.check(callback)
+                expected_response = {
+                    'connectivity': True,
+                    'api version': version_ok,
+                }
+                callback.assert_called_once_with(expected_response, ahc)
 
 
 class AsyncImagePullTestCase(unittest.TestCase):
