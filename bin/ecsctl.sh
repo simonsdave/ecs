@@ -380,7 +380,7 @@ deployment_cmd() {
                 exit 1
             fi
 
-             deployment_create "$@"
+            deployment_create "$@"
             ;;
 
         INS|INSPECT)
@@ -408,11 +408,43 @@ deployment_cmd() {
     esac
 }
 
+creds_cmd() {
+    if [ $# != 0 ] && [ $# != 1 ]; then
+        echo "usage: `basename $0` [-v] creds [number_of_creds]" >&2
+        exit 1
+    fi
+
+    local NUMBER_OF_CREDS=${1:-5}
+
+    local DOT_HTPASSWD=$PWD/.htpasswd
+
+    if [ -e "$DOT_HTPASSWD" ]; then
+        echo "Adding hashed credentials to existing file '$DOT_HTPASSWD'"
+    else
+        echo "Putting hashed credentials in new file '$DOT_HTPASSWD'"
+        touch "$DOT_HTPASSWD"
+    fi
+
+    for i in `seq 1 $NUMBER_OF_CREDS`;
+    do
+        local KEY=$(python -c "import uuid; print uuid.uuid4().hex")
+        local SECRET=$(python -c "import binascii; import os; print binascii.b2a_hex(os.urandom(128/8))")
+        # -b = batch
+        # -B = bcrypt for password encryption
+        # -C = # of bcrypt rounds (default 4; valid = 4 thru 31)
+        # :TODO: don't like swallowing stderr but couldn't find another
+        # way to surpress htpasswd's output
+        htpasswd -b -B -C 12 "$DOT_HTPASSWD" $KEY $SECRET > /dev/null 2>&1
+        echo "$KEY:$SECRET"
+    done 
+}
+
 usage() {
     echo "usage: `basename $0` [-v] <command> ..."
     echo ""
     echo "The most commonly used `basename $0` commands are:"
     echo "  deploy   manage an ECS deployment"
+    echo "  creds    create credentials for an ECS deployment"
 }
 
 COMMAND=`echo ${1:-} | awk '{print toupper($0)}'`
@@ -420,6 +452,9 @@ shift
 case "$COMMAND" in
     DEP|DEPLOY|DEPLOYMENT)
         deployment_cmd "$@"
+        ;;
+    CREDS)
+        creds_cmd "$@"
         ;;
     *)
         usage
