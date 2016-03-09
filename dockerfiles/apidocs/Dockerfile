@@ -8,6 +8,7 @@
 #
 # for testing/debugging
 #
+#   sudo docker run -p 8081:80 simonsdave/ecs-apidocs nginx
 #   sudo docker run -i -t simonsdave/ecs-apidocs /bin/bash
 #
 # to push to dockerhub
