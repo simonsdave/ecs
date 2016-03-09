@@ -14,19 +14,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
-* **branded** 404 response on invalid pages to docs domain
-
-```bash
->curl https://docs.ecs.cloudfeaster.com/whatever
-<html>
-<head><title>404 Not Found</title></head>
-<body bgcolor="white">
-<center><h1>404 Not Found</h1></center>
-<hr><center>nginx</center>
-</body>
-</html>
-```
-
 * [limit "size" of acceptable inbound payload](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
 
 ## Operations
@@ -35,7 +22,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
     * http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
     * https://www.digitalocean.com/community/tutorials/how-to-set-up-http-authentication-with-nginx-on-ubuntu-12-10
 * root CA on Ubuntu when using TLS/SSL certs from SSLs.com
-* add rating limiting capability in API docs
 * add instrumentation using ?DataDog? ?SignalFX?
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
 and [Pingdom](https://www.pingdom.com/)
@@ -49,6 +35,10 @@ and [Pingdom](https://www.pingdom.com/)
 * ```AsyncEndToEndContainerRunner``` should delete container using ```AsyncContainerDelete```
   after responding to the invoker of ```AsyncEndToEndContainerRunner``` - this should eliminate
   ~1 second overhead introduced by ```ecs```
+
+## Documenation
+
+* add rating limiting capability in API docs
 
 ## Stability
 
