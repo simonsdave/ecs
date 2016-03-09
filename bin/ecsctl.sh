@@ -412,7 +412,7 @@ usage() {
     echo "usage: `basename $0` [-v] <command> ..."
     echo ""
     echo "The most commonly used `basename $0` commands are:"
-    echo "  deploy	manage a CLF deployment"
+    echo "  deploy	manage an ECS deployment"
 }
 
 COMMAND=`echo ${1:-} | awk '{print toupper($0)}'`
