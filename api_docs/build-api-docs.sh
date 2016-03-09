@@ -77,7 +77,6 @@ html_to_raml() {
             exit 1
         fi
         sudo cp "$HTML" "$DEPLOYMENT_HTML"
-        echo "Find API docs @ http://127.0.0.1:$(cat /etc/nginx/sites-enabled/default | grep listen | sed -e 's|^\s*listen\s*||g' | sed -e 's|\s*;\s*$||g')"
     fi
 
     return 0
@@ -86,7 +85,11 @@ html_to_raml() {
 rm -f "$SCRIPT_DIR_NAME/api_docs.tar"
 rm -f "$SCRIPT_DIR_NAME/*.html"
 
-html_to_raml index
+for FILENAME in $SCRIPT_DIR_NAME/*.raml; do FILENAME=$(basename "$FILENAME"); html_to_raml ${FILENAME%.*}; done
+
+if [ "$DEPLOY_API_DOCS" == "1" ]; then
+    echo "Find API docs @ http://127.0.0.1:$(cat /etc/nginx/sites-enabled/default | grep listen | sed -e 's|^\s*listen\s*||g' | sed -e 's|\s*;\s*$||g')"
+fi
 
 if [ "$CREATE_TAR_FILE" == "1" ]; then
     pushd "$SCRIPT_DIR_NAME" > /dev/null
