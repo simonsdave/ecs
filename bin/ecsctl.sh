@@ -65,7 +65,7 @@ create_firewall_rule() {
 inspect_firewall_rule() {
     local FIREWALL_RULE_NAME=${1:-}
     echo_if_verbose "Inspecting firewall rule '$FIREWALL_RULE_NAME'"
-	gcloud compute firewall-rules describe $FIREWALL_RULE_NAME
+    gcloud compute firewall-rules describe $FIREWALL_RULE_NAME
     return 0
 }
 
@@ -90,8 +90,8 @@ create_firewall_rules() {
 }
 
 inspect_firewall_rules() {
-	inspect_firewall_rule $UNSECURED_TRAFFIC_FIREWALL_RULE_NAME
-	inspect_firewall_rule $SECURED_TRAFFIC_FIREWALL_RULE_NAME
+    inspect_firewall_rule $UNSECURED_TRAFFIC_FIREWALL_RULE_NAME
+    inspect_firewall_rule $SECURED_TRAFFIC_FIREWALL_RULE_NAME
 }
 
 delete_firewall_rules() {
@@ -159,7 +159,7 @@ inspect_forwarding_rule() {
     echo_if_verbose "Inspecting forwarding rule '$FORWARDING_RULE_NAME'"
     gcloud \
         compute forwarding-rules describe \
-		--region $(get_region) \
+        --region $(get_region) \
         $FORWARDING_RULE_NAME
 }
 
@@ -196,13 +196,13 @@ deployment_create_network() {
 
 deployment_inspect_network() {
     echo_if_verbose "Inspecting Firewall Rules" "blue"
-	inspect_firewall_rules
+    inspect_firewall_rules
 
     echo_if_verbose "Inspecting Target Pool" "blue"
-	inspect_target_pool
+    inspect_target_pool
 
     echo_if_verbose "Inspecting Forwarding Rule" "blue"
-	inspect_forwarding_rule
+    inspect_forwarding_rule
 }
 
 deployment_delete_network() {
@@ -217,7 +217,7 @@ deployment_delete_network() {
 }
 
 get_instance_ip() {
-	local INSTANCE_NAME=${1:-}
+    local INSTANCE_NAME=${1:-}
     gcloud \
         compute instances describe $INSTANCE_NAME | \
         grep natIP | \
@@ -230,12 +230,12 @@ get_all_node_names() {
 }
 
 deployment_create_cloud_config() {
-	local DOCS_DOMAIN=${1:-}
-	local API_DOMAIN=${2:-}
-	local DOCS_CERT=${3:-}
-	local DOCS_KEY=${4:-}
-	local API_CERT=${5:-}
-	local API_KEY=${6:-}
+    local DOCS_DOMAIN=${1:-}
+    local API_DOMAIN=${2:-}
+    local DOCS_CERT=${3:-}
+    local DOCS_KEY=${4:-}
+    local API_CERT=${5:-}
+    local API_KEY=${6:-}
 
     local CLOUD_CONFIG=$(platform_safe_mktemp)
     local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
@@ -262,9 +262,9 @@ deployment_create_cloud_config() {
 }
 
 deployment_insert_cert_or_key_into_cloud_config() { 
-	local CLOUD_CONFIG=${1:-}
-	local VARIABLE=${2:-}
-	local CERT_OR_KEY=${3:-}
+    local CLOUD_CONFIG=${1:-}
+    local VARIABLE=${2:-}
+    local CERT_OR_KEY=${3:-}
 
     local TEMP_CERT_CONFIG_DIR=$(platform_safe_mktemp_directory)
     pushd $TEMP_CERT_CONFIG_DIR > /dev/null
@@ -284,7 +284,7 @@ deployment_insert_cert_or_key_into_cloud_config() {
 deployment_create_node() {
     echo_if_verbose "Starting new node" "blue"
 
-	local CLOUD_CONFIG=${1:-}
+    local CLOUD_CONFIG=${1:-}
 
     INSTANCE_NAME="$INSTANCE_NAME_PREFIX-$(python -c 'import uuid; print uuid.uuid4().hex')"
 
@@ -337,14 +337,14 @@ deployment_create() {
 
     local CLOUD_CONFIG=$(deployment_create_cloud_config "$@")
 
-	deployment_create_network
+    deployment_create_network
 
-	deployment_create_node "$CLOUD_CONFIG"
+    deployment_create_node "$CLOUD_CONFIG"
 }
 
 deployment_inspect() {
     echo_if_verbose "Inspecting Deployment" "yellow"
-	deployment_inspect_network
+    deployment_inspect_network
 
     for node_name in $(get_all_node_names); do
         echo $node_name
@@ -354,7 +354,7 @@ deployment_inspect() {
 deployment_delete() {
     echo_if_verbose "Deleting Deployment" "yellow"
 
-	deployment_delete_network
+    deployment_delete_network
 
     for node_name in $(get_all_node_names); do
         deployment_delete_node $node_name
@@ -380,7 +380,7 @@ deployment_cmd() {
                 exit 1
             fi
 
-	 		deployment_create "$@"
+             deployment_create "$@"
             ;;
 
         INS|INSPECT)
@@ -389,7 +389,7 @@ deployment_cmd() {
                 exit 1
             fi
 
-			deployment_inspect
+            deployment_inspect
             ;;
 
         RM|REMOVE|DEL|DELETE)
@@ -398,7 +398,7 @@ deployment_cmd() {
                 exit 1
             fi
 
-			deployment_delete
+            deployment_delete
             ;;
 
         *)
@@ -412,7 +412,7 @@ usage() {
     echo "usage: `basename $0` [-v] <command> ..."
     echo ""
     echo "The most commonly used `basename $0` commands are:"
-    echo "  deploy	manage an ECS deployment"
+    echo "  deploy   manage an ECS deployment"
 }
 
 COMMAND=`echo ${1:-} | awk '{print toupper($0)}'`
