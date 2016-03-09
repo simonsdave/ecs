@@ -25,6 +25,9 @@ apt-get install -y libffi-dev
 apt-get build-dep -y python-pycurl
 apt-get install -y unzip
 
+# apache2-utils installed to get access to htpasswd
+apt-get install -y apache2-utils
+
 timedatectl set-timezone EST
 
 apt-get install -y nodejs
