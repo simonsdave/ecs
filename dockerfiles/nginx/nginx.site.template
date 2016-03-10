@@ -45,10 +45,10 @@
 # iptables (https://help.ubuntu.com/community/IptablesHowTo)
 #
 limit_req_zone $binary_remote_addr zone=docs_per_ip_rate_limit:1m rate=10r/s;
-limit_req_zone $binary_remote_addr zone=tasks_per_ip_rate_limit:100k rate=1r/s;
+limit_req_zone $binary_remote_addr zone=api_per_ip_rate_limit:100k rate=1r/s;
 
 limit_conn_zone $binary_remote_addr zone=docs_per_ip_conn_limit:1m;
-limit_conn_zone $binary_remote_addr zone=tasks_per_ip_conn_limit:100k;
+limit_conn_zone $binary_remote_addr zone=api_per_ip_conn_limit:100k;
 
 server {
     listen 80;
@@ -99,8 +99,8 @@ server {
 }
 
 server {
-    limit_req zone=tasks_per_ip_rate_limit;
-    limit_conn tasks_per_ip_conn_limit 25;
+    limit_req zone=api_per_ip_rate_limit;
+    limit_conn api_per_ip_conn_limit 25;
 
     listen          443 ssl;
     server_name     %API_DOMAIN_NAME%;
