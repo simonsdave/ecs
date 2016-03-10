@@ -23,6 +23,8 @@ Fine grained list of to do's in order to make ```ecs``` production ready
     * https://www.digitalocean.com/community/tutorials/how-to-set-up-http-authentication-with-nginx-on-ubuntu-12-10
 * rate limit based on key - see nginx variable
 [$remote_user](http://nginx.org/en/docs/http/ngx_http_core_module.html#var_remote_user)
+* deploy across multiple GCE zones
+* [enable iptables](https://www.jimmycuadra.com/posts/securing-coreos-with-iptables/)
 * root CA on Ubuntu when using TLS/SSL certs from SSLs.com
 * add instrumentation using ?DataDog? ?SignalFX?
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
