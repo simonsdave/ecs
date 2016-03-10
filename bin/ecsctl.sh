@@ -236,6 +236,7 @@ deployment_create_cloud_config() {
     local DOCS_KEY=${4:-}
     local API_CERT=${5:-}
     local API_KEY=${6:-}
+    local API_CREDENTIALS=${7:-}
 
     local CLOUD_CONFIG=$(platform_safe_mktemp)
     local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
@@ -252,16 +253,18 @@ deployment_create_cloud_config() {
     cat "$SED_SCRIPT_1" | sed -e 's/&/\\\&/g' > "$SED_SCRIPT_2"
     cat "$CLOUD_CONFIG_TEMPLATE" | sed -f "$SED_SCRIPT_2" > "$CLOUD_CONFIG"
 
-    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %API_CERT% "$API_CERT"
-    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %API_KEY% "$API_KEY"
+    deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_CERT% "$API_CERT"
+    deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_KEY% "$API_KEY"
 
-    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %DOCS_CERT% "$DOCS_CERT"
-    deployment_insert_cert_or_key_into_cloud_config "$CLOUD_CONFIG" %DOCS_KEY% "$DOCS_KEY"
+    deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %DOCS_CERT% "$DOCS_CERT"
+    deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %DOCS_KEY% "$DOCS_KEY"
+
+    deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_CREDENTIALS% "$API_CREDENTIALS"
 
     echo $CLOUD_CONFIG
 }
 
-deployment_insert_cert_or_key_into_cloud_config() { 
+deployment_indent_and_insert_file_into_cloud_config() { 
     local CLOUD_CONFIG=${1:-}
     local VARIABLE=${2:-}
     local CERT_OR_KEY=${3:-}
@@ -375,8 +378,8 @@ deployment_cmd() {
     shift
     case "$COMMAND" in
         CR|CREATE)
-            if [ $# != 6 ]; then
-                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key>"
+            if [ $# != 7 ]; then
+                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key> <api_credentials>"
                 exit 1
             fi
 
@@ -429,12 +432,26 @@ creds_cmd() {
     do
         local KEY=$(python -c "import uuid; print uuid.uuid4().hex")
         local SECRET=$(python -c "import binascii; import os; print binascii.b2a_hex(os.urandom(128/8))")
+        #
         # -b = batch
-        # -B = bcrypt for password encryption
-        # -C = # of bcrypt rounds (default 4; valid = 4 thru 31)
+        #
+        # wanted to use bcrypt to hash secrets so the htpasswd command would be 
+        #
+        #   htpasswd -b -B -C 12 "$DOT_HTPASSWD" $KEY $SECRET > /dev/null 2>&1
+        #
+        # where
+        #
+        #   -B = bcrypt for password encryption
+        #   -C = # of bcrypt rounds (default 4; valid = 4 thru 31)
+        #
+        # but when using bcrypt nginx generated errors (in nginx error log) like
+        #
+        #   crypt_r() failed (22: Invalid argument)
+        #
         # :TODO: don't like swallowing stderr but couldn't find another
         # way to surpress htpasswd's output
-        htpasswd -b -B -C 12 "$DOT_HTPASSWD" $KEY $SECRET > /dev/null 2>&1
+        #
+        htpasswd -b "$DOT_HTPASSWD" $KEY $SECRET > /dev/null 2>&1
         echo "$KEY:$SECRET"
     done 
 }

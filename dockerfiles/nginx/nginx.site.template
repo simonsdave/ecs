@@ -14,6 +14,10 @@
 #   /etc/nginx/ssl/api.crt
 #   /etc/nginx/ssl/api.key
 #
+# also, it's is expected that /etc/nginx/.htpasswd be volume mapped
+# to a file with keys & secrets used to perform authentication
+# against non-API-doc requests.
+#
 
 #
 # http://nginx.org/en/docs/http/ngx_http_limit_req_module.html
@@ -45,6 +49,13 @@ limit_req_zone $binary_remote_addr zone=tasks_per_ip_rate_limit:100k rate=1r/s;
 
 limit_conn_zone $binary_remote_addr zone=docs_per_ip_conn_limit:1m;
 limit_conn_zone $binary_remote_addr zone=tasks_per_ip_conn_limit:100k;
+
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+    server_tokens off;
+}
 
 server {
     listen          80;
@@ -107,6 +118,9 @@ server {
     server_tokens off;
 
     location / {
+
+        auth_basic "Restricted";
+        auth_basic_user_file /etc/nginx/.htpasswd;
 
         proxy_pass            http://tasks;
         proxy_read_timeout    10m;

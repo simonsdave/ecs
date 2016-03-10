@@ -115,7 +115,7 @@ coreos:
         ExecStartPre=-/usr/bin/docker kill nginx
         ExecStartPre=-/usr/bin/docker rm nginx
         ExecStartPre=/usr/bin/docker pull simonsdave/ecs-nginx
-        ExecStart=/usr/bin/docker run --name=nginx -p 80:80 -p 443:443 --link apidocs:apidocs --link tasks:tasks -v /etc/ssl/certs/%DOCS_DOMAIN%.crt:/etc/nginx/ssl/docs.crt  -v /etc/ssl/certs/%DOCS_DOMAIN%.key:/etc/nginx/ssl/docs.key -v /etc/ssl/certs/%API_DOMAIN%.crt:/etc/nginx/ssl/api.crt -v /etc/ssl/certs/%API_DOMAIN%.key:/etc/nginx/ssl/api.key simonsdave/ecs-nginx nginx.sh %DOCS_DOMAIN% %API_DOMAIN%
+        ExecStart=/usr/bin/docker run --name=nginx -p 80:80 -p 443:443 --link apidocs:apidocs --link tasks:tasks -v /etc/ssl/certs/%DOCS_DOMAIN%.crt:/etc/nginx/ssl/docs.crt  -v /etc/ssl/certs/%DOCS_DOMAIN%.key:/etc/nginx/ssl/docs.key -v /etc/ssl/certs/%API_DOMAIN%.crt:/etc/nginx/ssl/api.crt -v /etc/ssl/certs/%API_DOMAIN%.key:/etc/nginx/ssl/api.key -v /.ecs/api_credentials:/etc/nginx/.htpasswd simonsdave/ecs-nginx nginx.sh %DOCS_DOMAIN% %API_DOMAIN%
         ExecStop=/usr/bin/docker stop nginx
 
         [X-Fleet]
@@ -141,6 +141,11 @@ write_files:
     permissions: 0644
     content: |
       %API_KEY%
+  - path: /.ecs/api_credentials
+    owner: root:root
+    permissions: 0644
+    content: |
+      %API_CREDENTIALS%
   - path: /.ecs/config
     owner: root:root
     permissions: 0644

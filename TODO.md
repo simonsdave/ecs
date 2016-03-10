@@ -15,22 +15,31 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
 * [limit "size" of acceptable inbound payload](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
+* error detecting image not found
+    * ```curl -v -X POST "http://172.17.42.1:2375/images/create?fromImage=xubuntu&tag=latest"```
+```json
+{
+  "docker_image": "xubuntu",
+  "tag": "latest",
+  "cmd": [
+    "date"
+  ]
+}
+```
+    * ```curl -v -s -u $KEY:$SECRET -X POST -H "Content-Type: application/json" --data-binary @echo.json $ECS_ENDPOINT/v1.0/tasks``` will result in ```500 Internal Server Error``` rather than ```404 Not Found```
 
 ## Operations
 
-* use basic auth implemented in nginx
-    * http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
-    * https://www.digitalocean.com/community/tutorials/how-to-set-up-http-authentication-with-nginx-on-ubuntu-12-10
+* put 'correct' TLS configuration in nginx
 * rate limit based on key - see nginx variable
 [$remote_user](http://nginx.org/en/docs/http/ngx_http_core_module.html#var_remote_user)
 * deploy across multiple GCE zones
 * [enable iptables](https://www.jimmycuadra.com/posts/securing-coreos-with-iptables/)
-* root CA on Ubuntu when using TLS/SSL certs from SSLs.com
+* 401 from api domain should return json doc rather than HTML
 * add instrumentation using ?DataDog? ?SignalFX?
+* root CA on Ubuntu when using TLS/SSL certs from SSLs.com
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
 and [Pingdom](https://www.pingdom.com/)
-* add iptables rate limiting - why?
-* put 'correct' TLS configuration in nginx
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * document operational processes 
 

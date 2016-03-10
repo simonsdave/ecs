@@ -27,7 +27,16 @@ documentation:
       The ECS does not persist any data.
 
       ##### Authentication
-      ...
+      All requests (except API doc requests) into an ECS deployment
+      must pass BASIC authentication against a key & secret. Keys & secrets
+      are configured when a deployment is created.
+      ```ecsctl.sh``` is typically used to generate keys & secrets.
+      Keys are [UUIDs](https://docs.python.org/2/library/uuid.html#uuid.uuid4).
+      Secrets are are 128-bit random numbers generated using
+      [/dev/urandom](http://en.wikipedia.org/wiki//dev/urandom)
+      (via Python's [os.urandom()](https://docs.python.org/2/library/os.html#os-miscfunc)).
+      After secrets are generated, only a
+      hashed version of the secrets is written to disk.
 
       ##### Authorization
       The ECS is intended to be used a low level, utility service
@@ -69,6 +78,9 @@ documentation:
         you should be able to copy and paste all the sample requests
         regardless of the ip/port on which ```ephemeral_container_service.py```
         is listening.
+      * in the examples you'll see ```-u $KEY:$SECRET``` on cURL
+        command line; the ```KEY``` & ```SECRET``` environment variables refer to
+        the authentication key and secret described <a href="#Security">here</a>
 
 /tasks:
   displayName: Tasks
@@ -79,7 +91,7 @@ documentation:
       Create and execute a task.
 
       ##### Authentication
-        * None
+        * BASIC authentication using key and secret as described <a href="#Security">here</a>
 
       ##### Performance Expectations
         * 99% of the time &lt;&nbsp;nnn ms
@@ -100,6 +112,7 @@ documentation:
       }
       >curl \
         -s \
+        -u $KEY:$SECRET \
         -X POST \
         -H "Content-Type: application/json" \
         --data-binary @echo.json \
@@ -141,6 +154,12 @@ documentation:
       400:
         description:
           Bad request.
+      401:
+        description:
+          Authentication failed.
+      404:
+        description:
+          Docker image not found.
 
 /_version:
   displayName: Version
@@ -153,14 +172,14 @@ documentation:
       version number in the body.
 
       ##### Authentication
-        * None
+        * BASIC authentication using key and secret as described <a href="#Security">here</a>
 
       ##### Performance Expectations
         * 99% of the time &lt;&nbsp;50&nbsp;ms
 
       ##### Example
       ```bash
-      >curl -s $ECS_ENDPOINT/v1.0/_version | jq
+      >curl -s -u $KEY:$SECRET $ECS_ENDPOINT/v1.0/_version | jq
       {
         "version": "0.8.0",
         "links": {
@@ -174,7 +193,11 @@ documentation:
     responses:
       200:
         description:
-          200 OK is always returned by this endpoint.
+          Assuming authentication is successful, 200 OK is always
+          returned by this endpoint.
+      401:
+        description:
+          Authentication failed.
 
 
 /_noop:
@@ -190,7 +213,7 @@ documentation:
       and complete a request/response roundtrip.
 
       ##### Authentication
-        * None
+        * BASIC authentication using key and secret as described <a href="#Security">here</a>
 
       ##### Performance Expectations
         * 99% of the time &lt;&nbsp;50&nbsp;ms
@@ -199,6 +222,7 @@ documentation:
       ```bash
       >curl \
         -s \
+        -u $KEY:$SECRET \
         -o /dev/null \
         -w %{http_code}\\n \
         $ECS_ENDPOINT/v1.0/_noop
@@ -208,7 +232,11 @@ documentation:
     responses:
       200:
         description:
+          Assuming authentication is successful,
           200 OK is always returned by this endpoint.
+      401:
+        description:
+          Authentication failed.
 
 /_health:
   displayName: Health
@@ -234,7 +262,7 @@ documentation:
       health check is performed.
 
       ##### Authentication
-        * None (for now)
+        * BASIC authentication using key and secret as described <a href="#Security">here</a>
 
       ##### Usage Expectations
         * the external monitoring service will perform a quick health check every minute
@@ -258,6 +286,7 @@ documentation:
       ```bash
       >curl \
         -s \
+        -u $KEY:$SECRET \
         $ECS_ENDPOINT/v1.0/_health?quick=false | \
         jq
       {
@@ -293,6 +322,9 @@ documentation:
       200:
         description:
           When everything is green a 200 OK is returned.
+      401:
+        description:
+          Authentication failed.
       500:
         description:
           something super nasty happened inside the service

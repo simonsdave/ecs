@@ -23,14 +23,43 @@ the [Google Developer Console](https://console.developers.google.com/project)
 
 ## Choose Domain Names
 
-* for api and docs
+* choose 2 x domain names - (i) api & (ii) docs
+* for example, [Cloudfeaster](https://github.com/simonsdave/cloudfeaster)
+uses ECS and deploys it to
+the ```api.ecs.cloudfeaster.com``` and ```docs.ecs.cloudfeaster.com```
+domains
+
+## Create API Credentials
+
+* if you've already got a previously generated set of credentials then
+you can use them
+* if you need to generate credentials
+
+```bash
+> ecsctl.sh creds 5
+Putting hashed credentials in new file '/home/vagrant/ecs/.htpasswd'
+ed662dd52ae74ffd8a39a9c83938cfc8:e81e499c9062e25fb49083038f080721
+1133cea55a2348f5a3fcddbad0fc6d80:8a7c79fcbda71a6bcbcdb07d12ed0c52
+5fe9f24b3a1c460fae70eb3cf422c6ef:11dba5a17fc12cf5ccb32777d6532b68
+b87cb745f4db4e19a87706642950a405:d8839a6de7aa99879850b2a2271422fb
+c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
+>
+```
 
 ## Spin up a deployment
 
 * ...
 
 ```bash
-> ./ecsctl.sh -v dep create docs.ecs.cloudfeaster.com api.ecs.cloudfeaster.com /vagrant/docs.ecs.cloudfeaster.com.crt /vagrant/docs.ecs.cloudfeaster.com.key /vagrant/api.ecs.cloudfeaster.com.crt /vagrant/api.ecs.cloudfeaster.com.key
+> ecsctl.sh \
+    -v dep create \
+    docs.ecs.cloudfeaster.com \
+    api.ecs.cloudfeaster.com \
+    /vagrant/docs.ecs.cloudfeaster.com.crt \
+    /vagrant/docs.ecs.cloudfeaster.com.key \
+    /vagrant/api.ecs.cloudfeaster.com.crt \
+    /vagrant/api.ecs.cloudfeaster.com.key \
+    /home/vagrant/ecs/.htpasswd
 >
 ```
 
