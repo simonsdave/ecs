@@ -172,6 +172,9 @@ documentation:
       404:
         description:
           Docker image not found.
+      503:
+        description:
+          You've probably tripped a rate limiting rule.
 
 /_version:
   displayName: Version
@@ -210,7 +213,9 @@ documentation:
       401:
         description:
           Authentication failed.
-
+      503:
+        description:
+          You've probably tripped a rate limiting rule.
 
 /_noop:
   displayName: NoOp
@@ -244,11 +249,15 @@ documentation:
     responses:
       200:
         description:
-          Assuming authentication is successful,
+          Assuming authentication is successful and you
+          don't trip a rate limiting rule,
           200 OK is always returned by this endpoint.
       401:
         description:
           Authentication failed.
+      503:
+        description:
+          You've probably tripped a rate limiting rule.
 
 /_health:
   displayName: Health
@@ -342,4 +351,5 @@ documentation:
           something super nasty happened inside the service
       503:
         description:
-          When something is red a 503 service unavailable is returned.
+          When something is red a 503 service unavailable is returned
+          or you've tripped a rate limiting rule.
