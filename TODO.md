@@ -15,9 +15,9 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
 * [limit "size" of acceptable inbound payload](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
-* error detecting image not found
-    * ```curl -v -X POST "http://172.17.42.1:2375/images/create?fromImage=xubuntu&tag=latest"```
-```json
+* error detecting image not found; getting ```500 Internal Server Error``` rather than the expected```404 Not Found```
+```bash
+>cat echo.json
 {
   "docker_image": "xubuntu",
   "tag": "latest",
@@ -25,8 +25,9 @@ Fine grained list of to do's in order to make ```ecs``` production ready
     "date"
   ]
 }
+>curl -v -s -u $KEY:$SECRET -X POST -H "Content-Type: application/json" --data-binary @echo.json $ECS_ENDPOINT/v1.0/tasks
 ```
-    * ```curl -v -s -u $KEY:$SECRET -X POST -H "Content-Type: application/json" --data-binary @echo.json $ECS_ENDPOINT/v1.0/tasks``` will result in ```500 Internal Server Error``` rather than ```404 Not Found```
+* convert integration tests to deployment sanity tests
 
 ## Operations
 
