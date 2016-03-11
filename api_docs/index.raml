@@ -55,6 +55,18 @@ documentation:
       add this ```/_noop``` time to the performance expectation described in the
       API docs.
 
+  - title: Rate Limiting
+    content: |
+      Each ECS node in the cluster implements a set of rate limiting rules
+      for the ```docs``` and ```api``` domains. The rules are:
+
+      | Rule               | ```docs``` | ```api``` |
+      |--------------------|:----------:|:---------:|
+      | req / sec / key    | NA         | 5         |
+      | req / sec / IP     | 10         | 10        |
+      | connections / key  | NA         | 25        |
+      | connections / IP   | 10         | 5         |
+
   - title: Scaling
     content: |
       The ECS runs on a cluster of [CoreOS](https://coreos.com/) machines
@@ -62,7 +74,7 @@ documentation:
       Each node in the cluster runs the ECS service and schedules tasks
       on that node.
       From an ECS point of view, there are no dependancies between nodes and
-      as such the ECS cluster is intended to scale horizontally to accommadate
+      as such the ECS cluster is intended to scale horizontally to accommodate
       a broad variety of workloads.
 
   - title: Endpoint Documentation Conventions
@@ -252,7 +264,7 @@ documentation:
       is healthy and "red" if there's a problem.
       The "details" property of the JSON document contains a red/green style health entry
       for each service's components.
-      The overall health is "red" if any of the dependant services are unhealthy.
+      The overall health is "red" if any of the dependent services are unhealthy.
 
       Two types of health check are possible. A quick health check
       does not confirm the health of all service components and will

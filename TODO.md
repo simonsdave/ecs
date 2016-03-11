@@ -48,16 +48,12 @@ and [Pingdom](https://www.pingdom.com/)
   after responding to the invoker of ```AsyncEndToEndContainerRunner``` - this should eliminate
   ~1 second overhead introduced by ```ecs```
 
-## Documenation
-
-* add rating limiting capability in API docs
-
 ## Stability
 
 * (long running) load/stress test
 * write some integration tests for private repos
 
-## API Documentation
+## Documentation
 
 * add actual performance expectations numbers
 
