@@ -32,7 +32,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 * put 'correct' TLS configuration in nginx
 * deploy across multiple GCE zones
-* [enable iptables](https://www.jimmycuadra.com/posts/securing-coreos-with-iptables/)
 * 401 from api domain should return json doc rather than HTML
 * GCE forwarding rule should do health checks on nodes
 * add instrumentation using ?DataDog? ?SignalFX?
