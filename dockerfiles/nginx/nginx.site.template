@@ -23,6 +23,10 @@
 # http://nginx.org/en/docs/http/ngx_http_limit_req_module.html
 # binary ip address = 4-bytes (see http://nginx.org/en/docs/http/ngx_http_limit_conn_module.html)
 # so a 1k zone can store 1024 / 4 = 256 entries
+#
+# we also impose rate limit per key where each key is 32 bytes.
+# so (1024 * 1024) / 32 = 32,768 so 32,768 keys per 1MB
+#
 # assuming round-robin layer 5 (tcp) load balancing in front of
 # each machine frontend'ed with this nginx instance, think of
 # these resource limits as applying just to this one machine so
@@ -44,11 +48,14 @@
 # commerical version. so, it's probably better to look toward
 # iptables (https://help.ubuntu.com/community/IptablesHowTo)
 #
+
 limit_req_zone $binary_remote_addr zone=docs_per_ip_rate_limit:1m rate=10r/s;
 limit_req_zone $binary_remote_addr zone=api_per_ip_rate_limit:100k rate=1r/s;
+limit_req_zone $remote_user zone=api_per_key_rate_limit:1m rate=5r/s;
 
 limit_conn_zone $binary_remote_addr zone=docs_per_ip_conn_limit:1m;
 limit_conn_zone $binary_remote_addr zone=api_per_ip_conn_limit:100k;
+limit_conn_zone $remote_user zone=api_per_key_conn_limit:1m;
 
 server {
     listen 80;
@@ -100,7 +107,9 @@ server {
 
 server {
     limit_req zone=api_per_ip_rate_limit;
-    limit_conn api_per_ip_conn_limit 25;
+    limit_req zone=api_per_key_rate_limit;
+    limit_conn api_per_ip_conn_limit 5;
+    limit_conn api_per_key_conn_limit 25;
 
     listen          443 ssl;
     server_name     %API_DOMAIN_NAME%;

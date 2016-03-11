@@ -31,8 +31,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 ## Operations
 
 * put 'correct' TLS configuration in nginx
-* rate limit based on key - see nginx variable
-[$remote_user](http://nginx.org/en/docs/http/ngx_http_core_module.html#var_remote_user)
 * deploy across multiple GCE zones
 * [enable iptables](https://www.jimmycuadra.com/posts/securing-coreos-with-iptables/)
 * 401 from api domain should return json doc rather than HTML
