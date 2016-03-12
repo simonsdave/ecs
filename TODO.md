@@ -14,7 +14,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
-* [limit "size" of acceptable inbound payload](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
 * error detecting image not found; getting ```500 Internal Server Error``` rather than the expected```404 Not Found```
 ```bash
 >cat echo.json

@@ -55,10 +55,11 @@ documentation:
       add this ```/_noop``` time to the performance expectation described in the
       API docs.
 
-  - title: Rate Limiting
+  - title: Request and Rate Limiting
     content: |
-      Each ECS node in the cluster implements a set of rate limiting rules
-      for the ```docs``` and ```api``` domains. The rules are:
+      Each ECS node in the cluster implements a set of request and rate
+      limiting rules for the ```docs``` and ```api``` domains.
+      The rules are:
 
       | Rule               | ```docs``` | ```api``` |
       |--------------------|:----------:|:---------:|
@@ -66,6 +67,7 @@ documentation:
       | req / sec / IP     | 10         | 10        |
       | connections / key  | NA         | 25        |
       | connections / IP   | 10         | 5         |
+      | max request size   | 1K         | 5K        |
 
   - title: Scaling
     content: |
