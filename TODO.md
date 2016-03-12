@@ -37,6 +37,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
 and [Pingdom](https://www.pingdom.com/)
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
+* where does Network Intrustion Detection and Host Intrustion Detection fit?
 * document operational processes 
 
 ## Performance
