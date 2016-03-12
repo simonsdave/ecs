@@ -73,7 +73,6 @@ server {
 server {
     limit_req zone=docs_per_ip_rate_limit;
     limit_conn docs_per_ip_conn_limit 10;
-    client_max_body_size 1k;
 
     listen          443 ssl;
     server_name     %API_DOCS_DOMAIN_NAME%;
