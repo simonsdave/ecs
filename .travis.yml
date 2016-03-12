@@ -9,7 +9,7 @@ install:
 script:
   - pep8
   - flake8
-  - tor_async_util_nosetests.py -A "not integration" -A "not sanity" --with-coverage --cover-branches --cover-erase --cover-package ecs
+  - tor_async_util_nosetests.py -A "not integration" --with-coverage --cover-branches --cover-erase --cover-package ecs
   - coveralls
   - python setup.py sdist --formats=gztar
 #  - ./api_docs/build-api-docs.sh -t
