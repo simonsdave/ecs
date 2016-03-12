@@ -26,7 +26,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 }
 >curl -v -s -u $KEY:$SECRET -X POST -H "Content-Type: application/json" --data-binary @echo.json $ECS_ENDPOINT/v1.0/tasks
 ```
-* convert integration tests to deployment sanity tests
 
 ## Operations
 
