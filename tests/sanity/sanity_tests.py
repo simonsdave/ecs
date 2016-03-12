@@ -1,7 +1,6 @@
 """A collection of sanity tests for an ECS deployment
 that's already been spun up.
 """
-import base64
 import httplib
 import os
 import unittest

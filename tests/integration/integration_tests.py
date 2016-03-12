@@ -13,7 +13,6 @@ import unittest
 
 from nose.plugins.attrib import attr
 from tor_async_util.nose_plugins import FileCapture
-import mock
 import requests
 
 import ecs
