@@ -23,6 +23,12 @@ documentation:
       Layer 5 load balancing is required because [nginx](http://nginx.org)
       is used to terminate SSL/TLS on each node in the cluster.
 
+      Note - ECS nodes host both the api and docs domains on a single IP
+      with 2 distinct SSL/TLS certificates. Clients making requests into an ECS
+      deployment should support
+      [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) to ensure
+      the correct SSL/TLS certificate is used.
+
       ##### At-rest
       The ECS does not persist any data.
 
