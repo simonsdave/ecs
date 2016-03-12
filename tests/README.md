@@ -2,8 +2,14 @@
 
 ## [Integration](integration)
 
-Integration tests verify end-to-end functional correctness
-of a deployment that's spun up entirely on the local machine.
+Integration tests spin up a deployment entirely on the local
+machine and verify end-to-end functional correctness
+of the deployment.
+
+## [Sanity](sanity)
+
+Sanity tests verify end-to-end functional correctness
+of a cloud hosted ECS deployment.
 
 ## [Performance](performance)
 

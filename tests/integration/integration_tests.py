@@ -13,6 +13,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 from tor_async_util.nose_plugins import FileCapture
+import mock
 import requests
 
 import ecs
@@ -28,8 +29,10 @@ class ServiceConfig(object):
     def __init__(self):
         object.__init__(self)
 
-        self.ip = '127.0.0.1'
-        self.port = 8448
+        self._ip = '127.0.0.1'
+        self._port = 8448
+
+        self.endpoint = 'http://%s:%d' % (self._ip, self._port)
 
         self.filename = None
 
@@ -39,8 +42,8 @@ class ServiceConfig(object):
         cp = ConfigParser()
         cp.add_section(section)
 
-        cp.set(section, 'ip', self.ip)
-        cp.set(section, 'port', self.port)
+        cp.set(section, 'ip', self._ip)
+        cp.set(section, 'port', self._port)
         cp.set(section, 'log_level', 'info')
         cp.set(section, 'max_concurrent_executing_http_requests', '250')
         cp.set(section, 'docker_remote_api', 'http://172.17.42.1:4243')
@@ -86,10 +89,7 @@ class Service(object):
             preexec_fn=os.setsid,
         )
 
-        url = 'http://%s:%d/v1.0/_noop' % (
-            self.service_config.ip,
-            self.service_config.port,
-        )
+        url = '%s/v1.0/_noop' % self.service_config.endpoint
         for i in range(0, 10):
             try:
                 response = requests.get(url)
@@ -110,14 +110,20 @@ class Service(object):
             self._process = None
 
 
-@attr('integration')
 class IntegrationTestCase(unittest.TestCase):
     """An abstract base class for all integration tests."""
 
     def setup_env_and_run_func(self, the_test_func):
-        with ServiceConfig() as service_config:
-            with Service(service_config):
-                the_test_func(service_config)
+        endpoint = os.environ.get('ECS_ENDPOINT', None)
+        if endpoint:
+            key = os.environ.get('ECS_KEY', None)
+            secret = os.environ.get('ECS_SECRET', None)
+            auth = requests.auth.HTTPBasicAuth(key, secret) if key and secret else None
+            the_test_func(endpoint, auth)
+        else:
+            with ServiceConfig() as service_config:
+                with Service(service_config):
+                    the_test_func(service_config.endpoint, None)
 
 
 @attr('integration')
@@ -125,12 +131,9 @@ class NoOpTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_noop endpoint."""
 
     def test_happy_path(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/_noop' % (
-                service_config.ip,
-                service_config.port,
-            )
-            response = requests.get(url)
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/_noop' % endpoint
+            response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
         self.setup_env_and_run_func(the_test)
@@ -141,12 +144,9 @@ class VersionTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_version endpoint."""
 
     def test_happy_path_no_quick_arg(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/_version' % (
-                service_config.ip,
-                service_config.port,
-            )
-            response = requests.get(url)
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/_version' % endpoint
+            response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
             expected_response = {
@@ -167,45 +167,33 @@ class HealthTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_health endpoint."""
 
     def test_happy_path_no_quick_arg(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/_health' % (
-                service_config.ip,
-                service_config.port,
-            )
-            response = requests.get(url)
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/_health' % endpoint
+            response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
         self.setup_env_and_run_func(the_test)
 
     def test_happy_path_quick_arg_is_true(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/_health?quick=true' % (
-                service_config.ip,
-                service_config.port,
-            )
-            response = requests.get(url)
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/_health?quick=true' % endpoint
+            response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
         self.setup_env_and_run_func(the_test)
 
     def test_happy_path_quick_arg_is_false(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/_health?quick=false' % (
-                service_config.ip,
-                service_config.port,
-            )
-            response = requests.get(url)
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/_health?quick=false' % endpoint
+            response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
         self.setup_env_and_run_func(the_test)
 
     def test_happy_path_quick_arg_is_not_boolean(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/_health?quick=dave' % (
-                service_config.ip,
-                service_config.port,
-            )
-            response = requests.get(url)
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/_health?quick=dave' % endpoint
+            response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.BAD_REQUEST)
 
         self.setup_env_and_run_func(the_test)
@@ -216,10 +204,9 @@ class TasksTestCase(IntegrationTestCase):
     """A collection of integration tests for the /_tasks endpoint."""
 
     def _test_happy_path_with_simple_echo(self, trailing_slash):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/tasks%s' % (
-                service_config.ip,
-                service_config.port,
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/tasks%s' % (
+                endpoint,
                 '/' if trailing_slash else '',
             )
             body = {
@@ -230,7 +217,7 @@ class TasksTestCase(IntegrationTestCase):
                     'hello world',
                 ],
             }
-            response = requests.post(url, json=body)
+            response = requests.post(url, auth=auth, json=body)
             self.assertEqual(response.status_code, httplib.CREATED)
             json_response_body = response.json()
             self.assertEqual(json_response_body['exitCode'], 0)
@@ -250,11 +237,8 @@ class TasksTestCase(IntegrationTestCase):
         self._test_happy_path_with_simple_echo(trailing_slash=False)
 
     def test_non_zero_exit_code(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/tasks' % (
-                service_config.ip,
-                service_config.port,
-            )
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/tasks' % endpoint
             exit_code = 1
             body = {
                 'docker_image': 'ubuntu',
@@ -265,7 +249,7 @@ class TasksTestCase(IntegrationTestCase):
                     'exit %d' % exit_code,
                 ]
             }
-            response = requests.post(url, json=body)
+            response = requests.post(url, auth=auth, json=body)
             self.assertEqual(response.status_code, httplib.CREATED)
             json_response_body = response.json()
             self.assertEqual(json_response_body['exitCode'], exit_code)
@@ -275,11 +259,8 @@ class TasksTestCase(IntegrationTestCase):
         self.setup_env_and_run_func(the_test)
 
     def test_unknown_docker_image(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/tasks' % (
-                service_config.ip,
-                service_config.port,
-            )
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/tasks' % endpoint
             body = {
                 'docker_image': 'bindle/berry',
                 'tag': 'latest',
@@ -288,17 +269,14 @@ class TasksTestCase(IntegrationTestCase):
                     'dave was here',
                 ]
             }
-            response = requests.post(url, json=body)
+            response = requests.post(url, auth=auth, json=body)
             self.assertEqual(response.status_code, httplib.NOT_FOUND)
 
         self.setup_env_and_run_func(the_test)
 
     def test_invalid_docker_image_name(self):
-        def the_test(service_config):
-            url = 'http://%s:%d/v1.0/tasks' % (
-                service_config.ip,
-                service_config.port,
-            )
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/tasks' % endpoint
             body = {
                 'docker_image': 'IMAGE_NAME_IS_INVALID',
                 'tag': 'latest',
@@ -307,13 +285,13 @@ class TasksTestCase(IntegrationTestCase):
                     'dave was here',
                 ]
             }
-            response = requests.post(url, json=body)
+            response = requests.post(url, auth=auth, json=body)
             self.assertEqual(response.status_code, httplib.NOT_FOUND)
 
         self.setup_env_and_run_func(the_test)
 
     def test_bad_request_body(self):
-        def the_test(service_config):
+        def the_test(endpoint, auth):
             bodies = [
                 {
                     'tag': 'latest',
@@ -343,11 +321,8 @@ class TasksTestCase(IntegrationTestCase):
                 },
             ]
             for body in bodies:
-                url = 'http://%s:%d/v1.0/tasks' % (
-                    service_config.ip,
-                    service_config.port,
-                )
-                response = requests.post(url, json=body)
+                url = '%s/v1.0/tasks' % endpoint
+                response = requests.post(url, auth=auth, json=body)
                 self.assertEqual(response.status_code, httplib.BAD_REQUEST)
 
         self.setup_env_and_run_func(the_test)
