@@ -85,7 +85,10 @@ coreos:
         ExecStartPre=-/usr/bin/docker kill apidocs
         ExecStartPre=-/usr/bin/docker rm apidocs
         ExecStartPre=/usr/bin/docker pull simonsdave/ecs-apidocs
-        ExecStart=/usr/bin/docker run --name=apidocs simonsdave/ecs-apidocs nginx
+        ExecStart=/usr/bin/docker run \
+          --name=apidocs \
+          simonsdave/ecs-apidocs \
+          nginx
         ExecStop=/usr/bin/docker stop apidocs
 
         [X-Fleet]
@@ -103,7 +106,11 @@ coreos:
         ExecStartPre=-/usr/bin/docker kill tasks
         ExecStartPre=-/usr/bin/docker rm tasks
         ExecStartPre=/usr/bin/docker pull simonsdave/ecs-services
-        ExecStart=/usr/bin/docker run --name=tasks -v /.ecs/config:/root/.ecs/config simonsdave/ecs-services ephemeral_container_service.py
+        ExecStart=/usr/bin/docker run \
+          --name=tasks \
+          -v /.ecs/config:/root/.ecs/config \
+          simonsdave/ecs-services \
+          ephemeral_container_service.py
         ExecStop=/usr/bin/docker stop tasks
 
         [X-Fleet]
@@ -121,7 +128,20 @@ coreos:
         ExecStartPre=-/usr/bin/docker kill nginx
         ExecStartPre=-/usr/bin/docker rm nginx
         ExecStartPre=/usr/bin/docker pull simonsdave/ecs-nginx
-        ExecStart=/usr/bin/docker run --name=nginx -p 80:80 -p 443:443 --link apidocs:apidocs --link tasks:tasks -v /etc/ssl/certs/%DOCS_DOMAIN%.crt:/etc/nginx/ssl/docs.crt  -v /etc/ssl/certs/%DOCS_DOMAIN%.key:/etc/nginx/ssl/docs.key -v /etc/ssl/certs/%API_DOMAIN%.crt:/etc/nginx/ssl/api.crt -v /etc/ssl/certs/%API_DOMAIN%.key:/etc/nginx/ssl/api.key -v /.ecs/api_credentials:/etc/nginx/.htpasswd simonsdave/ecs-nginx nginx.sh %DOCS_DOMAIN% %API_DOMAIN%
+        ExecStart=/usr/bin/docker run \
+          --name=nginx \
+          -p 80:80 \
+          -p 443:443 \
+          --link apidocs:apidocs \
+          --link tasks:tasks \
+          -v /etc/ssl/dhparam.pem:/etc/nginx/ssl/dhparam.pem \
+          -v /etc/ssl/certs/%DOCS_DOMAIN%.crt:/etc/nginx/ssl/docs.crt \
+          -v /etc/ssl/certs/%DOCS_DOMAIN%.key:/etc/nginx/ssl/docs.key \
+          -v /etc/ssl/certs/%API_DOMAIN%.crt:/etc/nginx/ssl/api.crt \
+          -v /etc/ssl/certs/%API_DOMAIN%.key:/etc/nginx/ssl/api.key \
+          -v /.ecs/api_credentials:/etc/nginx/.htpasswd \
+          simonsdave/ecs-nginx \
+          nginx.sh %DOCS_DOMAIN% %API_DOMAIN%
         ExecStop=/usr/bin/docker stop nginx
 
         [X-Fleet]
@@ -147,6 +167,11 @@ write_files:
     permissions: 0644
     content: |
       %API_KEY%
+  - path: /etc/ssl/dhparam.pem
+    owner: root:root
+    permissions: 0644
+    content: |
+      %DHPARAM_PEM%
   - path: /.ecs/api_credentials
     owner: root:root
     permissions: 0644

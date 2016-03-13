@@ -17,17 +17,48 @@ the [Google Developer Console](https://console.developers.google.com/project)
 
 * ```gcloud config set compute/zone us-central1-a```
 
-## Create SSL/TLS certs
-
-* create api and docs SSL/TLS certs
-
 ## Choose Domain Names
 
-* choose 2 x domain names - (i) api & (ii) docs
+* choose 2 x domain names - (i) api & (ii) docs - ECS has been tested
+assuming domain names will be of the form ```api.ecs.yourservice.yourdomain.com```
+and ```docs.ecs.yourservice.yourdmain.com```
 * for example, [Cloudfeaster](https://github.com/simonsdave/cloudfeaster)
 uses ECS and deploys it to
 the ```api.ecs.cloudfeaster.com``` and ```docs.ecs.cloudfeaster.com```
 domains
+
+## Create SSL/TLS Certificates
+
+* create SSL/TLS certs for the 2 x previously choosen domain names
+
+## Create Strong(er) DHE Parameter
+
+* see [this](https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html#Forward_Secrecy_&_Diffie_Hellman_Ephemeral_Parameters)
+for reference
+* previously generated DHE parameters may be used when 
+spinning up the deployment ie you don't always need to
+generate the parameters
+* the command below took about 3 minutes to run on Mac OS X
+with a 2.5 GHz Intel Core i5
+
+```bash
+>cd /vagrant
+>openssl dhparam -out dhparam.pem 4096
+>cat dhparam.pem
+-----BEGIN DH PARAMETERS-----
+MIICCAKCAgEAkwqgBasqm+j+kD4DzB6xgTOUbpJHKpERP/roeQQG+PHV5sGSDc5T
+9Ngy/pp2py9xFz4ZmbS9zSW9pLdUYvmUTSJyaGWgotzEuwKX8gQLR+GbcEC1MVwy
+X9BSpKyxbUjSUWijVLEg0WMS8pui6rTnk0R/Z0GIbpNYdVdXHEm6pUwDuw6j6QhD
+qqIyH72/DmR9PiNLWZJT8Vq6LecUw8EGXqQNpkl5zCukW594wwjsJqUtWtb8/sDs
+sRqNX1Sw8BRrXkJHuQKKUCUhUTZH+bsOBxl71ntZdnWPtS/w7hSlKnTPk3M/N3P4
+mM9vvSjk2F37vnaWMrs5rkkI7rhNB5FNMkPvGBk637IBV5UvZ0y1pRxZ4CjJj/m4
+mbmf/3lkor4jXgpeXVbHPgwEGb3sHAlvFaiaW+XhDbUiblGxkyM0boy7SQX6GDlL
+u5TWtnrXp553qtGFnxfvD4tDv5J8SFPmGDy+uVEA6qYemYnKJyUaL17ra/G8TCA6
+wGSZYla/xC1nxN/gFJd9g+6IdUpx987OqM1WxzobEyi6MZ0HDjBSfgoHfXgiG2IB
+enOCulU7Pzj3vU4Do/CDFrUr6ld4frCOrnCX1lSYkl1zZfC3s2SzX9oRbvdgzv5m
+ZiqH+qwj8aOZLDmsngLLe8/8GO7YUYX/rapcw1PQpwrHixjltX83utMCAQI=
+-----END DH PARAMETERS-----
+```
 
 ## Create API Credentials
 
@@ -51,15 +82,16 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
 * ...
 
 ```bash
-> ecsctl.sh \
+>ecsctl.sh \
     -v dep create \
     docs.ecs.cloudfeaster.com \
     api.ecs.cloudfeaster.com \
-    /vagrant/docs.ecs.cloudfeaster.com.crt \
+    /vagrant/docs.ecs.cloudfeaster.com.ssl.bundle.crt \
     /vagrant/docs.ecs.cloudfeaster.com.key \
-    /vagrant/api.ecs.cloudfeaster.com.crt \
+    /vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt \
     /vagrant/api.ecs.cloudfeaster.com.key \
-    /home/vagrant/ecs/.htpasswd
+    /home/vagrant/ecs/.htpasswd \
+    /vagrant/dhparam.pem
 >
 ```
 
@@ -70,7 +102,15 @@ should be used in the ```ecsctl.sh dep create``` command instead of the standalo
 
 ## Configure DNS
 
-* ...
+* when ```ecsctl.sh``` runs an IP address is generated; this IP
+address is for the Forwarding Rule (load balancer) sitting in
+front of the ECS cluster
+* configure DNS with 2 x A records for the 2 x previously choosen
+domains to point to the Forwarding Rule's IP address
+* the screen shot below illustrates how [GoDaddy](https://www.godaddy.com/)
+is used to configure Cloudfeaster's ECS DNS settings 
+
+![GoDaddy Cloudfeaster DNS](images/godaddy-cloudfeaster.png)
 
 ## Exploring Endpoints
 

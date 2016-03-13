@@ -29,6 +29,13 @@ documentation:
       [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) to ensure
       the correct SSL/TLS certificate is used.
 
+      Note - SSL/TLS configuration derived from
+      [Mozilla's Security/Server Side TLS](https://wiki.mozilla.org/Security/Server_Side_TLS)
+      using ```nginx``` and ```modern``` settings.
+      This may have client implications.
+      For example, only ```TLSv1.2``` is supported so older clients
+      may struggle to establish an SSL/TLS connection.
+
       ##### At-rest
       The ECS does not persist any data.
 

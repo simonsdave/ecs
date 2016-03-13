@@ -237,6 +237,7 @@ deployment_create_cloud_config() {
     local API_CERT=${5:-}
     local API_KEY=${6:-}
     local API_CREDENTIALS=${7:-}
+    local DHPARAM_PEM=${8:-}
 
     local CLOUD_CONFIG=$(platform_safe_mktemp)
     local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
@@ -260,6 +261,7 @@ deployment_create_cloud_config() {
     deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %DOCS_KEY% "$DOCS_KEY"
 
     deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_CREDENTIALS% "$API_CREDENTIALS"
+    deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %DHPARAM_PEM% "$DHPARAM_PEM"
 
     echo $CLOUD_CONFIG
 }
@@ -378,8 +380,8 @@ deployment_cmd() {
     shift
     case "$COMMAND" in
         CR|CREATE)
-            if [ $# != 7 ]; then
-                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key> <api_credentials>"
+            if [ $# != 8 ]; then
+                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key> <api_credentials> <dhparam>"
                 exit 1
             fi
 
