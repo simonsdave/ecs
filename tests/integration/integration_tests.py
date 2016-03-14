@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import time
 import unittest
+import uuid
 
 from nose.plugins.attrib import attr
 from tor_async_util.nose_plugins import FileCapture
@@ -254,6 +255,33 @@ class TasksTestCase(IntegrationTestCase):
             self.assertEqual(json_response_body['exitCode'], exit_code)
             self.assertEqual(json_response_body['stdout'].strip(), '')
             self.assertEqual(json_response_body['stderr'].strip(), '')
+
+        self.setup_env_and_run_func(the_test)
+
+    def test_stdout_and_stderr_output(self):
+        def the_test(endpoint, auth):
+            url = '%s/v1.0/tasks' % endpoint
+            stdout = uuid.uuid4().hex
+            stderr = uuid.uuid4().hex
+            body = {
+                'docker_image': 'ubuntu',
+                'tag': 'latest',
+                'cmd': [
+                    'bash',
+                    '-c',
+                    'echo %s > /dev/stdout && echo %s > /dev/stderr' % (stdout, stderr)
+                ]
+            }
+            response = requests.post(url, auth=auth, json=body)
+            self.assertEqual(response.status_code, httplib.CREATED)
+            json_response_body = response.json()
+            print ">>>%s<<<" % json_response_body
+            self.assertEqual(
+                base64.b64decode(json_response_body['stdout']).strip(),
+                stdout)
+            self.assertEqual(
+                base64.b64decode(json_response_body['stderr']).strip(),
+                stderr)
 
         self.setup_env_and_run_func(the_test)
 

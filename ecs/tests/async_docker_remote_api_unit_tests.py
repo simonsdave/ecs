@@ -43,11 +43,14 @@ class AsyncHttpClientFetchPatcher(Patcher):
         chunks = kwargs.get('chunks', [])
 
         def fetch_patch(*args, **kwargs):
-            streaming_callback = args[1].streaming_callback
+            request = args[1]
+            streaming_callback = request.streaming_callback
             for chunk in chunks:
                 streaming_callback(chunk)
 
-            kwargs['callback'](self._responses.pop(0))
+            response = self._responses.pop(0)
+            response.effective_url = request.url
+            kwargs['callback'](response)
 
         patcher = mock.patch(
             'tornado.httpclient.AsyncHTTPClient.fetch',
@@ -285,6 +288,32 @@ class AsyncImagePullTestCase(unittest.TestCase):
             request=mock.Mock(method='GET'))
         chunks = [
             'Invalid repository name (%s), only [a-z0-9-_.] are allowed\n' % docker_image,
+        ]
+        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
+            callback = mock.Mock()
+            aip = AsyncImagePull(
+                docker_image=docker_image,
+                tag=tag,
+                email=uuid.uuid4().hex,
+                username=uuid.uuid4().hex,
+                password=uuid.uuid4().hex)
+            aip.pull(callback)
+            callback.assert_called_once_with(True, False, aip)
+            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
+
+    def test_image_not_found_cannot_connect_to_registry(self):
+        docker_image = uuid.uuid4().hex
+        tag = uuid.uuid4().hex
+
+        response = mock.Mock(
+            code=httplib.INTERNAL_SERVER_ERROR,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        chunks = [
+            'random stuff "no such host" other random stuff'
         ]
         with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
             callback = mock.Mock()
@@ -614,14 +643,23 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
         self.assertTrue(acl.async_state is async_state)
 
     def test_container_not_found(self):
-        response = mock.Mock(
-            code=httplib.NOT_FOUND,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response=response):
+        responses = [
+            mock.Mock(
+                code=httplib.NOT_FOUND,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+            mock.Mock(
+                code=httplib.NOT_FOUND,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+        ]
+        with AsyncHttpClientFetchPatcher(responses=responses):
             callback = mock.Mock()
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)
@@ -631,14 +669,23 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
                 type(acl).FFD_CONTAINER_NOT_FOUND)
 
     def test_error_on_fetch(self):
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response=response):
+        responses = [
+            mock.Mock(
+                code=httplib.INTERNAL_SERVER_ERROR,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+            mock.Mock(
+                code=httplib.INTERNAL_SERVER_ERROR,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+        ]
+        with AsyncHttpClientFetchPatcher(responses=responses):
             callback = mock.Mock()
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)
@@ -651,16 +698,23 @@ class AsyncContainerLogsTestCase(unittest.TestCase):
         header = '-' * 8
         stdout = 'something'
         stderr = 'out'
-        # :TODO: sort out the stderr thing
-        stderr = ''
-        response = mock.Mock(
-            code=httplib.OK,
-            body=header + stdout + stderr,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response=response):
+        responses = [
+            mock.Mock(
+                code=httplib.OK,
+                body=header + stdout,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+            mock.Mock(
+                code=httplib.OK,
+                body=header + stderr,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+        ]
+        with AsyncHttpClientFetchPatcher(responses=responses):
             callback = mock.Mock()
             acl = AsyncContainerLogs(container_id=uuid.uuid4().hex)
             acl.fetch(callback)

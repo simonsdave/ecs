@@ -135,6 +135,16 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
     def _on_chunk(self, chunk):
+        _logger.info('_on_chunk(): >>>%s<<<' % chunk)
+        #
+        # network connectivity can generate a "no such host" error
+        # that we'll choose to interpret as the requested image could
+        # not be found
+        #
+        if 'no such host' in chunk:
+            self._image_not_found = True
+            return
+
         #
         # the not found error will be raised by the docker remote
         # API under one of two conditions 1/ the image really can't
@@ -428,12 +438,20 @@ class AsyncContainerLogs(tor_async_util.AsyncAction):
     See API reference
 
         https://docs.docker.com/engine/reference/api/docker_remote_api_v1.18/#get-container-logs
+
+    The implementation of this method is more complex that it should be
+    because I was too lazy to figure out how to interpret the 8-byte header
+    in the response.
+
+    content type = application/octet-stream
+    see https://github.com/docker/docker/issues/8223
     """
 
     # FFD = Delete Failure Details
     FFD_OK = 0x0000
     FFD_ERROR = 0x0080
-    FFD_CONTAINER_NOT_FOUND = 0x0001
+    FFD_SOFT_ERROR = 0x0040
+    FFD_CONTAINER_NOT_FOUND = FFD_SOFT_ERROR | 0x0001
     FFD_ERROR_FETCHING_CONTAINER_LOGS = FFD_ERROR | 0x0002
 
     def __init__(self, container_id, async_state=None):
@@ -444,14 +462,22 @@ class AsyncContainerLogs(tor_async_util.AsyncAction):
         self.fetch_failure_detail = None
 
         self._callback = None
+        self._stdout = None
+        self._stderr = None
 
     def fetch(self, callback):
         assert self._callback is None
         self._callback = callback
 
-        url = '%s/containers/%s/logs?stdout=1&stderr=1&timestamps=0&tail=all' % (
+        self._fetch_logs(True, False)
+        self._fetch_logs(False, True)
+
+    def _fetch_logs(self, stdout, stderr):
+        url = '%s/containers/%s/logs?stdout=%d&stderr=%d&timestamps=0&tail=all' % (
             remote_docker_api_endpoint,
             self.container_id,
+            1 if stdout else 0,
+            1 if stderr else 0,
         )
         request = tornado.httpclient.HTTPRequest(
             url,
@@ -474,16 +500,21 @@ class AsyncContainerLogs(tor_async_util.AsyncAction):
             self._call_callback(type(self).FFD_ERROR_FETCHING_CONTAINER_LOGS)
             return
 
-        # :TODO: sort out what's stderr and what's stdout
-
-        # content type = application/octet-stream
-        # https://github.com/docker/docker/issues/8223
-        self._call_callback(type(self).FFD_OK, response.body[8:], '')
+        self._call_callback(
+            type(self).FFD_OK,
+            response.body[8:] if 'stdout=1' in response.effective_url else None,
+            response.body[8:] if 'stderr=1' in response.effective_url else None)
 
     def _call_callback(self, fetch_failure_detail, stdout=None, stderr=None):
-        assert self._callback is not None
-        assert self.fetch_failure_detail is None
+        if self._callback is None:
+            return
+
+        self._stdout = stdout if stdout is not None else self._stdout
+        self._stderr = stderr if stderr is not None else self._stderr
+
         self.fetch_failure_detail = fetch_failure_detail
         is_ok = not bool(self.fetch_failure_detail & type(self).FFD_ERROR)
-        self._callback(is_ok, stdout, stderr, self)
-        self._callback = None
+        is_soft_error = bool(self.fetch_failure_detail & type(self).FFD_SOFT_ERROR)
+        if not is_ok or is_soft_error or (self._stdout is not None and self._stderr is not None):
+            self._callback(is_ok, self._stdout, self._stderr, self)
+            self._callback = None

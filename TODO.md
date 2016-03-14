@@ -4,14 +4,9 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ## Functional
 
+### Required
+
 * ephemeral_container_service.py -> ecs.py
-* improve feedback on bad request response
-  * CID style + log aggregation / access
-  * include errors in response
-* sort out ```AsyncContainerLogs``` correctly fetching stdout & stderr
-  using a single call to the Docker Remote API - think this mostly comes
-  down to sorting out how to interpret the 8-byte header in the response
-  from the Docker Remote API
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
@@ -28,28 +23,49 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 >curl -v -s -u $KEY:$SECRET -X POST -H "Content-Type: application/json" --data-binary @echo.json $ECS_ENDPOINT/v1.0/tasks
 ```
 
+### Nice to Have
+
+* improve feedback on bad request response
+  * CID style + log aggregation / access
+  * include errors in response
+
 ## Operations
+
+### Required
 
 * ecsctl.sh should spin up multiple ECS nodes
 * ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * 401 from api domain should return json doc rather than HTML
 * GCE forwarding rule should do health checks on nodes
 * add instrumentation using [SignalFX](https://signalfx.com/)
+* add log aggregation
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
-and [Pingdom](https://www.pingdom.com/)
+  and [Pingdom](https://www.pingdom.com/)
   * [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
   * [Cachet API for adding metrics](https://docs.cachethq.io/docs/get-metric-points)
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
-* where does Network Intrustion Detection and Host Intrustion Detection fit?
 * document operational processes 
     * how to upgrade existing ECS cluster with new service code
     * how to increase and decrease size of ECS cluster
 
+### Nice to Have
+
+* where does Network Intrustion Detection and Host Intrustion Detection fit?
+
 ## Performance
+
+### Required
+
+* ...
+
+### Nice to Have
 
 * ```AsyncEndToEndContainerRunner``` should delete container using ```AsyncContainerDelete```
   after responding to the invoker of ```AsyncEndToEndContainerRunner``` - this should eliminate
   ~1 second overhead introduced by ```ecs```
+* ```AsyncContainerLogs``` makes 2 requests to the Docker Remote API - to
+  retrieve stdout and stderr - really should only need to do that once but
+  can't seem to figure out this 8-byte header
 
 ## Stability
 
@@ -58,7 +74,11 @@ and [Pingdom](https://www.pingdom.com/)
 
 ## Documentation
 
-* add actual performance expectations numbers
+* need some overview diagrams in the API docs
+  * 2-tier - LB in-front of ECS cluster
+  * request servicing pipeline
+* add actual performance expectation numbers in API docs
+* $KEY and $SECRET in API docs should be $ECS_KEY and $ECS_SECRET
 
 ## CI / CD
 
