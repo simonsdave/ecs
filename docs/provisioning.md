@@ -90,7 +90,7 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
     /vagrant/docs.ecs.cloudfeaster.com.key \
     /vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt \
     /vagrant/api.ecs.cloudfeaster.com.key \
-    /home/vagrant/ecs/.htpasswd \
+    /vagrant/.htpasswd \
     /vagrant/dhparam.pem
 >
 ```
