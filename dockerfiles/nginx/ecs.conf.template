@@ -58,13 +58,6 @@ limit_conn_zone $binary_remote_addr zone=api_per_ip_conn_limit:100k;
 limit_conn_zone $remote_user zone=api_per_key_conn_limit:1m;
 
 server {
-    listen 80;
-    root /usr/share/nginx/html;
-    index index.html index.htm;
-    server_tokens off;
-}
-
-server {
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name %API_DOCS_DOMAIN_NAME%;
