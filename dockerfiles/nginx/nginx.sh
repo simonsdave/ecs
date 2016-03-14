@@ -18,10 +18,10 @@ fi
 API_DOCS_DOMAIN_NAME=${1:-}
 API_DOMAIN_NAME=${2:-}
 
-cat /etc/nginx/sites-available/default.template | \
+cat /etc/nginx/conf.d/ecs.conf.template | \
     sed -e "s|%API_DOCS_DOMAIN_NAME%|$API_DOCS_DOMAIN_NAME|g" | \
     sed -e "s|%API_DOMAIN_NAME%|$API_DOMAIN_NAME|g" > \
-    /etc/nginx/sites-available/default
+    /etc/nginx/conf.d/ecs.conf
 
 #
 # configuration is good to go! time to start nginx:-)

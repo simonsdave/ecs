@@ -19,11 +19,28 @@ FROM ubuntu:14.04
 MAINTAINER Dave Simons
 
 RUN apt-get update -y
-RUN apt-get install -y nginx
 RUN apt-get install -y curl
 
+#
+# install nginx per these instructions
+#
+#   http://nginx.org/en/linux_packages.html
+#
+# without the first 5 instructions version 1.4.6 of nginx
+# is installed by "apt-get install nginx"
+#
+RUN apt-get install wget -y
+RUN wget -q -O- http://nginx.org/keys/nginx_signing.key | apt-key add -
+RUN echo "deb http://nginx.org/packages/mainline/ubuntu/ trusty nginx" >> /etc/apt/sources.list
+RUN echo "deb-src http://nginx.org/packages/mainline/ubuntu/ trusty nginx" >> /etc/apt/sources.list
+RUN apt-get update -y
+RUN apt-get install nginx -y
+
+#
+# configure nginx
+#
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-ADD nginx.site.template /etc/nginx/sites-available/default.template
+ADD ecs.conf.template /etc/nginx/conf.d/ecs.conf.template
 ADD nginx.sh /usr/local/bin/nginx.sh
 RUN mkdir -p /etc/nginx/ssl
 
