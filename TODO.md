@@ -4,6 +4,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ## Functional
 
+* ephemeral_container_service.py -> ecs.py
 * improve feedback on bad request response
   * CID style + log aggregation / access
   * include errors in response
@@ -41,6 +42,8 @@ and [Pingdom](https://www.pingdom.com/)
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
 * document operational processes 
+    * how to upgrade existing ECS cluster with new service code
+    * how to increase and decrease size of ECS cluster
 
 ## Performance
 
