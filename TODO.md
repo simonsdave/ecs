@@ -33,9 +33,11 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * 401 from api domain should return json doc rather than HTML
 * GCE forwarding rule should do health checks on nodes
-* add instrumentation using ?DataDog? ?SignalFX?
+* add instrumentation using [SignalFX](https://signalfx.com/)
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
 and [Pingdom](https://www.pingdom.com/)
+  * [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
+  * [Cachet API for adding metrics](https://docs.cachethq.io/docs/get-metric-points)
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
 * document operational processes 
