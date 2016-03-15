@@ -11,6 +11,10 @@ the instructions below the project will be called ```ecs```
 * enable the ```compute engine API``` in
 the [Google Developer Console](https://console.developers.google.com/project)
 
+* ```gcloud config configurations create ecs```
+
+* ```gcloud config configurations activate ecs```
+
 * ```gcloud auth login```
 
 * ```gcloud config set project ecs```
