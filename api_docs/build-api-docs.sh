@@ -89,14 +89,14 @@ rm -f "$SCRIPT_DIR_NAME/*.html"
 for FILENAME in $SCRIPT_DIR_NAME/*.raml; do FILENAME=$(basename "$FILENAME"); html_to_raml ${FILENAME%.*}; done
 
 if [ "$DEPLOY_API_DOCS" == "1" ]; then
-    sudo mkdir -p "$DEPLOYMENT_DIR/images"
-    sudo cp -r "$SCRIPT_DIR_NAME/images" "$DEPLOYMENT_DIR"
+    sudo mkdir -p "$DEPLOYMENT_DIR/static"
+    sudo cp -r "$SCRIPT_DIR_NAME/static" "$DEPLOYMENT_DIR"
 
     echo "Find API docs @ http://127.0.0.1:$(cat /etc/nginx/sites-enabled/default | grep listen | sed -e 's|^\s*listen\s*||g' | sed -e 's|\s*;\s*$||g')"
 fi
 
 if [ "$CREATE_TAR_FILE" == "1" ]; then
     pushd "$SCRIPT_DIR_NAME" > /dev/null
-    tar cvf api_docs.tar *.html images
+    tar cvf api_docs.tar *.html static
     popd > /dev/null
 fi

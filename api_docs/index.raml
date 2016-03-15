@@ -37,9 +37,14 @@ documentation:
       may struggle to establish an SSL/TLS connection.
       To verify/evaluate the SSL/TLS configuration for an ECS
       deployment try using [Qualys' SSL Server Test](https://www.ssllabs.com/ssltest/).
-      What you should see from the Qualys assessment is something like the report below.
+      Below is a sample Qualys report for ```api.ecs.cloudfeaster.com```.
 
-      <img src="images/qualys-ssl-labs-api-ecs-cloudfeaster-com-assessment.png" align="middle" height="412" width="712"/>
+      <a href="static/qualys-ssl-labs-api-ecs-cloudfeaster-com-assessment.pdf">
+        <img src="static/qualys-ssl-labs-api-ecs-cloudfeaster-com-assessment.png" align="middle" height="412" width="712"/>
+      </a>
+
+      FYI - [here's](https://www.ssllabs.com/downloads/SSL_Server_Rating_Guide.pdf)
+      a paper which describes how Qualys calculates its rating of your SSL/TLS configuration.
 
       ##### At-rest
       The ECS does not persist any data.
