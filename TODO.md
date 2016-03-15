@@ -49,6 +49,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Nice to Have
 
+* automate godaddy DNS provisioning as per [this API spec](https://developer.godaddy.com/doc)
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
 
 ## Performance
