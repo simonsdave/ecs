@@ -76,10 +76,10 @@ class Service(object):
 
     def __enter__(self):
         self._stdout_file = tempfile.mktemp()
-        FileCapture.watch(self._stdout_file, 'ephemeral_container_service.py stdout')
+        FileCapture.watch(self._stdout_file, 'ecservice.py stdout')
 
         cmd = [
-            'ephemeral_container_service.py',
+            'ecservice.py',
             '--config=%s' % self.service_config.filename,
         ]
         self._process = subprocess.Popen(

@@ -20,7 +20,7 @@ docker_remote_api=http://172.17.42.1:4243
     --name=tasks \
     -v ~/.ecs/config:/root/.ecs/config \
     simonsdave/ecs-services \
-    ephemeral_container_service.py
+    ecservice.py
 >sudo docker run \
     --name=nginx \
     -p 9000:80 \

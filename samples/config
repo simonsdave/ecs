@@ -3,9 +3,9 @@
 #
 
 #
-# configuration for the ephemeral_container_service.py service
+# configuration for the ecservice.py service
 #
-# instructions to create ephemeral_container_service.py config tar file
+# instructions to create ecservice.py config tar file
 #
 #   >cd ~/.ecs
 #   >tar cvf ecs_config.tar *
@@ -15,7 +15,7 @@
 #   Uploading   gs://ecs-config/ecs_config.tar:                   2.5 KiB/2.5 KiB
 #   >
 #
-# create signed url to ephemeral_container_service.py config tar
+# create signed url to ecservice.py config tar
 # file sitting on google cloud storage bucket
 #
 #   >gsutil signurl -p notasecret -d 10m ~/Downloads/*.p12 gs://ecs-config/ecs_config.tar

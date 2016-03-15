@@ -4,7 +4,7 @@
 #
 # to run the image
 #
-#   sudo docker run -d --name=tasks simonsdave/ecs-services ephemeral_container_service.py
+#   sudo docker run -d --name=tasks simonsdave/ecs-services ecservice.py
 #
 # for testing/debugging
 #

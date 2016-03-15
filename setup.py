@@ -41,7 +41,7 @@ setup(
         'ecs',
     ],
     scripts=[
-        'bin/ephemeral_container_service.py',
+        'bin/ecservice.py',
     ],
     install_requires=[
         # using tornado.curl_httpclient.CurlAsyncHTTPClient

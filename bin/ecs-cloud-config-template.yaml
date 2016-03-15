@@ -110,7 +110,7 @@ coreos:
           --name=tasks \
           -v /.ecs/config:/root/.ecs/config \
           simonsdave/ecs-services \
-          ephemeral_container_service.py
+          ecservice.py
         ExecStop=/usr/bin/docker stop tasks
 
         [X-Fleet]

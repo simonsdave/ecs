@@ -6,7 +6,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* ephemeral_container_service.py -> ecs.py
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
