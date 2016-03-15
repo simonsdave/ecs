@@ -97,17 +97,6 @@ documentation:
       >
       ```
 
-  - title: Performance
-    content: |
-      In the API docs you'll notice a *Performance Expectations* section for
-      endpoint operations. These performance expectations describe the expected
-      time to perform the requested operation **after** the request has reached
-      the service code which implements the operation. In order to estimate expected
-      time to perform an operation from your infrastructure, record the time it
-      takes to send repeated requests to the ```/_noop``` endpoint and
-      add this ```/_noop``` time to the performance expectation described in the
-      API docs.
-
   - title: Request and Rate Limiting
     content: |
       Each node in an ECS cluster implements a set of request and rate
@@ -121,6 +110,17 @@ documentation:
       | connections / key  | N/A        | 25        |
       | connections / IP   | 10         | 5         |
       | max request size   | N/A        | 5K        |
+
+  - title: Performance
+    content: |
+      In the API docs you'll notice a *Performance Expectations* section for
+      endpoint operations. These performance expectations describe the expected
+      time to perform the requested operation **after** the request has reached
+      the service code which implements the operation. In order to estimate expected
+      time to perform an operation from your infrastructure, record the time it
+      takes to send repeated requests to the ```/_noop``` endpoint and
+      add this ```/_noop``` time to the performance expectation described in the
+      API docs.
 
   - title: Scaling
     content: |
