@@ -125,6 +125,17 @@ class IntegrationTestCase(unittest.TestCase):
                 with Service(service_config):
                     the_test_func(service_config.endpoint, None)
 
+    def avoid_rate_limiting_and_sleep_one_second(self):
+        if os.environ.get('ECS_ENDPOINT', None):
+            one_second = 1.0
+            time.sleep(one_second)
+
+    def setUp(self):
+        self.avoid_rate_limiting_and_sleep_one_second()
+
+    def tearDown(self):
+        pass
+
 
 @attr('integration')
 class NoOpTestCase(IntegrationTestCase):
@@ -348,6 +359,7 @@ class TasksTestCase(IntegrationTestCase):
                 },
             ]
             for body in bodies:
+                self.avoid_rate_limiting_and_sleep_one_second()
                 url = '%s/v1.0/tasks' % endpoint
                 response = requests.post(url, auth=auth, json=body)
                 self.assertEqual(response.status_code, httplib.BAD_REQUEST)
