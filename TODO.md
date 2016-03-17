@@ -32,7 +32,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* ecsctl.sh should spin up multiple ECS nodes
 * ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * 401 from api domain should return json doc rather than HTML
 * GCE forwarding rule should do health checks on nodes

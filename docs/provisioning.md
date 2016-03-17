@@ -83,7 +83,7 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
 
 ## Spin up a deployment
 
-* ...
+* the command below spins up a 3-node ECS cluster
 
 ```bash
 >ecsctl.sh \
@@ -95,7 +95,8 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
     /vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt \
     /vagrant/api.ecs.cloudfeaster.com.key \
     /vagrant/.htpasswd \
-    /vagrant/dhparam.pem
+    /vagrant/dhparam.pem \
+    3
 >
 ```
 

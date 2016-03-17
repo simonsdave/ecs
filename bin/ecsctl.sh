@@ -238,11 +238,12 @@ deployment_create_cloud_config() {
     local API_KEY=${6:-}
     local API_CREDENTIALS=${7:-}
     local DHPARAM_PEM=${8:-}
+    local NUMBER_OF_NODES=${9:-}
 
     local CLOUD_CONFIG=$(platform_safe_mktemp)
     local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
 
-    local DISCOVERY_TOKEN=$(curl -s 'https://discovery.etcd.io/new?size=1')
+    local DISCOVERY_TOKEN=$(curl -s "https://discovery.etcd.io/new?size=$NUMBER_OF_NODES")
 
     # this sed mess is required because URLs may contain the & character
     # which is interpreted in a special manner by the "s" command:-(
@@ -340,11 +341,18 @@ deployment_delete_node() {
 deployment_create() {
     echo_if_verbose "Creating Deployment" "yellow"
 
-    local CLOUD_CONFIG=$(deployment_create_cloud_config "$@")
-
     deployment_create_network
 
-    deployment_create_node "$CLOUD_CONFIG"
+    local CLOUD_CONFIG=$(deployment_create_cloud_config "$@")
+    local NUMBER_OF_NODES=${9:-}
+
+    for i in `seq 1 $NUMBER_OF_NODES`;
+    do
+        deployment_create_node "$CLOUD_CONFIG"
+    done
+
+    exit 0
+
 }
 
 deployment_inspect() {
@@ -380,8 +388,8 @@ deployment_cmd() {
     shift
     case "$COMMAND" in
         CR|CREATE)
-            if [ $# != 8 ]; then
-                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key> <api_credentials> <dhparam>"
+            if [ $# != 9 ]; then
+                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key> <api_credentials> <dhparam> <number_of_nodes>"
                 exit 1
             fi
 
