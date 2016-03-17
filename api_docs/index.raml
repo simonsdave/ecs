@@ -145,8 +145,8 @@ documentation:
         you should be able to copy and paste all the sample requests
         regardless of the ip/port on which ```ecservice.py```
         is listening.
-      * in the examples you'll see ```-u $KEY:$SECRET``` on cURL
-        command line; the ```KEY``` & ```SECRET``` environment variables refer to
+      * in the examples you'll see ```-u $ECS_KEY:$ECS_SECRET``` on cURL
+        command line; the ```ECS_KEY``` & ```ECS_SECRET``` environment variables refer to
         the authentication key and secret described <a href="#Security">here</a>
 
 /tasks:
@@ -179,7 +179,7 @@ documentation:
       }
       >curl \
         -s \
-        -u $KEY:$SECRET \
+        -u $ECS_KEY:$ECS_SECRET \
         -X POST \
         -H "Content-Type: application/json" \
         --data-binary @echo.json \
@@ -254,7 +254,7 @@ documentation:
 
       ##### Example
       ```bash
-      >curl -s -u $KEY:$SECRET $ECS_ENDPOINT/v1.0/_version | jq
+      >curl -s -u $ECS_KEY:$ECS_SECRET $ECS_ENDPOINT/v1.0/_version | jq
       {
         "version": "0.8.0",
         "links": {
@@ -299,7 +299,7 @@ documentation:
       ```bash
       >curl \
         -s \
-        -u $KEY:$SECRET \
+        -u $ECS_KEY:$ECS_SECRET \
         -o /dev/null \
         -w %{http_code}\\n \
         $ECS_ENDPOINT/v1.0/_noop
@@ -367,7 +367,7 @@ documentation:
       ```bash
       >curl \
         -s \
-        -u $KEY:$SECRET \
+        -u $ECS_KEY:$ECS_SECRET \
         $ECS_ENDPOINT/v1.0/_health?quick=false | \
         jq
       {

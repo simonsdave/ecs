@@ -49,7 +49,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Nice to Have
 
-* automate godaddy DNS provisioning as per [this API spec](https://developer.godaddy.com/doc)
+* automate GoDaddy DNS provisioning as per [this API spec](https://developer.godaddy.com/doc)
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
 
 ## Performance
@@ -78,7 +78,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   * 2-tier - LB in-front of ECS cluster
   * request servicing pipeline
 * add actual performance expectation numbers in API docs
-* $KEY and $SECRET in API docs should be $ECS_KEY and $ECS_SECRET
 
 ## CI / CD
 
