@@ -120,16 +120,40 @@ is used to configure Cloudfeaster's ECS DNS settings
 ## Exploring Endpoints
 
 ```bash
-> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1 | jq
-> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/random | jq
-> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0 | jq
-> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_health | jq
-> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_health?quick=false | jq
-> curl --insecure -s -v -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop | jq
+>curl -u $ECS_KEY:$ECS_SECRET -s 'https://api.ecs.cloudfeaster.com/v1.0/_health?quick=false' | jq
+{
+  "status": "green",
+  "details": {
+    "docker remote api": {
+      "status": "green",
+      "details": {
+        "connectivity": "green",
+        "api version": "green"
+      }
+    }
+  },
+  "links": {
+    "self": {
+      "href": "https://api.ecs.cloudfeaster.com/v1.0/_health"
+    }
+  }
+}
 ```
 
 ## Exploring Rate Limiting
+
 ```bash
-> sudo apt-get install -y apache2-utils
-> for i in `seq 100`; do sleep .25; curl -o /dev/null -s -w %{http_code}\\n --insecure -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1/v1.0/_noop; done
+>sudo apt-get install -y apache2-utils
+```
+
+Assume a 3-node ECS cluster this should all be fine.
+
+```bash
+>for i in `seq 100`; do curl -o /dev/null -s -w %{http_code}\\n -u $ECS_KEY:$ECS_SECRET -s 'https://api.ecs.cloudfeaster.com/v1.0/_noop'; done
+```
+
+Now target a single node in the ECS cluster and we should see 503s.
+
+```bash
+>for i in `seq 100`; do curl -o /dev/null -s -w %{http_code}\\n --insecure -u $ECS_KEY:$ECS_SECRET -H 'Host: api.ecs.cloudfeaster.com' 'https://104.197.39.251/v1.0/_noop'; done
 ```
