@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# this script spins up a Cloudfeaster Infrastructure deployment
-# on the Google Compute Cloud
+# this script spins up an ECS deployment
+# in the Google Compute Cloud
 #
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
@@ -12,13 +12,6 @@ UNSECURED_TRAFFIC_FIREWALL_RULE_NAME=allow-non-tls-traffic
 
 SECURED_TRAFFIC_PORT=443
 SECURED_TRAFFIC_FIREWALL_RULE_NAME=allow-tls-traffic
-
-# defines the number of nodes in the cluster
-#
-# note - there's an 8 CPU quota on Google Compute Cloud projects (you
-# can request this quote be changed) - just need to make sure we don't
-# exceed this quota
-NUMBER_NODES=1
 
 # note - see note associated with NUMBER_NODES on how choosing
 # this machine type needs to be done with consideration of the entire
@@ -183,6 +176,9 @@ delete_forwarding_rule() {
 }
 
 deployment_create_network() {
+    echo_if_verbose "Adjusting Default Network's Firewall Rules" "blue"
+    delete_firewall_rule default-allow-rdp
+
     echo_if_verbose "Creating Firewall Rules" "blue"
     create_firewall_rules
 

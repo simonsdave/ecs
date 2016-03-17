@@ -117,6 +117,85 @@ is used to configure Cloudfeaster's ECS DNS settings
 
 ![GoDaddy Cloudfeaster DNS](images/godaddy-cloudfeaster.png)
 
+## Verifying Firewall Configuration
+
+```bash
+>gcloud compute firewall-rules list
+NAME                                         NETWORK SRC_RANGES    RULES                        SRC_TAGS TARGET_TAGS
+allow-non-tls-traffic                        default 0.0.0.0/0     tcp:80                                node
+allow-tls-traffic                            default 0.0.0.0/0     tcp:443                               node
+cloudfeaster-services-dev-allow-http-traffic default 0.0.0.0/0     tcp:80                                cloudfeaster-services-dev
+default-allow-icmp                           default 0.0.0.0/0     icmp
+default-allow-internal                       default 10.240.0.0/16 tcp:1-65535,udp:1-65535,icmp
+default-allow-ssh                            default 0.0.0.0/0     tcp:22
+>
+```
+
+```bash
+>gcloud compute instances list
+NAME                                      ZONE          MACHINE_TYPE  PREEMPTIBLE INTERNAL_IP EXTERNAL_IP     STATUS
+ecs-node-3d38b33504694180b19e6bc863657e29 us-central1-a n1-standard-2             10.240.0.2  104.197.39.251  RUNNING
+ecs-node-691257fece694e38822e8bd7faeaf536 us-central1-a n1-standard-2             10.240.0.4  104.197.233.110 RUNNING
+ecs-node-e21b7ec97abf43f3b442f4288819b9dc us-central1-a n1-standard-2             10.240.0.3  104.197.77.133  RUNNING
+>
+```
+
+```bash
+>gcloud compute instances create nmap --image ubuntu-14-04
+```
+
+```bash
+>gcloud compute ssh nmap
+```
+
+```bash
+>sudo apt-get install nmap -y
+```
+
+```bash
+>nmap 104.197.77.133
+nmap 104.197.77.133
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2016-03-17 10:39 UTC
+Nmap scan report for 133.77.197.104.bc.googleusercontent.com (104.197.77.133)
+Host is up (0.0016s latency).
+Not shown: 997 filtered ports
+PORT    STATE SERVICE
+22/tcp  open  ssh
+80/tcp  open  http
+443/tcp open  https
+
+Nmap done: 1 IP address (1 host up) scanned in 4.94 seconds
+```
+
+```bash
+>nmap -v 104.197.77.133
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2016-03-17 10:38 UTC
+Initiating Ping Scan at 10:38
+Scanning 104.197.77.133 [2 ports]
+Completed Ping Scan at 10:38, 0.00s elapsed (1 total hosts)
+Initiating Parallel DNS resolution of 1 host. at 10:38
+Completed Parallel DNS resolution of 1 host. at 10:38, 0.00s elapsed
+Initiating Connect Scan at 10:38
+Scanning 133.77.197.104.bc.googleusercontent.com (104.197.77.133) [1000 ports]
+Discovered open port 443/tcp on 104.197.77.133
+Discovered open port 22/tcp on 104.197.77.133
+Discovered open port 80/tcp on 104.197.77.133
+Completed Connect Scan at 10:38, 4.91s elapsed (1000 total ports)
+Nmap scan report for 133.77.197.104.bc.googleusercontent.com (104.197.77.133)
+Host is up (0.0016s latency).
+Not shown: 997 filtered ports
+PORT    STATE SERVICE
+22/tcp  open  ssh
+80/tcp  open  http
+443/tcp open  https
+
+Read data files from: /usr/bin/../share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 4.95 seconds
+>
+```
+
 ## Exploring Endpoints
 
 ```bash
