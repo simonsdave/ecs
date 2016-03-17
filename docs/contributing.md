@@ -27,12 +27,12 @@ docker_remote_api=http://172.17.42.1:4243
     -p 9443:443 \
     --link apidocs:apidocs \
     --link tasks:tasks \
-    -v /etc/ssl/dhparam.pem:/etc/nginx/ssl/dhparam.pem \
-    -v /etc/ssl/certs/docs.ecs.cloudfeaster.com.crt:/etc/nginx/ssl/docs.crt \
-    -v /etc/ssl/certs/docs.ecs.cloudfeaster.com.key:/etc/nginx/ssl/docs.key \
-    -v /etc/ssl/certs/api.ecs.cloudfeaster.com.crt:/etc/nginx/ssl/api.crt \
-    -v /etc/ssl/certs/api.ecs.cloudfeaster.com.key:/etc/nginx/ssl/api.key \
-    -v ~/ecs/.htpasswd:/etc/nginx/.htpasswd \
+    -v /vagrant/dhparam.pem:/etc/nginx/ssl/dhparam.pem \
+    -v /vagrant/docs.ecs.cloudfeaster.com.ssl.bundle.crt:/etc/nginx/ssl/docs.crt \
+    -v /vagrant/docs.ecs.cloudfeaster.com.key:/etc/nginx/ssl/docs.key \
+    -v /vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt:/etc/nginx/ssl/api.crt \
+    -v /vagrant/api.ecs.cloudfeaster.com.key:/etc/nginx/ssl/api.key \
+    -v /vagrant/.htpasswd:/etc/nginx/.htpasswd \
     simonsdave/ecs-nginx \
     nginx.sh docs.ecs.cloudfeaster.com api.ecs.cloudfeaster.com
 ```
