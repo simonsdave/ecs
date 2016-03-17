@@ -286,7 +286,6 @@ class TasksTestCase(IntegrationTestCase):
             response = requests.post(url, auth=auth, json=body)
             self.assertEqual(response.status_code, httplib.CREATED)
             json_response_body = response.json()
-            print ">>>%s<<<" % json_response_body
             self.assertEqual(
                 base64.b64decode(json_response_body['stdout']).strip(),
                 stdout)
