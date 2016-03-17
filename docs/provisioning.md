@@ -124,7 +124,6 @@ is used to configure Cloudfeaster's ECS DNS settings
 NAME                                         NETWORK SRC_RANGES    RULES                        SRC_TAGS TARGET_TAGS
 allow-non-tls-traffic                        default 0.0.0.0/0     tcp:80                                node
 allow-tls-traffic                            default 0.0.0.0/0     tcp:443                               node
-cloudfeaster-services-dev-allow-http-traffic default 0.0.0.0/0     tcp:80                                cloudfeaster-services-dev
 default-allow-icmp                           default 0.0.0.0/0     icmp
 default-allow-internal                       default 10.240.0.0/16 tcp:1-65535,udp:1-65535,icmp
 default-allow-ssh                            default 0.0.0.0/0     tcp:22
