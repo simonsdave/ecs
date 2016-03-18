@@ -28,6 +28,9 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   * [Docker - configure logging drivers](https://docs.docker.com/engine/admin/logging/overview/)
   * [16 Apr '15 - SumoLogic - New Docker Logging Drivers](https://www.sumologic.com/2015/04/16/new-docker-logging-drivers/)
   * [10 Feb '16 - There is a “LOG”! Introducing Splunk Logging Driver in Docker 1.10.0](http://blogs.splunk.com/tag/splunk-logging-driver/)
+  * [16 Dec '16 - Splunk Logging Driver for Docker](http://blogs.splunk.com/2015/12/16/splunk-logging-driver-for-docker/)
+  * for Splunk Logging Driver need @ least version 1.10 of docker
+  * [CoreOS release channels](https://coreos.com/releases/) which indicate Alpha channel is required
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
   and [Pingdom](https://www.pingdom.com/)
   * [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
