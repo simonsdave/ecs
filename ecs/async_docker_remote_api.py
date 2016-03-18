@@ -135,7 +135,6 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
     def _on_chunk(self, chunk):
-        _logger.info('_on_chunk(): >>>%s<<<' % chunk)
         #
         # network connectivity can generate a "no such host" error
         # that we'll choose to interpret as the requested image could
@@ -151,9 +150,8 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         # be found or 2/ the request isn't authorized to access
         # the image
         #
-        expected_error_fmt = 'Error: image %s:%s not found'
-        expected_error = expected_error_fmt % (self.docker_image, self.tag)
-        if 0 <= chunk.find(expected_error):
+        expected_error = '%s:%s not found' % (self.docker_image, self.tag)
+        if expected_error in chunk:
             self._image_not_found = True
             return
 
@@ -163,11 +161,15 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         # we'll treat this as an image
         # not found
         #
-        if chunk.strip().startswith('Invalid namespace name'):
+        if 'Invalid namespace name' in chunk:
             self._image_not_found = True
             return
 
-        if chunk.strip().startswith('Invalid repository name'):
+        if 'Invalid repository name' in chunk:
+            self._image_not_found = True
+            return
+
+        if 'repository name component must match' in chunk:
             self._image_not_found = True
             return
 

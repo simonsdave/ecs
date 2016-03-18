@@ -327,6 +327,32 @@ class AsyncImagePullTestCase(unittest.TestCase):
             callback.assert_called_once_with(True, False, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
 
+    def test_repo_name_component_must_match(self):
+        docker_image = uuid.uuid4().hex
+        tag = uuid.uuid4().hex
+
+        response = mock.Mock(
+            code=httplib.INTERNAL_SERVER_ERROR,
+            body=None,
+            time_info={},
+            request_time=0.042,
+            effective_url='http://www.bindle.com',
+            request=mock.Mock(method='GET'))
+        chunks = [
+            'bindle bindle bear repository name component must match bla bla bla'
+        ]
+        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
+            callback = mock.Mock()
+            aip = AsyncImagePull(
+                docker_image=docker_image,
+                tag=tag,
+                email=uuid.uuid4().hex,
+                username=uuid.uuid4().hex,
+                password=uuid.uuid4().hex)
+            aip.pull(callback)
+            callback.assert_called_once_with(True, False, aip)
+            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
+
     def test_happy_path_with_creds(self):
         response = mock.Mock(
             code=httplib.OK,
