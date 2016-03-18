@@ -25,17 +25,23 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * GCE forwarding rule should do health checks on nodes
 * add instrumentation using [SignalFX](https://signalfx.com/)
 * add log aggregation
+  * [Docker - configure logging drivers](https://docs.docker.com/engine/admin/logging/overview/)
+  * [16 Apr '15 - SumoLogic - New Docker Logging Drivers](https://www.sumologic.com/2015/04/16/new-docker-logging-drivers/)
+  * [10 Feb '16 - There is a “LOG”! Introducing Splunk Logging Driver in Docker 1.10.0](http://blogs.splunk.com/tag/splunk-logging-driver/)
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
   and [Pingdom](https://www.pingdom.com/)
   * [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
   * [Cachet API for adding metrics](https://docs.cachethq.io/docs/get-metric-points)
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * document operational processes 
-    * how to upgrade existing ECS cluster with new service code
-    * how to increase and decrease size of ECS cluster
+  * how to upgrade existing ECS cluster with new service code
+  * how to increase and decrease size of ECS cluster
+* [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
+* [CoreOS Hardening](https://coreos.com/os/docs/latest/coreos-hardening-guide.html)
 
 ### Nice to Have
 
+* remove SSH access to nodes in ECS cluster
 * automate GoDaddy DNS provisioning as per [this API spec](https://developer.godaddy.com/doc)
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
 
