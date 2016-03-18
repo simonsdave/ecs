@@ -9,18 +9,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just exiting
-* error detecting image not found; getting ```500 Internal Server Error``` rather than the expected```404 Not Found```
-```bash
->cat echo.json
-{
-  "docker_image": "xubuntu",
-  "tag": "latest",
-  "cmd": [
-    "date"
-  ]
-}
->curl -v -s -u $KEY:$SECRET -X POST -H "Content-Type: application/json" --data-binary @echo.json $ECS_ENDPOINT/v1.0/tasks
-```
 
 ### Nice to Have
 
