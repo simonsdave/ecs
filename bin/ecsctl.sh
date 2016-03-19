@@ -7,6 +7,8 @@
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source "$SCRIPT_DIR_NAME/ecsutil.sh"
 
+set -x
+
 UNSECURED_TRAFFIC_PORT=80
 UNSECURED_TRAFFIC_FIREWALL_RULE_NAME=allow-non-tls-traffic
 
@@ -33,11 +35,63 @@ TAG_NAME=node
 # VM instances are in the same target pool
 TARGET_POOL_NAME=target-pool
 
+# target pools issue periodic http health checks to confirm
+# instances are healthy. HTTP_HEALTH_CHECK_NAME is the name
+# of the ECS health check
+HTTP_HEALTH_CHECK_NAME=health-check
+
 # creating a forwarding rule is like creating a load balancer
 FORWARDING_RULE_NAME=forwarding-rule
 
 # the name of each node in the cluster starts with this prefix
 INSTANCE_NAME_PREFIX=ecs-node
+
+
+create_http_health_check() {
+    local HTTP_HEALTH_CHECK_NAME=${1:-}
+    local TARGET_POOL_NAME=${2:-}
+
+    echo_if_verbose "Creating http health check '$HTTP_HEALTH_CHECK_NAME'"
+
+    gcloud \
+        compute http-health-checks create $HTTP_HEALTH_CHECK_NAME \
+        --request-path /_only_for_lb_health_check \
+        --quiet \
+        >& /dev/null
+
+    gcloud \
+        compute target-pools add-health-checks $TARGET_POOL_NAME \
+        --http-health-check $HTTP_HEALTH_CHECK_NAME \
+        --region $(get_region) \
+        >& /dev/null
+
+    echo_if_verbose "Created http health check '$HTTP_HEALTH_CHECK_NAME'"
+
+    return 0
+}
+
+delete_http_health_check() {
+    local HTTP_HEALTH_CHECK_NAME=${1:-}
+    local TARGET_POOL_NAME=${2:-}
+
+    echo_if_verbose "Deleting http health check '$HTTP_HEALTH_CHECK_NAME'"
+
+    gcloud \
+        compute target-pools remove-health-checks $TARGET_POOL_NAME \
+        --http-health-check $HTTP_HEALTH_CHECK_NAME \
+        --region $(get_region) \
+        >& /dev/null
+
+    gcloud \
+        compute http-health-checks delete $HTTP_HEALTH_CHECK_NAME \
+        --region $(get_region) \
+        --quiet \
+        >& /dev/null
+
+    echo_if_verbose "Deleted http health check '$HTTP_HEALTH_CHECK_NAME'"
+
+    return 0
+}
 
 create_firewall_rule() {
     local FIREWALL_RULE_NAME=${1:-}
@@ -188,6 +242,8 @@ deployment_create_network() {
     echo_if_verbose "Creating Forwarding Rule" "blue"
     local FORWARDING_RULE_IP=$(create_forwarding_rule)
     echo "$FORWARDING_RULE_IP"
+
+    create_http_health_check $HTTP_HEALTH_CHECK_NAME $TARGET_POOL_NAME
 }
 
 deployment_inspect_network() {
@@ -202,6 +258,8 @@ deployment_inspect_network() {
 }
 
 deployment_delete_network() {
+    delete_http_health_check $HTTP_HEALTH_CHECK_NAME $TARGET_POOL_NAME
+
     echo_if_verbose "Deleting Forwarding Rule" "blue"
     delete_forwarding_rule
 
