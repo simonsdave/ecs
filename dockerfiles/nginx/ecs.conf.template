@@ -13,6 +13,8 @@
 #   /etc/nginx/ssl/docs.key
 #   /etc/nginx/ssl/api.crt
 #   /etc/nginx/ssl/api.key
+#   /etc/nginx/ssl/dhparam.pem
+#   /etc/nginx/.htpasswd
 #
 # also, it's is expected that /etc/nginx/.htpasswd be volume mapped
 # to a file with keys & secrets used to perform authentication
