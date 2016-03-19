@@ -142,6 +142,8 @@ server {
         auth_basic "Restricted";
         auth_basic_user_file /etc/nginx/.htpasswd;
 
+        error_page 401 @unauthorized_json_doc;
+
         proxy_pass            http://tasks;
         proxy_read_timeout    10m;
         proxy_set_header      Host                $host;
@@ -152,5 +154,12 @@ server {
         proxy_set_header      X-Forwarded-For     $proxy_add_x_forwarded_for;
         proxy_set_header      X-Forwarded-Proto   $scheme;
 
+    }
+
+    location @unauthorized_json_doc {
+        add_header Content-Type "application/json; charset=UTF-8";
+        # :TODO: how to install headers-more-nginx-module?
+        # more_set_headers "Content-Type: application/json; charset=UTF-8";
+        return 401 "{}";
     }
 }

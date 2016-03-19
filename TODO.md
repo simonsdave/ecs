@@ -20,9 +20,8 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* ecsctl.sh should spin up ECS nodes across multiple GCE zones
-* 401 from api domain should return json doc rather than HTML
 * GCE forwarding rule should do health checks on nodes
+* ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * add instrumentation using [SignalFX](https://signalfx.com/)
 * add log aggregation
   * [Docker - configure logging drivers](https://docs.docker.com/engine/admin/logging/overview/)
@@ -44,6 +43,8 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Nice to Have
 
+* 401 from api domain should return json content type
+* remove nginx version # from all responses
 * remove SSH access to nodes in ECS cluster
 * automate GoDaddy DNS provisioning as per [this API spec](https://developer.godaddy.com/doc)
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
