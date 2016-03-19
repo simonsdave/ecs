@@ -96,6 +96,29 @@ documentation:
       >
       ```
 
+      Typically requests into an ECS deployment are directed to a load
+      balancer sitting in front of an ECS cluster.
+      Network traffic is load balanced across an ECS cluster using
+      [Google Compute Engine's (layer 5) Network Load Balancing](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling#network_load_balancing).
+      <a href="https://nmap.org">nmap</a> can also be used to validate the
+      configuration of the load balancer which also implements a firewall.
+      Below is sample ```nmap``` output.
+
+      ```bash
+      >nmap api.ecs.cloudfeaster.com
+
+      Starting Nmap 6.40 ( http://nmap.org ) at 2016-03-19 18:30 EST
+      Nmap scan report for api.ecs.cloudfeaster.com (104.197.67.63)
+      Host is up (0.056s latency).
+      rDNS record for 104.197.67.63: 63.67.197.104.bc.googleusercontent.com
+      Not shown: 998 filtered ports
+      PORT    STATE SERVICE
+      80/tcp  open  http
+      443/tcp open  https
+
+      Nmap done: 1 IP address (1 host up) scanned in 4.90 seconds
+      ```
+
   - title: Request and Rate Limiting
     content: |
       Each node in an ECS cluster implements a set of request and rate
