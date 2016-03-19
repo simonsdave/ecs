@@ -206,7 +206,7 @@ create_self_signed_cert() {
 #   0   always
 #
 get_zone() {
-    gcloud config list | grep "^zone = " | sed -e "s/zone = //g"
+    gcloud config list 2>&1 | grep "^zone = " | sed -e "s/zone = //g"
     return 0
 }
 
