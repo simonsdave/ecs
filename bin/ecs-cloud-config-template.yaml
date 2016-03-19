@@ -132,6 +132,7 @@ coreos:
           --name=nginx \
           -p 80:80 \
           -p 443:443 \
+          -p 8080:8080 \
           --link apidocs:apidocs \
           --link tasks:tasks \
           -v /etc/ssl/dhparam.pem:/etc/nginx/ssl/dhparam.pem \
@@ -187,6 +188,11 @@ write_files:
       log_level=info
       max_concurrent_executing_http_requests=250
       docker_remote_api=http://172.17.42.1:2375
+  #
+  # see https://cloud.google.com/compute/docs/load-balancing/health-checks
+  # to understand the motivation for port 8080 below & the inclusion of
+  # 169.254.169.254 in the rule
+  #
   - path: /var/lib/iptables/rules-save
     permissions: 0644
     owner: root:root
@@ -201,6 +207,7 @@ write_files:
       -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
       -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
       -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+      -A INPUT -p tcp -m tcp -s 169.254.169.254 --dport 8080 -j ACCEPT
       -A INPUT -p icmp -m icmp --icmp-type 0 -j ACCEPT
       -A INPUT -p icmp -m icmp --icmp-type 3 -j ACCEPT
       -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT

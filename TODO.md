@@ -20,7 +20,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* GCE forwarding rule should do health checks on nodes
 * ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * add instrumentation using [SignalFX](https://signalfx.com/)
 * add log aggregation

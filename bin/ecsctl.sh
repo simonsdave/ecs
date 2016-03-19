@@ -7,8 +7,6 @@
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source "$SCRIPT_DIR_NAME/ecsutil.sh"
 
-set -x
-
 UNSECURED_TRAFFIC_PORT=80
 UNSECURED_TRAFFIC_FIREWALL_RULE_NAME=allow-non-tls-traffic
 
@@ -39,6 +37,8 @@ TARGET_POOL_NAME=target-pool
 # instances are healthy. HTTP_HEALTH_CHECK_NAME is the name
 # of the ECS health check
 HTTP_HEALTH_CHECK_NAME=health-check
+HTTP_HEALTH_CHECK_PORT=8080
+HTTP_HEALTH_CHECK_PATH=/_only_for_lb_health_check
 
 # creating a forwarding rule is like creating a load balancer
 FORWARDING_RULE_NAME=forwarding-rule
@@ -49,13 +49,16 @@ INSTANCE_NAME_PREFIX=ecs-node
 
 create_http_health_check() {
     local HTTP_HEALTH_CHECK_NAME=${1:-}
-    local TARGET_POOL_NAME=${2:-}
+    local HTTP_HEALTH_CHECK_PORT=${2:-}
+    local HTTP_HEALTH_CHECK_PATH=${3:-}
+    local TARGET_POOL_NAME=${4:-}
 
     echo_if_verbose "Creating http health check '$HTTP_HEALTH_CHECK_NAME'"
 
     gcloud \
         compute http-health-checks create $HTTP_HEALTH_CHECK_NAME \
-        --request-path /_only_for_lb_health_check \
+        --request-path $HTTP_HEALTH_CHECK_PATH \
+        --port $HTTP_HEALTH_CHECK_PORT \
         --quiet \
         >& /dev/null
 
@@ -63,6 +66,7 @@ create_http_health_check() {
         compute target-pools add-health-checks $TARGET_POOL_NAME \
         --http-health-check $HTTP_HEALTH_CHECK_NAME \
         --region $(get_region) \
+        --quiet \
         >& /dev/null
 
     echo_if_verbose "Created http health check '$HTTP_HEALTH_CHECK_NAME'"
@@ -80,11 +84,11 @@ delete_http_health_check() {
         compute target-pools remove-health-checks $TARGET_POOL_NAME \
         --http-health-check $HTTP_HEALTH_CHECK_NAME \
         --region $(get_region) \
+        --quiet \
         >& /dev/null
 
     gcloud \
         compute http-health-checks delete $HTTP_HEALTH_CHECK_NAME \
-        --region $(get_region) \
         --quiet \
         >& /dev/null
 
@@ -243,7 +247,11 @@ deployment_create_network() {
     local FORWARDING_RULE_IP=$(create_forwarding_rule)
     echo "$FORWARDING_RULE_IP"
 
-    create_http_health_check $HTTP_HEALTH_CHECK_NAME $TARGET_POOL_NAME
+    create_http_health_check \
+        $HTTP_HEALTH_CHECK_NAME \
+        $HTTP_HEALTH_CHECK_PORT \
+        $HTTP_HEALTH_CHECK_PATH \
+        $TARGET_POOL_NAME
 }
 
 deployment_inspect_network() {
