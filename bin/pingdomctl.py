@@ -111,7 +111,6 @@ def _create_checks(username, password, app_key, args):
         'auth': '%s:%s' % (key, secret),
         'encryption': 'true',
         'host': host,
-#        'port': 443,
     }
 
     response = requests.post(
