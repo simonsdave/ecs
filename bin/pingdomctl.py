@@ -5,6 +5,7 @@ checks against an ECS deployment.
 
 Helpful references:
 
+    * https://www.pingdom.com/resources/api
     * https://www.pingdom.com/features/api/documentation/
 """
 
@@ -15,8 +16,16 @@ import sys
 
 import requests
 
-"""Name of the quick health check."""
+"""quick def'n"""
 _quick_check_name = 'ECS Quick'
+_quick_check_url = '/v1.0/_health?quick=true'
+_quick_check_resolution = 1
+
+
+"""Name of the slow health check."""
+_slow_check_name = 'ECS'
+_slow_check_url = '/v1.0/_health?quick=false'
+_slow_check_resolution = 5
 
 
 """Used to parse the create command."""
@@ -67,8 +76,59 @@ def _does_check_exist(username, password, app_key, check_name):
     return None
 
 
-def _create_checks(username, password, app_key, args):
-    """create pingdom checks."""
+def _create_check(pingdom_username,
+                  pingdom_password,
+                  pingdom_app_key,
+                  check_name,
+                  ecs_host,
+                  url,
+                  resolution,
+                  ecs_key,
+                  ecs_secret):
+    """create pingdom check."""
+
+    #
+    # if the check already exists fail
+    #
+    if _does_check_exist(pingdom_username, pingdom_password, app_key, check_name):
+        msg = 'Check ''%s'' already exists\n' % check_name
+        sys.stderr.write(msg)
+        return False
+
+    #
+    # create the quick check
+    #
+    auth = requests.auth.HTTPBasicAuth(pingdom_username, pingdom_password)
+
+    headers = {
+        'App-Key': pingdom_app_key,
+    }
+
+    body = {
+        'name': check_name,
+        'resolution': resolution,
+        'type': 'http',
+        'url': url,
+        'auth': '%s:%s' % (ecs_key, ecs_secret),
+        'encryption': 'true',
+        'host': ecs_host,
+    }
+
+    response = requests.post(
+        'https://api.pingdom.com/api/2.0/checks',
+        auth=auth,
+        headers=headers,
+        data=body)
+    if response.status_code != httplib.OK:
+        fmt = 'Error creating check ''%s'' (%s)\n'
+        msg = fmt % (check_name, response.status_code),
+        sys.stderr.write(msg)
+        return False
+
+    return True
+
+def _create_checks(pingdom_username, pingdom_password, pingdom_app_key, args):
+    """create all pingdom checks."""
 
     if 3 != len(args):
         fmt = (
@@ -79,55 +139,66 @@ def _create_checks(username, password, app_key, args):
         sys.stderr.write(msg)
         return False
 
-    #
-    # extract values from ```args```
-    #
-    host = args[0]
-    key = args[1]
-    secret = args[2]
+    ecs_host = args[0]
+    ecs_key = args[1]
+    ecs_secret = args[2]
 
-    #
-    # if the check already exists fail
-    #
-    if _does_check_exist(username, password, app_key, _quick_check_name):
-        msg = 'Check ''%s'' already exists\n' % _quick_check_name
-        sys.stderr.write(msg)
-        return False
+    rv_quick = _create_check(
+        pingdom_username,
+        pingdom_password,
+        pingdom_app_key,
+        _quick_check_name,
+        ecs_host,
+        _quick_check_url,
+        _quick_check_resolution,
+        ecs_key,
+        ecs_secret)
 
-    #
-    # create the quick check
-    #
-    auth = requests.auth.HTTPBasicAuth(username, password)
+    rv_slow = _create_check(
+        pingdom_username,
+        pingdom_password,
+        pingdom_app_key,
+        _slow_check_name,
+        ecs_host,
+        _slow_check_url,
+        _slow_check_resolution,
+        ecs_key,
+        ecs_secret)
+
+    return rv_quick and rv_slow
+
+
+def _delete_check(pingdom_username, pingdom_password, pingdom_app_key, check_name):
+    """delete pingdom checks."""
+
+    check_id = _does_check_exist(
+        pingdom_username,
+        pingdom_password,
+        pingdom_app_key,
+        check_name)
+    if not check_id:
+        return True
+
+    auth = requests.auth.HTTPBasicAuth(pingdom_username, pingdom_password)
 
     headers = {
-        'App-Key': app_key,
+        'App-Key': pingdom_app_key,
     }
 
-    body = {
-        'name': _quick_check_name,
-        'resolution': 1,
-        'type': 'http',
-        'url': '/v1.0/_health?quick=true',
-        'auth': '%s:%s' % (key, secret),
-        'encryption': 'true',
-        'host': host,
-    }
-
-    response = requests.post(
-        'https://api.pingdom.com/api/2.0/checks',
+    response = requests.delete(
+        'https://api.pingdom.com/api/2.0/checks/%s' % check_id,
         auth=auth,
-        headers=headers,
-        data=body)
+        headers=headers)
     if response.status_code != httplib.OK:
-        fmt = 'Error creating Couldn''t get checks (%s)\n'
-        msg = fmt % response.status_code
+        msg_fmt = 'Error deleting check ''%s'' (%s)\n'
+        msg = msg_fmt % (check_name, response.status_code)
         sys.stderr.write(msg)
         return False
 
     return True
 
 
-def _delete_checks(username, password, app_key, args):
+def _delete_checks(pingdom_username, pingdom_password, pingdom_app_key, args):
     """delete pingdom checks."""
 
     if 0 != len(args):
@@ -136,37 +207,19 @@ def _delete_checks(username, password, app_key, args):
         sys.stderr.write(msg)
         return False
 
-    #
-    # if the check doesn't exist it's a shortcut to success
-    #
-    check_id = _does_check_exist(
-        username,
-        password,
-        app_key,
+    rv_quick = _delete_check(
+        pingdom_username,
+        pingdom_password,
+        pingdom_app_key,
         _quick_check_name)
-    if not check_id:
-        return True
 
-    #
-    # delete the quick check
-    #
-    auth = requests.auth.HTTPBasicAuth(username, password)
+    rv_slow = _delete_check(
+        pingdom_username,
+        pingdom_password,
+        pingdom_app_key,
+        _slow_check_name)
 
-    headers = {
-        'App-Key': app_key,
-    }
-
-    response = requests.delete(
-        'https://api.pingdom.com/api/2.0/checks/%s' % check_id,
-        auth=auth,
-        headers=headers)
-    if response.status_code != httplib.OK:
-        msg_fmt = 'Error deleting checks (%s)\n'
-        msg = msg_fmt % response.status_code
-        sys.stderr.write(msg)
-        return False
-
-    return True
+    return rv_quick and rv_slow
 
 
 if __name__ == '__main__':
