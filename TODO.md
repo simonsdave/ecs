@@ -31,6 +31,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   * [CoreOS release channels](https://coreos.com/releases/) which indicate Alpha channel is required
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
   and [Pingdom](https://www.pingdom.com/)
+  * [Amazon RDS](http://aws.amazon.com/rds/)
   * [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
   ```bash
     >PINGDOM_USERNAME=...
