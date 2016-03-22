@@ -6,16 +6,13 @@ dist: trusty
 install:
   - source cfg4dev
   - pip install coveralls
-  # per https://github.com/travis-ci/travis-ci/issues/4090
-  # travis does not support more than one language declaration
-  # and hence the need to nvm install 4.1.0 of node below
   - nvm install 4.1.0
   - npm i -g raml2md
   - npm i -g raml2html
   - sudo apt-get install -y docker.io
   - sudo docker version
   - sudo cat /etc/default/docker
-  - sudo sed -i -e 's/#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"/DOCKER_OPTS="-H tcp:\/\/172.17.42.1:4243 -H unix:\/\/\/var\/run\/docker.sock"/g' /etc/default/docker
+  - sudo sed -i -e 's|DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock"|DOCKER_OPTS="-H tcp://172.17.42.1:2375 -H unix:///var/run/docker.sock"|g' /etc/default/docker
   - sudo service docker restart
   - sudo cat /etc/default/docker
 script:
