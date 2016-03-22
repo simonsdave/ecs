@@ -5,9 +5,10 @@ sudo: required
 install:
   - source cfg4dev
   - pip install coveralls
+  # per https://github.com/travis-ci/travis-ci/issues/4090
+  # travis does not support more than one language declaration
+  # and hence the need to nvm install 4.1.0 of node below
   - nvm install 4.1.0
-  - which node
-  - node -v
   - npm i -g raml2md
   - npm i -g raml2html
 script:
