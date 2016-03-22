@@ -5,11 +5,13 @@ validate the ..request_handler module.
 import base64
 import httplib
 import json
+import socket
 import re
 import uuid
 
 import mock
 import tor_async_util
+import tornado.netutil
 import tornado.testing
 import tornado.web
 
@@ -19,6 +21,16 @@ from ..request_handlers import HealthRequestHandler
 from ..request_handlers import NoOpRequestHandler
 from ..request_handlers import TasksRequestHandler
 from ..request_handlers import VersionRequestHandler
+
+
+def fix_for_travis_bind_unused_port():
+    """patch for problem described in https://github.com/tornadoweb/tornado/pull/1574"""
+    [sock] = tornado.netutil.bind_sockets(None, '127.0.0.1', family=socket.AF_INET)
+    port = sock.getsockname()[1]
+    return sock, port
+
+
+tornado.testing.bind_unused_port = fix_for_travis_bind_unused_port
 
 
 class Patcher(object):
