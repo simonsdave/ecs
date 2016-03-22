@@ -10,7 +10,7 @@ script:
   - pep8
   - flake8
   - tor_async_util_nosetests.py -A "not integration" --with-coverage --cover-branches --cover-erase --cover-package ecs
-  - coveralls
+  - coveralls || true
   - python setup.py sdist --formats=gztar
 #  - ./api_docs/build-api-docs.sh -t
 #  - ./dockerfiles/build-docker-images.sh $DOCKER_EMAIL $DOCKER_USERNAME $DOCKER_PASSWORD ./dist/ecs-*.*.*.tar.gz ./api_docs/api_docs.tar
