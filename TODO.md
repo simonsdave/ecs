@@ -32,6 +32,56 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
   and [Pingdom](https://www.pingdom.com/)
   * [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
+  ```bash
+    >PINGDOM_USERNAME=...
+    >PINGDOM_PASSWORD=...
+    >PINGDOM_APPKEY=...
+    >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/checks" | jq
+    >PINGDOM_CHECK_ID=...
+    >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/results/$PINGDOM_CHECK_ID?limit=1440" | jq . > formatted_last_day_of_check_results.json
+    >head -20 formatted_last_day_of_check_results.json
+    {
+      "activeprobes": [
+        65,
+        34,
+        68,
+        72,
+        43,
+        82,
+        60
+      ],
+      "results": [
+        {
+          "probeid": 68,
+          "time": 1458570747,
+          "status": "down",
+          "statusdesc": "Timeout (> 30s)",
+          "statusdesclong": "Socket timeout, unable to connect to server"
+        },
+        {
+          "probeid": 72,
+    >tail -20 formatted_last_day_of_check_results.json
+          "statusdesclong": "OK"
+        },
+        {
+          "probeid": 82,
+          "time": 1458510867,
+          "status": "up",
+          "responsetime": 508,
+          "statusdesc": "OK",
+          "statusdesclong": "OK"
+        },
+        {
+          "probeid": 34,
+          "time": 1458510807,
+          "status": "up",
+          "responsetime": 132,
+          "statusdesc": "OK",
+          "statusdesclong": "OK"
+        }
+      ]
+    }
+    ```
   * [Cachet API for adding metrics](https://docs.cachethq.io/docs/get-metric-points)
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * document operational processes 
