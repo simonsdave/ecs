@@ -127,6 +127,7 @@ def _create_check(pingdom_username,
 
     return True
 
+
 def _create_checks(pingdom_username, pingdom_password, pingdom_app_key, args):
     """create all pingdom checks."""
 
