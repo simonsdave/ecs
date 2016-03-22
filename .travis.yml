@@ -11,8 +11,10 @@ install:
   # these next 2 lines should not be required (added 12 Mar '16) ...
   - curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
   - node -v
+  - which node
   - sudo apt-get install -y nodejs
   - node -v
+  - which node
 script:
   - pep8
   - flake8
