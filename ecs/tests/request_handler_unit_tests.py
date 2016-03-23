@@ -35,10 +35,12 @@ from ..request_handlers import VersionRequestHandler
 #
 assert semantic_version.Version(tornado.version, partial=True) <= semantic_version.Version('4.3', partial=True)
 
+
 def _fix_for_travis_bind_unused_port():
     [sock] = tornado.netutil.bind_sockets(None, '127.0.0.1', family=socket.AF_INET)
     port = sock.getsockname()[1]
     return sock, port
+
 
 tornado.testing.bind_unused_port = _fix_for_travis_bind_unused_port
 
