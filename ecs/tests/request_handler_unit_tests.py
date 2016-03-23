@@ -10,7 +10,9 @@ import re
 import uuid
 
 import mock
+import semantic_version
 import tor_async_util
+import tornado
 import tornado.netutil
 import tornado.testing
 import tornado.web
@@ -23,14 +25,22 @@ from ..request_handlers import TasksRequestHandler
 from ..request_handlers import VersionRequestHandler
 
 
-def fix_for_travis_bind_unused_port():
-    """patch for problem described in https://github.com/tornadoweb/tornado/pull/1574"""
+#
+# the motivation for patching tornado.testing.bind_unused_port is
+# described https://github.com/tornadoweb/tornado/pull/1574
+#
+# believe the PR will be incorporated in tornado release after 4.3
+# and hence the version check. obviously once the PR is released
+# the patch below can be deleted
+#
+assert semantic_version.Version(tornado.version, partial=True) <= semantic_version.Version('4.3', partial=True)
+
+def _fix_for_travis_bind_unused_port():
     [sock] = tornado.netutil.bind_sockets(None, '127.0.0.1', family=socket.AF_INET)
     port = sock.getsockname()[1]
     return sock, port
 
-
-tornado.testing.bind_unused_port = fix_for_travis_bind_unused_port
+tornado.testing.bind_unused_port = _fix_for_travis_bind_unused_port
 
 
 class Patcher(object):
