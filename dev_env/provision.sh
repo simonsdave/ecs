@@ -30,12 +30,17 @@ apt-get install -y apache2-utils
 
 timedatectl set-timezone EST
 
-# these next 2 lines should not be required (added 12 Mar '16) ...
-curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+#
+# this install process does not feel right
+# look @ .travis.yml for how it uses nvm - that feels correct
+# could not get nvm to work here :-(
+#
 apt-get install -y nodejs
 apt-get install -y npm
 ln -s /usr/bin/nodejs /usr/bin/node
 chmod a+x /usr/bin/nodejs
+curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+apt-get install -y nodejs
 npm i -g raml2md
 npm i -g raml2html
 
