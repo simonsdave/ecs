@@ -128,6 +128,4 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ## CI / CD
 
-* why is Travis CI failing any and all Tornado Async unit tests
-* why is Travis CI failing all integration tests
 * build ecs docker images from .travis.yml
