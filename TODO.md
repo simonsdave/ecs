@@ -6,15 +6,19 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
+* remove tag property from /tasks request body and instead support
+  standard owner/repo:tag format
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
-  rather than just exiting
+  rather than just returning
 
 ### Nice to Have
 
 * improve feedback on bad request response
   * CID style + log aggregation / access
   * include errors in response
+* support [docker registries](https://docs.docker.com/registry/) in
+  addition to [DockerHub](https://hub.docker.com)
 
 ## Operations
 
