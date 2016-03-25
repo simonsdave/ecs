@@ -10,6 +10,7 @@ import tornado.httpclient
 import tornado.httpserver
 import tornado.web
 
+import ecs
 from ecs.request_handlers import HealthRequestHandler
 from ecs.request_handlers import NoOpRequestHandler
 from ecs.request_handlers import TasksRequestHandler
@@ -135,12 +136,15 @@ if __name__ == '__main__':
     # to have this basic info available
     #
     fmt = (
+        '({package_version}/{api_version}) '
         'read config from \'{config_file}[{config_section}]\', '
         'listening on http://{address}:{port:d} '
         'with logging level set to {logging_level} and '
         'talking to the Docker Remote API on {docker_remote_api}'
     )
     args = {
+        'package_version': ecs.__version__,
+        'api_version': ecs.__api_version__,
         'config_file': tor_async_util.Config.instance.config_file,
         'config_section': config_section,
         'address': address,
