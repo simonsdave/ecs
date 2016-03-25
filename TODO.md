@@ -91,8 +91,13 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * document operational processes 
   * how to upgrade existing ECS cluster with new service code
+    * don't change IPs, DNS, forwarding rule, etc.
+    * just want to replace nodes behind forward rule
+    * think about using [docker tags](https://medium.com/@mccode/the-misunderstood-docker-tag-latest-af3babfd6375#.x4xg3qhgn)
+      as an approach for identifying targets for upgrade
   * how to increase and decrease size of ECS cluster
-* [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
+* [Core OS  updates](https://coreos.com/using-coreos/updates/)
+  * [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
 * [CoreOS Hardening](https://coreos.com/os/docs/latest/coreos-hardening-guide.html)
 
 ### Nice to Have
@@ -125,6 +130,8 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ## Documentation
 
+* add 1/ forward rule to node health checks 2/ pingdom health checks
+* add CoreOS updates to security section
 * need some overview diagrams in the API docs
   * 2-tier - LB in-front of ECS cluster
   * request servicing pipeline
