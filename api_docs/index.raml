@@ -1,6 +1,6 @@
 #%RAML 0.8
 
-title: Ephemeral Container Service (ECS) (%ECS_VERSION%)
+title: Ephemeral Container Service (ECS) (%ECS_VERSION% / %ECS_API_VERSION%)
 version: v99.999
 documentation:
   - title: Overview
@@ -205,7 +205,7 @@ documentation:
         -X POST \
         -H "Content-Type: application/json" \
         --data-binary @echo.json \
-        $ECS_ENDPOINT/v1.0/tasks | \
+        $ECS_ENDPOINT/%ECS_API_VERSION%/tasks | \
         jq
       {
         "stdout": "aGVsbG8gd29ybGQhISEK",
@@ -276,12 +276,12 @@ documentation:
 
       ##### Example
       ```bash
-      >curl -s -u $ECS_KEY:$ECS_SECRET $ECS_ENDPOINT/v1.0/_version | jq
+      >curl -s -u $ECS_KEY:$ECS_SECRET $ECS_ENDPOINT/%ECS_API_VERSION%/_version | jq
       {
         "version": "0.8.0",
         "links": {
           "self": {
-            "href": "$ECS_ENDPOINT/v1.0/_version"
+            "href": "$ECS_ENDPOINT/%ECS_API_VERSION%/_version"
           }
         }
       }
@@ -324,7 +324,7 @@ documentation:
         -u $ECS_KEY:$ECS_SECRET \
         -o /dev/null \
         -w %{http_code}\\n \
-        $ECS_ENDPOINT/v1.0/_noop
+        $ECS_ENDPOINT/%ECS_API_VERSION%/_noop
       200
       >
       ```
@@ -390,7 +390,7 @@ documentation:
       >curl \
         -s \
         -u $ECS_KEY:$ECS_SECRET \
-        $ECS_ENDPOINT/v1.0/_health?quick=false | \
+        $ECS_ENDPOINT/%ECS_API_VERSION%/_health?quick=false | \
         jq
       {
         "status": "green",
@@ -405,7 +405,7 @@ documentation:
         },
         "links": {
           "self": {
-            "href": "$ECS_ENDPOINT/v1.0/_health"
+            "href": "$ECS_ENDPOINT/%ECS_API_VERSION%/_health"
           }
         }
       }

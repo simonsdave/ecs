@@ -69,6 +69,12 @@ html_to_raml() {
     fi
     sed -i -e "s/%ECS_VERSION%/$ECS_VERSION/g" "$HTML"
 
+    ECS_API_VERSION=$(python -c "import ecs; print ecs.__api_version__" 2> /dev/null)
+    if [ "$ECS_API_VERSION" == "" ]; then
+        ECS_API_VERSION="UNKNOWN ECS API VERSION"
+    fi
+    sed -i -e "s/%ECS_API_VERSION%/$ECS_API_VERSION/g" "$HTML"
+
     # massage the document's title
     sed -i -e "s/API documentation//g" "$HTML"
 
