@@ -136,8 +136,6 @@ class AsyncImagePull(tor_async_util.AsyncAction):
     def _on_chunk(self, chunk):
         chunk = chunk.strip()
 
-        _logger.info('>>>%s<<<' % chunk)
-
         #
         # network connectivity can generate a "no such host" error
         # that we'll choose to interpret as the requested image could
