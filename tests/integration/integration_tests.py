@@ -227,7 +227,7 @@ class TasksTestCase(IntegrationTestCase):
                 '/' if trailing_slash else '',
             )
             body = {
-                'docker_image': 'ubuntu',
+                'docker_image': 'ubuntu:14.04',
                 'cmd': [
                     'echo',
                     'hello world',
@@ -257,7 +257,7 @@ class TasksTestCase(IntegrationTestCase):
             url = '%s/%s/tasks' % (endpoint, _api_version)
             exit_code = 1
             body = {
-                'docker_image': 'ubuntu',
+                'docker_image': 'ubuntu:14.04',
                 'cmd': [
                     'bash',
                     '-c',
@@ -279,7 +279,7 @@ class TasksTestCase(IntegrationTestCase):
             stdout = uuid.uuid4().hex
             stderr = uuid.uuid4().hex
             body = {
-                'docker_image': 'ubuntu',
+                'docker_image': 'ubuntu:14.04',
                 'cmd': [
                     'bash',
                     '-c',
@@ -338,10 +338,10 @@ class TasksTestCase(IntegrationTestCase):
                     ]
                 },
                 {
-                    'docker_image': 'ubuntu',
+                    'docker_image': 'ubuntu:14.04',
                 },
                 {
-                    'docker_image': 'ubuntu',
+                    'docker_image': 'ubuntu:14.04',
                     'cmd': [
                     ]
                 },
