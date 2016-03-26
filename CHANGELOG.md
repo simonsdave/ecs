@@ -7,7 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- ...
+- bump API version from v1.0 -> v1.1
+- removed required 'tag' property from POST to /tasks endpoint; use the
+  image name format 'owner/image:tag' format to specify a specific, tagged
+  version of an image
 
 ### Removed
 

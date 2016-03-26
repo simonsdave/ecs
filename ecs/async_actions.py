@@ -27,7 +27,6 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
 
     def __init__(self,
                  docker_image,
-                 tag,
                  cmd,
                  email,
                  username,
@@ -36,7 +35,6 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
         tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
-        self.tag = tag
         self.cmd = cmd
         self.email = email
         self.username = username
@@ -56,11 +54,10 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
         assert self._callback is None
         self._callback = callback
 
-        fmt = '%s - attempting to pull image %s:%s'
-        _logger.info(fmt, self.cid, self.docker_image, self.tag)
+        fmt = '%s - attempting to pull image %s'
+        _logger.info(fmt, self.cid, self.docker_image)
         aip = async_docker_remote_api.AsyncImagePull(
             self.docker_image,
-            self.tag,
             self.email,
             self.username,
             self.password)
@@ -68,39 +65,38 @@ class AsyncEndToEndContainerRunner(tor_async_util.AsyncAction):
 
     def _on_aip_pull_done(self, is_ok, is_image_found, api):
         if not is_ok:
-            fmt = '%s - error pulling image %s:%s'
-            _logger.error(fmt, self.cid, self.docker_image, self.tag)
+            fmt = '%s - error pulling image %s'
+            _logger.error(fmt, self.cid, self.docker_image)
             self._call_callback(type(self).CFD_ERROR_PULLING_IMAGE)
             return
 
         if not is_image_found:
-            fmt = '%s - could not find image %s:%s'
-            _logger.info(fmt, self.cid, self.docker_image, self.tag)
+            fmt = '%s - could not find image %s'
+            _logger.info(fmt, self.cid, self.docker_image)
             self._call_callback(type(self).CFD_IMAGE_NOT_FOUND)
             return
 
-        fmt = '%s - successfully pulled image %s:%s'
-        _logger.info(fmt, self.cid, self.docker_image, self.tag)
+        fmt = '%s - successfully pulled image %s'
+        _logger.info(fmt, self.cid, self.docker_image)
 
-        fmt = '%s - attempting to create container running %s:%s - %s'
-        _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd[0])
+        fmt = '%s - attempting to create container running %s - %s'
+        _logger.info(fmt, self.cid, self.docker_image, self.cmd[0])
         acc = async_docker_remote_api.AsyncContainerCreate(
             self.docker_image,
-            self.tag,
             self.cmd)
         acc.create(self._on_acc_create_done)
 
     def _on_acc_create_done(self, is_ok, container_id, acc):
         if not is_ok:
-            fmt = '%s - error creating container running %s:%s - %s'
-            _logger.error(fmt, self.cid, self.docker_image, self.tag, self.cmd[0])
+            fmt = '%s - error creating container running %s - %s'
+            _logger.error(fmt, self.cid, self.docker_image, self.cmd[0])
             self._call_callback(type(self).CFD_ERROR_CREATING_CONTAINER)
             return
 
         self._container_id = container_id
 
-        fmt = '%s - successfully created container %s:%s - %s - container ID = %s'
-        _logger.info(fmt, self.cid, self.docker_image, self.tag, self.cmd[0], self._container_id)
+        fmt = '%s - successfully created container %s - %s - container ID = %s'
+        _logger.info(fmt, self.cid, self.docker_image, self.cmd[0], self._container_id)
 
         fmt = '%s - attempting to start container - container ID = %s'
         _logger.info(fmt, self.cid, self._container_id)

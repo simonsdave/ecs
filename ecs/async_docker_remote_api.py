@@ -5,6 +5,7 @@ import datetime
 import httplib
 import json
 import logging
+import re
 
 import semantic_version
 import tor_async_util
@@ -88,7 +89,6 @@ class AsyncImagePull(tor_async_util.AsyncAction):
 
     def __init__(self,
                  docker_image,
-                 tag,
                  email=None,
                  username=None,
                  password=None,
@@ -96,14 +96,13 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
-        self.tag = tag
         self.email = email
         self.username = username
         self.password = password
 
         self.pull_failure_detail = None
 
-        self._image_not_found = False
+        self._image_found = None
 
         self._callback = None
 
@@ -122,9 +121,9 @@ class AsyncImagePull(tor_async_util.AsyncAction):
             )
             headers['X-Registry-Auth'] = base64.b64encode(x_registry_auth_as_str)
 
-        url_fmt = '%s/images/create?fromImage=%s&tag=%s'
+        url_fmt = '%s/images/create?fromImage=%s'
         request = tornado.httpclient.HTTPRequest(
-            url_fmt % (remote_docker_api_endpoint, self.docker_image, self.tag),
+            url_fmt % (remote_docker_api_endpoint, self.docker_image),
             method='POST',
             headers=headers,
             allow_nonstandard_methods=True,
@@ -135,13 +134,17 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
     def _on_chunk(self, chunk):
+        chunk = chunk.strip()
+
+        _logger.info('>>>%s<<<' % chunk)
+
         #
         # network connectivity can generate a "no such host" error
         # that we'll choose to interpret as the requested image could
         # not be found
         #
         if 'no such host' in chunk:
-            self._image_not_found = True
+            self._image_found = False
             return
 
         #
@@ -150,9 +153,8 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         # be found or 2/ the request isn't authorized to access
         # the image
         #
-        expected_error = '%s:%s not found' % (self.docker_image, self.tag)
-        if expected_error in chunk:
-            self._image_not_found = True
+        if re.search(r'%s:? not found' % self.docker_image, chunk):
+            self._image_found = False
             return
 
         #
@@ -162,33 +164,45 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         # not found
         #
         if 'Invalid namespace name' in chunk:
-            self._image_not_found = True
+            self._image_found = False
             return
 
         if 'Invalid repository name' in chunk:
-            self._image_not_found = True
+            self._image_found = False
             return
 
         if 'repository name component must match' in chunk:
-            self._image_not_found = True
+            self._image_found = False
+            return
+
+        #
+        # test for messages that indicate the image has been
+        # successfully downloaded
+        #
+        success_msg = r'{"status":"Status: Image is up to date for %s"}' % self.docker_image
+        if chunk == success_msg:
+            self._image_found = True
+            return
+
+        success_msg = r'{"status":"Status: Downloaded newer image for %s"}' % self.docker_image
+        if chunk == success_msg:
+            self._image_found = True
             return
 
     def _on_http_client_fetch_done(self, response):
         _write_http_client_response_to_log(response)
 
-        #
-        # see '_on_chunk()' for the comments on why this is the
-        # first statement to be executed in this method
-        #
-        if self._image_not_found:
+        if self._image_found is True:
+            self._call_callback(type(self).PFD_OK)
+            return
+
+        if self._image_found is False:
             self._call_callback(type(self).PFD_IMAGE_NOT_FOUND)
             return
 
-        if response.code != httplib.OK:
-            self._call_callback(type(self).PFD_ERROR_PULLING_IMAGE)
-            return
+        assert self._image_found is None
 
-        self._call_callback(type(self).PFD_OK)
+        self._call_callback(type(self).PFD_ERROR_PULLING_IMAGE)
 
     def _call_callback(self, pull_failure_detail):
         assert self._callback is not None
@@ -208,11 +222,10 @@ class AsyncContainerCreate(tor_async_util.AsyncAction):
     CFD_ERROR = 0x0080
     CFD_ERROR_CREATING_CONTAINER = CFD_ERROR | 0x0001
 
-    def __init__(self, docker_image, tag, cmd, async_state=None):
+    def __init__(self, docker_image, cmd, async_state=None):
         tor_async_util.AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
-        self.tag = tag
         self.cmd = cmd
 
         self.create_failure_detail = None
@@ -225,7 +238,6 @@ class AsyncContainerCreate(tor_async_util.AsyncAction):
 
         body = {
             'Image': self.docker_image,
-            'Tag': self.tag,
             'Cmd': self.cmd,
             'LogConfig': {
                 'Type': 'json-file',

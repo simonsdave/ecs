@@ -159,7 +159,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
 
     def test_ctr_without_async_state(self):
         docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
         cmd = uuid.uuid4().hex
         email = uuid.uuid4().hex
         username = uuid.uuid4().hex
@@ -167,14 +166,12 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
 
         aetecr = AsyncEndToEndContainerRunner(
             docker_image,
-            tag,
             cmd,
             email,
             username,
             password)
 
         self.assertTrue(aetecr.docker_image is docker_image)
-        self.assertTrue(aetecr.tag is tag)
         self.assertTrue(aetecr.cmd is cmd)
         self.assertTrue(aetecr.email is email)
         self.assertTrue(aetecr.username is username)
@@ -184,7 +181,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
 
     def test_ctr_with_async_state(self):
         docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
         cmd = uuid.uuid4().hex
         email = uuid.uuid4().hex
         username = uuid.uuid4().hex
@@ -193,7 +189,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
 
         aetecr = AsyncEndToEndContainerRunner(
             docker_image,
-            tag,
             cmd,
             email,
             username,
@@ -201,7 +196,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
             async_state)
 
         self.assertTrue(aetecr.docker_image is docker_image)
-        self.assertTrue(aetecr.tag is tag)
         self.assertTrue(aetecr.cmd is cmd)
         self.assertTrue(aetecr.email is email)
         self.assertTrue(aetecr.username is username)
@@ -213,7 +207,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
             callback = mock.Mock()
             aetecr = AsyncEndToEndContainerRunner(
                 docker_image=uuid.uuid4().hex,
-                tag=uuid.uuid4().hex,
                 cmd=uuid.uuid4().hex,
                 email=uuid.uuid4().hex,
                 username=uuid.uuid4().hex,
@@ -235,7 +228,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
             callback = mock.Mock()
             aetecr = AsyncEndToEndContainerRunner(
                 docker_image=uuid.uuid4().hex,
-                tag=uuid.uuid4().hex,
                 cmd=uuid.uuid4().hex,
                 email=uuid.uuid4().hex,
                 username=uuid.uuid4().hex,
@@ -258,7 +250,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                 callback = mock.Mock()
                 aetecr = AsyncEndToEndContainerRunner(
                     docker_image=uuid.uuid4().hex,
-                    tag=uuid.uuid4().hex,
                     cmd=uuid.uuid4().hex,
                     email=uuid.uuid4().hex,
                     username=uuid.uuid4().hex,
@@ -282,7 +273,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                     callback = mock.Mock()
                     aetecr = AsyncEndToEndContainerRunner(
                         docker_image=uuid.uuid4().hex,
-                        tag=uuid.uuid4().hex,
                         cmd=uuid.uuid4().hex,
                         email=uuid.uuid4().hex,
                         username=uuid.uuid4().hex,
@@ -307,7 +297,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                         callback = mock.Mock()
                         aetecr = AsyncEndToEndContainerRunner(
                             docker_image=uuid.uuid4().hex,
-                            tag=uuid.uuid4().hex,
                             cmd=uuid.uuid4().hex,
                             email=uuid.uuid4().hex,
                             username=uuid.uuid4().hex,
@@ -333,7 +322,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                             callback = mock.Mock()
                             aetecr = AsyncEndToEndContainerRunner(
                                 docker_image=uuid.uuid4().hex,
-                                tag=uuid.uuid4().hex,
                                 cmd=uuid.uuid4().hex,
                                 email=uuid.uuid4().hex,
                                 username=uuid.uuid4().hex,
@@ -360,7 +348,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                                 callback = mock.Mock()
                                 aetecr = AsyncEndToEndContainerRunner(
                                     docker_image=uuid.uuid4().hex,
-                                    tag=uuid.uuid4().hex,
                                     cmd=uuid.uuid4().hex,
                                     email=uuid.uuid4().hex,
                                     username=uuid.uuid4().hex,
@@ -390,7 +377,6 @@ class AsyncEndToEndContainerRunnerTestCase(unittest.TestCase):
                                 callback = mock.Mock()
                                 aetecr = AsyncEndToEndContainerRunner(
                                     docker_image=uuid.uuid4().hex,
-                                    tag=uuid.uuid4().hex,
                                     cmd=uuid.uuid4().hex,
                                     email=uuid.uuid4().hex,
                                     username=uuid.uuid4().hex,

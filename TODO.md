@@ -6,8 +6,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* remove tag property from /tasks request body and instead support
-  standard owner/repo:tag format
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just returning

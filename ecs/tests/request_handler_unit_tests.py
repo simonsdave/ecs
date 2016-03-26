@@ -172,7 +172,7 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
         body = {
         }
         response = self.fetch(
-            '/v1.0/tasks',
+            '/v1.1/tasks',
             method='POST',
             headers=headers,
             body=json.dumps(body))
@@ -192,14 +192,13 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
             }
             body = {
                 'docker_image': uuid.uuid4().hex,
-                'tag': uuid.uuid4().hex,
                 'cmd': [
                     'echo',
                     'hello world!!!',
                 ],
             }
             response = self.fetch(
-                '/v1.0/tasks',
+                '/v1.1/tasks',
                 method='POST',
                 headers=headers,
                 body=json.dumps(body))
@@ -219,14 +218,13 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
             }
             body = {
                 'docker_image': uuid.uuid4().hex,
-                'tag': uuid.uuid4().hex,
                 'cmd': [
                     'echo',
                     'hello world!!!',
                 ],
             }
             response = self.fetch(
-                '/v1.0/tasks',
+                '/v1.1/tasks',
                 method='POST',
                 headers=headers,
                 body=json.dumps(body))
@@ -254,14 +252,13 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
                 }
                 body = {
                     'docker_image': uuid.uuid4().hex,
-                    'tag': uuid.uuid4().hex,
                     'cmd': [
                         'echo',
                         'hello world!!!',
                     ],
                 }
                 response = self.fetch(
-                    '/v1.0/tasks',
+                    '/v1.1/tasks',
                     method='POST',
                     headers=headers,
                     body=json.dumps(body))
@@ -284,14 +281,13 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
             }
             body = {
                 'docker_image': uuid.uuid4().hex,
-                'tag': uuid.uuid4().hex,
                 'cmd': [
                     'echo',
                     'hello world!!!',
                 ],
             }
             response = self.fetch(
-                '/v1.0/tasks',
+                '/v1.1/tasks',
                 method='POST',
                 headers=headers,
                 body=json.dumps(body))
@@ -320,7 +316,7 @@ class VersionRequestHandlerTestCase(AsyncRequestHandlerTestCase):
         return tornado.web.Application(handlers=handlers)
 
     def test_happy_path(self):
-        response = self.fetch('/v1.0/_version', method='GET')
+        response = self.fetch('/v1.1/_version', method='GET')
 
         self.assertEqual(response.code, httplib.OK)
 
@@ -354,7 +350,7 @@ class NoOpRequestHandlerTestCase(AsyncRequestHandlerTestCase):
         return tornado.web.Application(handlers=handlers)
 
     def test_happy_path(self):
-        response = self.fetch('/v1.0/_noop', method='GET')
+        response = self.fetch('/v1.1/_noop', method='GET')
 
         self.assertEqual(response.code, httplib.OK)
 
@@ -387,7 +383,7 @@ class HealthRequestHandlerTestCase(AsyncRequestHandlerTestCase):
         return tornado.web.Application(handlers=handlers)
 
     def test_happy_path(self):
-        response = self.fetch('/v1.0/_health', method='GET')
+        response = self.fetch('/v1.1/_health', method='GET')
 
         self.assertEqual(response.code, httplib.OK)
 

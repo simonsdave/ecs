@@ -18,6 +18,11 @@ import requests
 
 import ecs
 
+#
+# defines the api version that this set of tests validates
+#
+_api_version = r'v1.1'
+
 
 class ServiceConfig(object):
     """This context manager encapsulates the details of creating a
@@ -46,7 +51,7 @@ class ServiceConfig(object):
         cp.set(section, 'port', self._port)
         cp.set(section, 'log_level', 'info')
         cp.set(section, 'max_concurrent_executing_http_requests', '250')
-        cp.set(section, 'docker_remote_api', 'http://172.17.42.1:2375')
+        cp.set(section, 'docker_remote_api', 'http://172.17.42.1:4243')
 
         self.filename = tempfile.mktemp()
         with open(self.filename, 'w+') as fp:
@@ -89,7 +94,7 @@ class Service(object):
             preexec_fn=os.setsid,
         )
 
-        url = '%s/v1.0/_noop' % self.service_config.endpoint
+        url = '%s/%s/_noop' % (self.service_config.endpoint, _api_version)
         for i in range(0, 10):
             try:
                 response = requests.get(url)
@@ -143,7 +148,7 @@ class NoOpTestCase(IntegrationTestCase):
 
     def test_happy_path(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/_noop' % endpoint
+            url = '%s/%s/_noop' % (endpoint, _api_version)
             response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
@@ -156,7 +161,7 @@ class VersionTestCase(IntegrationTestCase):
 
     def test_happy_path_no_quick_arg(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/_version' % endpoint
+            url = '%s/%s/_version' % (endpoint, _api_version)
             response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
@@ -179,7 +184,7 @@ class HealthTestCase(IntegrationTestCase):
 
     def test_happy_path_no_quick_arg(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/_health' % endpoint
+            url = '%s/%s/_health' % (endpoint, _api_version)
             response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
@@ -187,7 +192,7 @@ class HealthTestCase(IntegrationTestCase):
 
     def test_happy_path_quick_arg_is_true(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/_health?quick=true' % endpoint
+            url = '%s/%s/_health?quick=true' % (endpoint, _api_version)
             response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
@@ -195,7 +200,7 @@ class HealthTestCase(IntegrationTestCase):
 
     def test_happy_path_quick_arg_is_false(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/_health?quick=false' % endpoint
+            url = '%s/%s/_health?quick=false' % (endpoint, _api_version)
             response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.OK)
 
@@ -203,7 +208,7 @@ class HealthTestCase(IntegrationTestCase):
 
     def test_happy_path_quick_arg_is_not_boolean(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/_health?quick=dave' % endpoint
+            url = '%s/%s/_health?quick=dave' % (endpoint, _api_version)
             response = requests.get(url, auth=auth)
             self.assertEqual(response.status_code, httplib.BAD_REQUEST)
 
@@ -216,13 +221,13 @@ class TasksTestCase(IntegrationTestCase):
 
     def _test_happy_path_with_simple_echo(self, trailing_slash):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/tasks%s' % (
+            url = '%s/%s/tasks%s' % (
                 endpoint,
+                _api_version,
                 '/' if trailing_slash else '',
             )
             body = {
                 'docker_image': 'ubuntu',
-                'tag': 'latest',
                 'cmd': [
                     'echo',
                     'hello world',
@@ -249,11 +254,10 @@ class TasksTestCase(IntegrationTestCase):
 
     def test_non_zero_exit_code(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/tasks' % endpoint
+            url = '%s/%s/tasks' % (endpoint, _api_version)
             exit_code = 1
             body = {
                 'docker_image': 'ubuntu',
-                'tag': 'latest',
                 'cmd': [
                     'bash',
                     '-c',
@@ -271,12 +275,11 @@ class TasksTestCase(IntegrationTestCase):
 
     def test_stdout_and_stderr_output(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/tasks' % endpoint
+            url = '%s/%s/tasks' % (endpoint, _api_version)
             stdout = uuid.uuid4().hex
             stderr = uuid.uuid4().hex
             body = {
                 'docker_image': 'ubuntu',
-                'tag': 'latest',
                 'cmd': [
                     'bash',
                     '-c',
@@ -297,10 +300,9 @@ class TasksTestCase(IntegrationTestCase):
 
     def test_unknown_docker_image(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/tasks' % endpoint
+            url = '%s/%s/tasks' % (endpoint, _api_version)
             body = {
                 'docker_image': 'bindle/berry',
-                'tag': 'latest',
                 'cmd': [
                     'echo',
                     'dave was here',
@@ -313,10 +315,9 @@ class TasksTestCase(IntegrationTestCase):
 
     def test_invalid_docker_image_name(self):
         def the_test(endpoint, auth):
-            url = '%s/v1.0/tasks' % endpoint
+            url = '%s/%s/tasks' % (endpoint, _api_version)
             body = {
                 'docker_image': 'IMAGE_NAME_IS_INVALID',
-                'tag': 'latest',
                 'cmd': [
                     'echo',
                     'dave was here',
@@ -331,7 +332,6 @@ class TasksTestCase(IntegrationTestCase):
         def the_test(endpoint, auth):
             bodies = [
                 {
-                    'tag': 'latest',
                     'cmd': [
                         'echo',
                         'dave was here',
@@ -339,18 +339,9 @@ class TasksTestCase(IntegrationTestCase):
                 },
                 {
                     'docker_image': 'ubuntu',
-                    'cmd': [
-                        'echo',
-                        'dave was here',
-                    ]
                 },
                 {
                     'docker_image': 'ubuntu',
-                    'tag': 'latest',
-                },
-                {
-                    'docker_image': 'ubuntu',
-                    'tag': 'latest',
                     'cmd': [
                     ]
                 },
@@ -359,7 +350,7 @@ class TasksTestCase(IntegrationTestCase):
             ]
             for body in bodies:
                 self.avoid_rate_limiting_and_sleep_one_second()
-                url = '%s/v1.0/tasks' % endpoint
+                url = '%s/%s/tasks' % (endpoint, _api_version)
                 response = requests.post(url, auth=auth, json=body)
                 self.assertEqual(response.status_code, httplib.BAD_REQUEST)
 

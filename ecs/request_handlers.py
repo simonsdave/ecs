@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 
 class TasksRequestHandler(tor_async_util.RequestHandler):
 
-    url_spec = r'/v1.0/tasks/?'
+    url_spec = r'/%s/tasks/?' % ecs.__api_version__
 
     # PDD = Post Debug Details
     PDD_BAD_REQUEST_BODY = 0x0001
@@ -38,7 +38,6 @@ class TasksRequestHandler(tor_async_util.RequestHandler):
         creds = request_body.get('creds', {})
         acr = async_actions.AsyncEndToEndContainerRunner(
             request_body['docker_image'],
-            request_body['tag'],
             request_body['cmd'],
             creds.get('email', None),
             creds.get('username', None),
@@ -76,7 +75,7 @@ class TasksRequestHandler(tor_async_util.RequestHandler):
 
 class VersionRequestHandler(tor_async_util.RequestHandler):
 
-    url_spec = r'/v1.0/_version'
+    url_spec = r'/%s/_version' % ecs.__api_version__
 
     @tornado.web.asynchronous
     def get(self):
@@ -85,7 +84,7 @@ class VersionRequestHandler(tor_async_util.RequestHandler):
 
 class NoOpRequestHandler(tor_async_util.RequestHandler):
 
-    url_spec = r'/v1.0/_noop'
+    url_spec = r'/%s/_noop' % ecs.__api_version__
 
     @tornado.web.asynchronous
     def get(self):
@@ -94,7 +93,7 @@ class NoOpRequestHandler(tor_async_util.RequestHandler):
 
 class HealthRequestHandler(tor_async_util.RequestHandler):
 
-    url_spec = r'/v1.0/_health'
+    url_spec = r'/%s/_health' % ecs.__api_version__
 
     @tornado.web.asynchronous
     def get(self):

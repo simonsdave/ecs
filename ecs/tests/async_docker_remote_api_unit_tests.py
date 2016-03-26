@@ -157,20 +157,17 @@ class AsyncImagePullTestCase(unittest.TestCase):
 
     def test_ctr_without_async_state(self):
         docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
         email = uuid.uuid4().hex
         username = uuid.uuid4().hex
         password = uuid.uuid4().hex
 
         aip = AsyncImagePull(
             docker_image,
-            tag,
             email,
             username,
             password)
 
         self.assertTrue(aip.docker_image is docker_image)
-        self.assertTrue(aip.tag is tag)
         self.assertTrue(aip.email is email)
         self.assertTrue(aip.username is username)
         self.assertTrue(aip.password is password)
@@ -179,7 +176,6 @@ class AsyncImagePullTestCase(unittest.TestCase):
 
     def test_ctr_with_async_state(self):
         docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
         email = uuid.uuid4().hex
         username = uuid.uuid4().hex
         password = uuid.uuid4().hex
@@ -187,14 +183,12 @@ class AsyncImagePullTestCase(unittest.TestCase):
 
         aip = AsyncImagePull(
             docker_image,
-            tag,
             email,
             username,
             password,
             async_state)
 
         self.assertTrue(aip.docker_image is docker_image)
-        self.assertTrue(aip.tag is tag)
         self.assertTrue(aip.email is email)
         self.assertTrue(aip.username is username)
         self.assertTrue(aip.password is password)
@@ -202,156 +196,30 @@ class AsyncImagePullTestCase(unittest.TestCase):
 
     def test_error_pulling_image(self):
         response = mock.Mock(
-            code=httplib.NOT_FOUND,
+            code=httplib.INTERNAL_SERVER_ERROR,
             body=None,
             time_info={},
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response=response):
+
+        docker_image = uuid.uuid4().hex
+
+        chunks = [
+            'ok',
+            'great',
+        ]
+
+        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
             callback = mock.Mock()
             aip = AsyncImagePull(
-                docker_image=uuid.uuid4().hex,
-                tag=uuid.uuid4().hex,
+                docker_image=docker_image,
                 email=uuid.uuid4().hex,
                 username=uuid.uuid4().hex,
                 password=uuid.uuid4().hex)
             aip.pull(callback)
             callback.assert_called_once_with(False, None, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_ERROR_PULLING_IMAGE)
-
-    def test_image_not_found(self):
-        docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        chunks = [
-            (
-                '{"errorDetail":{"message":"Error: image %s:%s not found"},'
-                '"error":"Error: image %s:%s not found"}\n'
-            ) % (docker_image, tag, docker_image, tag),
-        ]
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                tag=tag,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_image_not_found_invalid_namespace_name(self):
-        docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        chunks = [
-            'Invalid namespace name (%s). Only [a-z0-9-_] are allowed\n' % docker_image,
-        ]
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                tag=tag,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_image_not_found_invalid_repo_name(self):
-        docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        chunks = [
-            'Invalid repository name (%s), only [a-z0-9-_.] are allowed\n' % docker_image,
-        ]
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                tag=tag,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_image_not_found_cannot_connect_to_registry(self):
-        docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        chunks = [
-            'random stuff "no such host" other random stuff'
-        ]
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                tag=tag,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_repo_name_component_must_match(self):
-        docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-        chunks = [
-            'bindle bindle bear repository name component must match bla bla bla'
-        ]
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                tag=tag,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
 
     def test_happy_path_with_creds(self):
         response = mock.Mock(
@@ -361,16 +229,19 @@ class AsyncImagePullTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
+
+        docker_image = uuid.uuid4().hex
+
         chunks = [
             'ok',
             'great',
-            'good',
+            r'{"status":"Status: Image is up to date for %s"}' % docker_image,
         ]
+
         with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
             callback = mock.Mock()
             aip = AsyncImagePull(
-                docker_image=uuid.uuid4().hex,
-                tag=uuid.uuid4().hex,
+                docker_image=docker_image,
                 email=uuid.uuid4().hex,
                 username=uuid.uuid4().hex,
                 password=uuid.uuid4().hex)
@@ -386,11 +257,18 @@ class AsyncImagePullTestCase(unittest.TestCase):
             request_time=0.042,
             effective_url='http://www.bindle.com',
             request=mock.Mock(method='GET'))
-        with AsyncHttpClientFetchPatcher(response=response):
+
+        docker_image = uuid.uuid4().hex
+
+        chunks = [
+            'ok',
+            'great',
+            r'{"status":"Status: Downloaded newer image for %s"}' % docker_image,
+        ]
+
+        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
             callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=uuid.uuid4().hex,
-                tag=uuid.uuid4().hex)
+            aip = AsyncImagePull(docker_image=docker_image)
             aip.pull(callback)
             callback.assert_called_once_with(True, True, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_OK)
@@ -400,26 +278,22 @@ class AsyncContainerCreateTestCase(unittest.TestCase):
 
     def test_ctr_without_async_state(self):
         docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
         cmd = uuid.uuid4().hex
 
-        acc = AsyncContainerCreate(docker_image, tag, cmd)
+        acc = AsyncContainerCreate(docker_image, cmd)
 
         self.assertTrue(acc.docker_image is docker_image)
-        self.assertTrue(acc.tag is tag)
         self.assertTrue(acc.cmd is cmd)
         self.assertIsNone(acc.async_state)
 
     def test_ctr_with_async_state(self):
         docker_image = uuid.uuid4().hex
-        tag = uuid.uuid4().hex
         cmd = uuid.uuid4().hex
         async_state = uuid.uuid4().hex
 
-        acc = AsyncContainerCreate(docker_image, tag, cmd, async_state)
+        acc = AsyncContainerCreate(docker_image, cmd, async_state)
 
         self.assertTrue(acc.docker_image is docker_image)
-        self.assertTrue(acc.tag is tag)
         self.assertTrue(acc.cmd is cmd)
         self.assertTrue(acc.async_state is async_state)
 
@@ -435,7 +309,6 @@ class AsyncContainerCreateTestCase(unittest.TestCase):
             callback = mock.Mock()
             acc = AsyncContainerCreate(
                 docker_image=uuid.uuid4().hex,
-                tag=uuid.uuid4().hex,
                 cmd=uuid.uuid4().hex)
             acc.create(callback)
             callback.assert_called_once_with(False, None, acc)
@@ -455,7 +328,6 @@ class AsyncContainerCreateTestCase(unittest.TestCase):
             callback = mock.Mock()
             acc = AsyncContainerCreate(
                 docker_image=uuid.uuid4().hex,
-                tag=uuid.uuid4().hex,
                 cmd=uuid.uuid4().hex)
             acc.create(callback)
             callback.assert_called_once_with(
