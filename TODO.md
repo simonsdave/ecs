@@ -6,6 +6,8 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
+* allow ECS to Docker Remote API connect & request timeouts to
+  be configurable
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just returning
