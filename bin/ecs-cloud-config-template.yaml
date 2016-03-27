@@ -187,7 +187,9 @@ write_files:
       port=80
       log_level=info
       max_concurrent_executing_http_requests=250
-      docker_remote_api=http://172.17.42.1:2375
+      # 172.17.0.1 is the docker bridged network from docker 1.9+
+      # prior to docker 1.9, the docker bridge network was 172.17.42.1
+      docker_remote_api=http://172.17.0.1:2375
   #
   # see https://cloud.google.com/compute/docs/load-balancing/health-checks
   # to understand the motivation for port 8080 below & the inclusion of
