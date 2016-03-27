@@ -7,11 +7,7 @@
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 source "$SCRIPT_DIR_NAME/ecsutil.sh"
 
-UNSECURED_TRAFFIC_PORT=80
-UNSECURED_TRAFFIC_FIREWALL_RULE_NAME=allow-non-tls-traffic
-
-SECURED_TRAFFIC_PORT=443
-SECURED_TRAFFIC_FIREWALL_RULE_NAME=allow-tls-traffic
+NETWORK_NAME=ecs
 
 # note - see note associated with NUMBER_NODES on how choosing
 # this machine type needs to be done with consideration of the entire
@@ -19,6 +15,7 @@ SECURED_TRAFFIC_FIREWALL_RULE_NAME=allow-tls-traffic
 MACHINE_TYPE=n1-standard-2
 
 # name of the image for each node in the cluster
+# see https://coreos.com/os/docs/latest/booting-on-google-compute-engine.html#choosing-a-channel
 IMAGE_NAME=https://www.googleapis.com/compute/v1/projects/coreos-cloud/global/images/coreos-stable-835-13-0-v20160218
 
 # regions and zones within regions
@@ -45,7 +42,6 @@ FORWARDING_RULE_NAME=forwarding-rule
 
 # the name of each node in the cluster starts with this prefix
 INSTANCE_NAME_PREFIX=ecs-node
-
 
 create_http_health_check() {
     local HTTP_HEALTH_CHECK_NAME=${1:-}
@@ -97,57 +93,50 @@ delete_http_health_check() {
     return 0
 }
 
-create_firewall_rule() {
-    local FIREWALL_RULE_NAME=${1:-}
-    local TARGET_TAG_NAME=${2:-}
-    local PORT=${3:-}
-    echo_if_verbose "Creating firewall rule '$FIREWALL_RULE_NAME'"
-    gcloud \
-        compute firewall-rules create \
-        --quiet \
-        $FIREWALL_RULE_NAME \
-        --target-tags $TARGET_TAG_NAME \
-        --allow tcp:$PORT \
-        >& /dev/null
-    echo_if_verbose "Successfully created firewall rule '$FIREWALL_RULE_NAME'"
-    return 0
-}
-
-inspect_firewall_rule() {
-    local FIREWALL_RULE_NAME=${1:-}
-    echo_if_verbose "Inspecting firewall rule '$FIREWALL_RULE_NAME'"
-    gcloud compute firewall-rules describe $FIREWALL_RULE_NAME
-    return 0
-}
-
-delete_firewall_rule() {
-    local FIREWALL_RULE_NAME=${1:-}
-    echo_if_verbose "Deleting firewall rule '$FIREWALL_RULE_NAME'"
-    gcloud compute firewall-rules delete --quiet $FIREWALL_RULE_NAME >& /dev/null
-    echo_if_verbose "Deleted firewall rule '$FIREWALL_RULE_NAME'"
-    return 0
-}
-
 create_firewall_rules() {
-    create_firewall_rule \
-        $UNSECURED_TRAFFIC_FIREWALL_RULE_NAME \
-        $TAG_NAME \
-        $UNSECURED_TRAFFIC_PORT
-    create_firewall_rule \
-        $SECURED_TRAFFIC_FIREWALL_RULE_NAME \
-        $TAG_NAME \
-        $SECURED_TRAFFIC_PORT
+    gcloud \
+        compute firewall-rules create $NETWORK_NAME-allow-icmp \
+        --quiet \
+        --network $NETWORK_NAME \
+        --allow icmp
+
+    gcloud \
+        compute firewall-rules create $NETWORK_NAME-allow-ssh \
+        --quiet \
+        --network $NETWORK_NAME \
+        --allow tcp:22
+
+    gcloud \
+        compute firewall-rules create $NETWORK_NAME-allow-internal \
+        --quiet \
+        --network $NETWORK_NAME \
+        --source-ranges '10.240.0.0/16' \
+        --allow tcp:1-65535,udp:1-65535,icmp
+
+    gcloud \
+        compute firewall-rules create $NETWORK_NAME-allow-http \
+        --quiet \
+        --network $NETWORK_NAME \
+        --allow tcp:80
+
+    gcloud \
+        compute firewall-rules create $NETWORK_NAME-allow-https \
+        --quiet \
+        --network $NETWORK_NAME \
+        --allow tcp:443
+
     return 0
 }
 
 inspect_firewall_rules() {
-    inspect_firewall_rule $UNSECURED_TRAFFIC_FIREWALL_RULE_NAME
-    inspect_firewall_rule $SECURED_TRAFFIC_FIREWALL_RULE_NAME
+    gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$
 }
 
 delete_firewall_rules() {
-    delete_firewall_rule $SECURED_TRAFFIC_FIREWALL_RULE_NAME
-    delete_firewall_rule $UNSECURED_TRAFFIC_FIREWALL_RULE_NAME
+    for FIREWALL_RULE_NAME in $(gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$ | tail -n +2 | awk '{print $1}'); do
+        gcloud compute firewall-rules delete --quiet $FIREWALL_RULE_NAME
+    done
+
     return 0
 }
 
@@ -160,7 +149,6 @@ create_target_pool() {
         $TARGET_POOL_NAME \
         --region $(get_region) \
         >& /dev/null
-        # :TODO: should be a --health-check in here too
     if [ $? -ne 0 ] ; then
         echo_to_stderr "Error creating target pool '$TARGET_POOL_NAME'"
         exit 1
@@ -234,8 +222,7 @@ delete_forwarding_rule() {
 }
 
 deployment_create_network() {
-    echo_if_verbose "Adjusting Default Network's Firewall Rules" "blue"
-    delete_firewall_rule default-allow-rdp
+    gcloud compute networks create $NETWORK_NAME
 
     echo_if_verbose "Creating Firewall Rules" "blue"
     create_firewall_rules
@@ -276,6 +263,8 @@ deployment_delete_network() {
 
     echo_if_verbose "Deleting Firewall Rule(s)" "blue"
     delete_firewall_rules
+
+    gcloud compute networks delete --quiet $NETWORK_NAME
 }
 
 get_instance_ip() {
@@ -360,6 +349,7 @@ deployment_create_node() {
         compute instances create $INSTANCE_NAME \
         --machine-type $MACHINE_TYPE \
         --image $IMAGE_NAME \
+        --network $NETWORK_NAME \
         --tags $TAG_NAME \
         --metadata-from-file user-data=$CLOUD_CONFIG \
         >& /dev/null
@@ -408,8 +398,7 @@ deployment_create() {
     local CLOUD_CONFIG=$(deployment_create_cloud_config "$@")
     local NUMBER_OF_NODES=${9:-}
 
-    for i in `seq 1 $NUMBER_OF_NODES`;
-    do
+    for i in `seq 1 $NUMBER_OF_NODES`; do
         deployment_create_node "$CLOUD_CONFIG"
     done
 
@@ -429,11 +418,11 @@ deployment_inspect() {
 deployment_delete() {
     echo_if_verbose "Deleting Deployment" "yellow"
 
-    deployment_delete_network
-
     for node_name in $(get_all_node_names); do
         deployment_delete_node $node_name
     done
+
+    deployment_delete_network
 }
 
 deployment_usage() {
