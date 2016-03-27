@@ -16,7 +16,7 @@ MACHINE_TYPE=n1-standard-2
 
 # name of the image for each node in the cluster
 # see https://coreos.com/os/docs/latest/booting-on-google-compute-engine.html#choosing-a-channel
-IMAGE_NAME=https://www.googleapis.com/compute/v1/projects/coreos-cloud/global/images/coreos-stable-835-13-0-v20160218
+IMAGE_NAME=https://www.googleapis.com/compute/v1/projects/coreos-cloud/global/images/coreos-stable-899-13-0-v20160323
 
 # regions and zones within regions
 # all resources are either zonal or regional
