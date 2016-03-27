@@ -68,6 +68,35 @@ documentation:
       any of ECS' endpoints.
 
       ##### Firewalls
+      Every ECS deployment employs 2 different types of firewalls - network and node.
+      
+      ##### Network Firewall
+      All nodes in an ECS cluster sit on a single network.
+      [Firewall rules](https://cloud.google.com/compute/docs/networking#firewalls)
+      define what traffic is permitted into this network.
+      Requests into an deployment are load balanced across ECS cluster nodes using
+      [Google Compute Engine's (layer 5) Network Load Balancing](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling#network_load_balancing).
+
+      <a href="https://nmap.org">nmap</a> can also be used to validate the
+      configuration of the firewall rules and load balancer.
+      Below is sample ```nmap``` output.
+
+      ```bash
+      >nmap api.ecs.cloudfeaster.com
+
+      Starting Nmap 6.40 ( http://nmap.org ) at 2016-03-27 07:33 EST
+      Nmap scan report for api.ecs.cloudfeaster.com (104.197.213.254)
+      Host is up (0.082s latency).
+      rDNS record for 104.197.213.254: 254.213.197.104.bc.googleusercontent.com
+      Not shown: 998 filtered ports
+      PORT    STATE SERVICE
+      80/tcp  open  http
+      443/tcp open  https
+
+      Nmap done: 1 IP address (1 host up) scanned in 12.14 seconds
+      ```
+
+      ##### Node Firewall
       Each node in an ECS cluster uses a combination of 
       <a href="https://wiki.ubuntu.com/UncomplicatedFirewall">iptables & netfilter</a>
       as a firewall.
@@ -81,42 +110,19 @@ documentation:
       against an ECS node with an external IP of ```104.154.102.140```.
 
       ```bash
-      > nmap 104.154.102.140
+      >nmap 23.251.145.126
 
-      Starting Nmap 6.40 ( http://nmap.org ) at 2016-03-15 05:52 EST
-      Nmap scan report for 140.102.154.104.bc.googleusercontent.com (104.154.102.140)
-      Host is up (0.047s latency).
-      Not shown: 996 filtered ports
-      PORT     STATE  SERVICE
-      22/tcp   open   ssh
-      80/tcp   open   http
-      443/tcp  open   https
-
-      Nmap done: 1 IP address (1 host up) scanned in 40.55 seconds
-      >
-      ```
-
-      Typically requests into an ECS deployment are directed to a load
-      balancer sitting in front of an ECS cluster.
-      Network traffic is load balanced across an ECS cluster using
-      [Google Compute Engine's (layer 5) Network Load Balancing](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling#network_load_balancing).
-      <a href="https://nmap.org">nmap</a> can also be used to validate the
-      configuration of the load balancer which also implements a firewall.
-      Below is sample ```nmap``` output.
-
-      ```bash
-      >nmap api.ecs.cloudfeaster.com
-
-      Starting Nmap 6.40 ( http://nmap.org ) at 2016-03-19 18:30 EST
-      Nmap scan report for api.ecs.cloudfeaster.com (104.197.67.63)
-      Host is up (0.056s latency).
-      rDNS record for 104.197.67.63: 63.67.197.104.bc.googleusercontent.com
-      Not shown: 998 filtered ports
+      Starting Nmap 6.40 ( http://nmap.org ) at 2016-03-27 07:42 EST
+      Nmap scan report for 126.145.251.23.bc.googleusercontent.com (23.251.145.126)
+      Host is up (0.044s latency).
+      Not shown: 997 filtered ports
       PORT    STATE SERVICE
+      22/tcp  open  ssh
       80/tcp  open  http
       443/tcp open  https
 
-      Nmap done: 1 IP address (1 host up) scanned in 4.90 seconds
+      Nmap done: 1 IP address (1 host up) scanned in 6.71 seconds
+      >
       ```
 
   - title: Request and Rate Limiting
