@@ -64,7 +64,7 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
 
         api_version = semantic_version.Version(response_body['ApiVersion'], partial=True)
         min_api_version = semantic_version.Version('1.18', partial=True)
-        max_api_version = semantic_version.Version('1.20', partial=True)
+        max_api_version = semantic_version.Version('1.21', partial=True)
         api_version_ok = (min_api_version <= api_version) and (api_version <= max_api_version)
         details = {
             'connectivity': True,
