@@ -38,7 +38,7 @@ HTTP_HEALTH_CHECK_PORT=8080
 HTTP_HEALTH_CHECK_PATH=/_only_for_lb_health_check
 
 # creating a forwarding rule is like creating a load balancer
-FORWARDING_RULE_NAME=forwarding-rule
+FORWARDING_RULE_NAME=$NETWORK_NAME-forwarding-rule
 
 create_http_health_check() {
     local HTTP_HEALTH_CHECK_NAME=${1:-}
@@ -175,18 +175,7 @@ create_forwarding_rule() {
     if [ $? -ne 0 ] ; then
         exit 1
     fi
-    echo $(get_forwarding_rule_ip)
-}
 
-inspect_forwarding_rule() {
-    echo_if_verbose "Inspecting forwarding rule '$FORWARDING_RULE_NAME'"
-    gcloud \
-        compute forwarding-rules describe \
-        --region $(get_region) \
-        $FORWARDING_RULE_NAME
-}
-
-get_forwarding_rule_ip() {
     gcloud \
         compute forwarding-rules describe $FORWARDING_RULE_NAME \
         --region $(get_region) | \
@@ -217,7 +206,7 @@ deployment_create_network() {
 
     echo_if_verbose "Creating Forwarding Rule" "blue"
     local FORWARDING_RULE_IP=$(create_forwarding_rule)
-    echo "$FORWARDING_RULE_IP"
+    echo "Access ECS cluster @ $FORWARDING_RULE_IP"
 
     create_http_health_check \
         $HTTP_HEALTH_CHECK_NAME \
@@ -227,29 +216,29 @@ deployment_create_network() {
 }
 
 deployment_inspect_network() {
-    echo_if_verbose "Firewall Rules" "blue"
+    echo_if_verbose "Firewall Rule(s)" "blue"
     gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$
 
-    echo_if_verbose "Target Pools" "blue"
+    echo_if_verbose "Target Pool(s)" "blue"
     gcloud compute target-pools list --regexp ^$NETWORK_NAME.*$
 
-    echo_if_verbose "Forwarding Rules" "blue"
-    inspect_forwarding_rule
+    echo_if_verbose "Forwarding Rule(s)" "blue"
+    gcloud compute forwarding-rules list --region $(get_region) --regexp ^$NETWORK_NAME.*$
 }
 
 deployment_delete_network() {
     delete_http_health_check $HTTP_HEALTH_CHECK_NAME $TARGET_POOL_NAME
 
-    echo_if_verbose "Deleting Forwarding Rule" "blue"
+    echo_if_verbose "Deleting Forwarding Rule(s)" "blue"
     delete_forwarding_rule
 
-    echo_if_verbose "Deleting Target Pool" "blue"
+    echo_if_verbose "Deleting Target Pool(s)" "blue"
     delete_target_pool
 
     echo_if_verbose "Deleting Firewall Rule(s)" "blue"
     delete_firewall_rules
 
-    echo_if_verbose "Deleting Network" "blue"
+    echo_if_verbose "Deleting Network(s)" "blue"
     gcloud compute networks delete --quiet $NETWORK_NAME
 }
 
