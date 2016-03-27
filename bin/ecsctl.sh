@@ -40,9 +40,6 @@ HTTP_HEALTH_CHECK_PATH=/_only_for_lb_health_check
 # creating a forwarding rule is like creating a load balancer
 FORWARDING_RULE_NAME=forwarding-rule
 
-# the name of each node in the cluster starts with this prefix
-INSTANCE_NAME_PREFIX=ecs-node
-
 create_http_health_check() {
     local HTTP_HEALTH_CHECK_NAME=${1:-}
     local HTTP_HEALTH_CHECK_PORT=${2:-}
@@ -128,10 +125,6 @@ create_firewall_rules() {
     return 0
 }
 
-inspect_firewall_rules() {
-    gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$
-}
-
 delete_firewall_rules() {
     for FIREWALL_RULE_NAME in $(gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$ | tail -n +2 | awk '{print $1}'); do
         gcloud compute firewall-rules delete --quiet $FIREWALL_RULE_NAME
@@ -156,15 +149,6 @@ create_target_pool() {
 
     echo_if_verbose "Successfully created target pool '$TARGET_POOL_NAME'"
     return 0
-}
-
-inspect_target_pool() {
-    echo_if_verbose "Inspecting target pool rule '$TARGET_POOL_NAME'"
-    gcloud \
-        compute target-pools describe \
-        --quiet \
-        --region $(get_region) \
-        $TARGET_POOL_NAME
 }
 
 delete_target_pool() {
@@ -222,6 +206,7 @@ delete_forwarding_rule() {
 }
 
 deployment_create_network() {
+    echo_if_verbose "Creating Network" "blue"
     gcloud compute networks create $NETWORK_NAME
 
     echo_if_verbose "Creating Firewall Rules" "blue"
@@ -242,13 +227,13 @@ deployment_create_network() {
 }
 
 deployment_inspect_network() {
-    echo_if_verbose "Inspecting Firewall Rules" "blue"
-    inspect_firewall_rules
+    echo_if_verbose "Firewall Rules" "blue"
+    gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$
 
-    echo_if_verbose "Inspecting Target Pool" "blue"
-    inspect_target_pool
+    echo_if_verbose "Target Pools" "blue"
+    gcloud compute target-pools list --regexp ^$NETWORK_NAME.*$
 
-    echo_if_verbose "Inspecting Forwarding Rule" "blue"
+    echo_if_verbose "Forwarding Rules" "blue"
     inspect_forwarding_rule
 }
 
@@ -264,6 +249,7 @@ deployment_delete_network() {
     echo_if_verbose "Deleting Firewall Rule(s)" "blue"
     delete_firewall_rules
 
+    echo_if_verbose "Deleting Network" "blue"
     gcloud compute networks delete --quiet $NETWORK_NAME
 }
 
@@ -273,11 +259,6 @@ get_instance_ip() {
         compute instances describe $INSTANCE_NAME | \
         grep natIP | \
         sed -e "s/natIP://g"
-}
-
-get_all_node_names() {
-    local PATTERN="^$INSTANCE_NAME_PREFIX-.+"
-    gcloud compute instances list | awk -v pattern="$PATTERN" '$1 ~ pattern {print $1}'
 }
 
 deployment_create_cloud_config() {
@@ -343,7 +324,7 @@ deployment_create_node() {
 
     local CLOUD_CONFIG=${1:-}
 
-    INSTANCE_NAME="$INSTANCE_NAME_PREFIX-$(python -c 'import uuid; print uuid.uuid4().hex')"
+    INSTANCE_NAME="$NETWORK_NAME-$(python -c 'import uuid; print uuid.uuid4().hex')"
 
     gcloud \
         compute instances create $INSTANCE_NAME \
@@ -410,16 +391,15 @@ deployment_inspect() {
     echo_if_verbose "Inspecting Deployment" "yellow"
     deployment_inspect_network
 
-    for node_name in $(get_all_node_names); do
-        echo $node_name
-    done
+    echo_if_verbose "Instances" "yellow"
+    gcloud compute instances list --regexp ^$NETWORK_NAME.*$
 }
 
 deployment_delete() {
     echo_if_verbose "Deleting Deployment" "yellow"
 
-    for node_name in $(get_all_node_names); do
-        deployment_delete_node $node_name
+    for INSTANCE_NAME in $(gcloud compute instances list --regexp ^$NETWORK_NAME.*$ | tail -n +2 | awk '{print $1}'); do
+        deployment_delete_node $INSTANCE_NAME
     done
 
     deployment_delete_network
