@@ -166,7 +166,7 @@ create_forwarding_rule() {
         --target-pool $TARGET_POOL_NAME \
         --region $(get_region) \
         --ip-protoco TCP \
-        --port-range 80-65535 \
+        --port-range 80-443 \
         >& /dev/null
     if [ $? -ne 0 ] ; then
         exit 1
