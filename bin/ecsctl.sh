@@ -211,23 +211,6 @@ deployment_create_network() {
         $TARGET_POOL_NAME
 }
 
-deployment_inspect_network() {
-    echo_if_verbose "HTTP Health Check(s)" "blue"
-    gcloud compute http-health-checks list --regexp ^$NETWORK_NAME.*$
-
-    echo_if_verbose "Firewall Rule(s)" "blue"
-    gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$
-
-    echo_if_verbose "Target Pool(s)" "blue"
-    gcloud compute target-pools list --regexp ^$NETWORK_NAME.*$
-
-    echo_if_verbose "Forwarding Rule(s)" "blue"
-    gcloud compute forwarding-rules list --region $(get_region) --regexp ^$NETWORK_NAME.*$
-
-    echo_if_verbose "Network" "blue"
-    gcloud compute networks list --regexp ^$NETWORK_NAME$
-}
-
 deployment_delete_network() {
     echo_if_verbose "Deleting HTTP Health Check(s)" "blue"
     delete_http_health_check $HTTP_HEALTH_CHECK_NAME $TARGET_POOL_NAME
@@ -381,10 +364,24 @@ deployment_create() {
 
 deployment_inspect() {
     echo_if_verbose "Inspecting Deployment" "yellow"
-    deployment_inspect_network
 
-    echo_if_verbose "Instances" "yellow"
+    echo_if_verbose "Instances" "blue"
     gcloud compute instances list --regexp ^$NETWORK_NAME.*$
+
+    echo_if_verbose "HTTP Health Check(s)" "blue"
+    gcloud compute http-health-checks list --regexp ^$NETWORK_NAME.*$
+
+    echo_if_verbose "Target Pool(s)" "blue"
+    gcloud compute target-pools list --regexp ^$NETWORK_NAME.*$
+
+    echo_if_verbose "Forwarding Rule(s)" "blue"
+    gcloud compute forwarding-rules list --region $(get_region) --regexp ^$NETWORK_NAME.*$
+
+    echo_if_verbose "Firewall Rule(s)" "blue"
+    gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$
+
+    echo_if_verbose "Network" "blue"
+    gcloud compute networks list --regexp ^$NETWORK_NAME$
 }
 
 deployment_delete() {
