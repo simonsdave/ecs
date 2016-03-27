@@ -21,10 +21,6 @@ IMAGE_NAME=https://www.googleapis.com/compute/v1/projects/coreos-cloud/global/im
 # regions and zones within regions
 # all resources are either zonal or regional
 
-# tags are associated with a VM instance and are typically
-# used to "tag" classes of VMs
-TAG_NAME=node
-
 # load balances (or fowarding rules in GCE land) load
 # balance across collections of VM instances where the
 # VM instances are in the same target pool
@@ -320,7 +316,7 @@ deployment_create_node() {
         --machine-type $MACHINE_TYPE \
         --image $IMAGE_NAME \
         --network $NETWORK_NAME \
-        --tags $TAG_NAME \
+        --tags $NETWORK_NAME-node \
         --metadata-from-file user-data=$CLOUD_CONFIG \
         >& /dev/null
     if [ $? -ne 0 ] ; then
