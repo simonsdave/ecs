@@ -28,7 +28,7 @@ TAG_NAME=node
 # load balances (or fowarding rules in GCE land) load
 # balance across collections of VM instances where the
 # VM instances are in the same target pool
-TARGET_POOL_NAME=target-pool
+TARGET_POOL_NAME=$NETWORK_NAME-target-pool
 
 # target pools issue periodic http health checks to confirm
 # instances are healthy. HTTP_HEALTH_CHECK_NAME is the name
