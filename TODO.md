@@ -25,6 +25,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 ### Required
 
 * ecsctl.sh should accept deployment config input via json doc
+* ecsctl.sh should support use of static IP for forwarding rule
 * ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * add instrumentation using [SignalFX](https://signalfx.com/)
 * add log aggregation
