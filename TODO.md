@@ -28,6 +28,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * ecsctl.sh should support use of static IP for forwarding rule
 * ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * add instrumentation using [SignalFX](https://signalfx.com/)
+  * try [docker-collectd](https://github.com/signalfx/docker-collectd) and [docker-collectd-plugin](https://github.com/signalfx/docker-collectd-plugin) 
 * add log aggregation
   * [Docker - configure logging drivers](https://docs.docker.com/engine/admin/logging/overview/)
   * [16 Apr '15 - SumoLogic - New Docker Logging Drivers](https://www.sumologic.com/2015/04/16/new-docker-logging-drivers/)
