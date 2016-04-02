@@ -7,7 +7,10 @@ VM running [Ubuntu 14.04](http://releases.ubuntu.com/14.04/).
 Below are the instructions for spinning up such a VM.
 
 Spin up a VM using [create_dev_env.sh](create_dev_env.sh)
-(instead of using ```vagrant up```).
+(instead of using ```vagrant up``` - this is the only step
+that standard vagrant commands aren't used - after provisioning
+the VM you will use ```vagrant ssh```, ```vagrant halt```,
+```vagrant up```, ```vagrant status```, etc).
 
 ```bash
 >./create_dev_env.sh
