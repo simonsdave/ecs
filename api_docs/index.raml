@@ -218,8 +218,8 @@ documentation:
         "stderr": "",
         "exitCode": 0
       }
-      >echo aGVsbG8gd29ybGQhISEK | base64 --decode
-      'hello world!!!\n'
+      >echo ">>>$(echo aGVsbG8gd29ybGQhISEK | base64 --decode)<<<"
+      >>>hello world!!!\n<<<
       >
       ```
 
