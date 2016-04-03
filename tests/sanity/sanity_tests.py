@@ -8,6 +8,11 @@ import unittest
 from nose.plugins.attrib import attr
 import requests
 
+#
+# defines the api version that this set of tests validates
+#
+_api_version = r'v1.1'
+
 
 class SanityTestCase(unittest.TestCase):
     """An abstract base class for all sanity tests."""
@@ -33,10 +38,9 @@ class TasksTestCase(SanityTestCase):
 
         for (size, expected_status_code) in sizes.iteritems():
             def the_test(endpoint, auth):
-                url = '%s/v1.0/tasks' % endpoint
+                url = '%s/%s/tasks' % (endpoint, _api_version)
                 body = {
-                    'docker_image': 'ubuntu',
-                    'tag': 'latest',
+                    'docker_image': 'ubuntu:14.04',
                     'cmd': [
                         'echo',
                         '0' * size,
