@@ -18,13 +18,13 @@ import requests
 
 """quick def'n"""
 _quick_check_name = 'ECS Quick'
-_quick_check_url = '/v1.0/_health?quick=true'
+_quick_check_url = '/v1.1/_health?quick=true'
 _quick_check_resolution = 1
 
 
 """Name of the slow health check."""
 _slow_check_name = 'ECS'
-_slow_check_url = '/v1.0/_health?quick=false'
+_slow_check_url = '/v1.1/_health?quick=false'
 _slow_check_resolution = 5
 
 
