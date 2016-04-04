@@ -7,17 +7,8 @@
 #   https://coreos.com/os/docs/latest/cloud-config.html
 #
 # This file is a template. In order for this template to be used as a
-# real cloud-config the following variables need to be replaced:
-#
-#   %DISCOVERY_TOKEN%
-#
-#   %DOCS_DOMAIN%
-#   %DOCS_CERT%
-#   %DOCS_KEY%
-#
-#   %API_DOMAIN%
-#   %API_CERT%
-#   %API_KEY%
+# real cloud-config, a number of variables of the form %<variable-name>%
+# need to be replaced.
 #
 # If changes are made to this file, the file can be validated
 # using https://coreos.com/validate/
@@ -72,6 +63,36 @@ coreos:
           ListenStream=49153
     - name: fleet.service
       command: start
+      #
+      # the signalfx unit is configured as per the documentation
+      # at https://github.com/signalfx/docker-collectd - it's worth
+      # noting the comment @ the end of the "How to use this image"
+      # section in the main README.md
+      #
+    - name: signalfx.service
+      command: start
+      content: |
+        [Unit]
+        Description=Metrics Collection by SignalFX
+        After=docker.service
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        TimeoutStartSec=0
+        ExecStartPre=-/usr/bin/docker kill signalfx
+        ExecStartPre=-/usr/bin/docker rm signalfx
+        ExecStartPre=/usr/bin/docker pull quay.io/signalfuse/collectd
+        ExecStart=/usr/bin/docker run \
+          --name=signalfx \
+          --privileged \
+          -e "SF_API_TOKEN=C-ecygVn1kS4ixyNPs6zJw" \
+          -v /proc:/mnt/proc:ro \
+          -v /usr/share/coreos:/mnt/etc:ro \
+          quay.io/signalfuse/collectd
+        ExecStop=/usr/bin/docker stop signalfx
+
+        [X-Fleet]
+        Global=true
     - name: apidocs.service
       command: start
       content: |

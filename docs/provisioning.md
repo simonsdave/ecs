@@ -86,17 +86,20 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
 * the command below spins up a 3-node ECS cluster
 
 ```bash
->ecsctl.sh \
-    -v dep create \
-    docs.ecs.cloudfeaster.com \
-    api.ecs.cloudfeaster.com \
-    /vagrant/docs.ecs.cloudfeaster.com.ssl.bundle.crt \
-    /vagrant/docs.ecs.cloudfeaster.com.key \
-    /vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt \
-    /vagrant/api.ecs.cloudfeaster.com.key \
-    /vagrant/.htpasswd \
-    /vagrant/dhparam.pem \
-    3
+>cat deployment.json
+{
+    "docs_domain": "docs.ecs.cloudfeaster.com",
+    "api_domain": "api.ecs.cloudfeaster.com",
+    "docs_cert": "/vagrant/docs.ecs.cloudfeaster.com.ssl.bundle.crt",
+    "docs_key": "/vagrant/docs.ecs.cloudfeaster.com.key",
+    "api_cert": "/vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt",
+    "api_key": "/vagrant/api.ecs.cloudfeaster.com.key",
+    "api_credentials": "/vagrant/.htpasswd",
+    "dh_parameter": "/vagrant/dhparam.pem",
+    "sf_api_token": "something",
+    "number_of_nodes": 3
+}
+>ecsctl.sh -v dep create deployment.json
 >
 ```
 

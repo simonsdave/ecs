@@ -225,7 +225,7 @@ deployment_delete_network() {
     delete_firewall_rules
 
     echo_if_verbose "Deleting Network(s)" "blue"
-    gcloud compute networks delete --quiet $NETWORK_NAME
+    gcloud compute networks delete --quiet $NETWORK_NAME >& /dev/null
 }
 
 get_instance_ip() {
@@ -237,15 +237,71 @@ get_instance_ip() {
 }
 
 deployment_create_cloud_config() {
-    local DOCS_DOMAIN=${1:-}
-    local API_DOMAIN=${2:-}
-    local DOCS_CERT=${3:-}
-    local DOCS_KEY=${4:-}
-    local API_CERT=${5:-}
-    local API_KEY=${6:-}
-    local API_CREDENTIALS=${7:-}
-    local DHPARAM_PEM=${8:-}
-    local NUMBER_OF_NODES=${9:-}
+
+    if [ $# != 1 ]; then
+        echo_to_stderr "deployment_create_cloud_config() - expected a single arg - got $#"
+        exit 1
+    fi
+
+    local DOCS_DOMAIN=$(cat "$1" | jq -r .docs_domain | sed -e 's/null//g')
+    if [ "$DOCS_DOMAIN" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find docs_domain property in $1"
+        exit 1
+    fi
+
+    local API_DOMAIN=$(cat "$1" | jq -r .api_domain | sed -e 's/null//g')
+    if [ "$API_DOMAIN" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find api_domain property in $1"
+        exit 1
+    fi
+
+    local DOCS_CERT=$(cat "$1" | jq -r .docs_cert | sed -e 's/null//g')
+    if [ "$DOCS_CERT" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find docs_cert property in $1"
+        exit 1
+    fi
+
+    local DOCS_KEY=$(cat "$1" | jq -r .docs_key | sed -e 's/null//g')
+    if [ "$DOCS_KEY" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find docs_key property in $1"
+        exit 1
+    fi
+
+    local API_CERT=$(cat "$1" | jq -r .api_cert | sed -e 's/null//g')
+    if [ "$API_CERT" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find api_cert property in $1"
+        exit 1
+    fi
+
+    local API_KEY=$(cat "$1" | jq -r .api_key | sed -e 's/null//g')
+    if [ "$API_KEY" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find api_key property in $1"
+        exit 1
+    fi
+
+    local API_CREDENTIALS=$(cat "$1" | jq -r .api_credentials | sed -e 's/null//g')
+    if [ "$API_CREDENTIALS" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find api_credentials property in $1"
+        exit 1
+    fi
+
+    local DHPARAM_PEM=$(cat "$1" | jq -r .dh_parameter | sed -e 's/null//g')
+    if [ "$DHPARAM_PEM" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find dh_parameter property in $1"
+        exit 1
+    fi
+
+    local SF_API_TOKEN=$(cat "$1" | jq -r .sf_api_token | sed -e 's/null//g')
+    if [ "$SF_API_TOKEN" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find sf_api_token property in $1"
+        exit 1
+    fi
+
+    local NUMBER_OF_NODES=$(cat "$1" | jq -r .number_of_nodes | sed -e 's/null//g')
+    if [ "$NUMBER_OF_NODES" == "" ]; then
+        echo_to_stderr "deployment_create_cloud_config() - couldn't find number_of_nodes property in $1"
+        exit 1
+    fi
 
     local CLOUD_CONFIG=$(platform_safe_mktemp)
     local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
@@ -258,6 +314,7 @@ deployment_create_cloud_config() {
     echo "s|%DISCOVERY_TOKEN%|$DISCOVERY_TOKEN|g" >> "$SED_SCRIPT_1"
     echo "s|%DOCS_DOMAIN%|$DOCS_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%API_DOMAIN%|$API_DOMAIN|g" >> "$SED_SCRIPT_1"
+    echo "s|%SF_API_TOKEN%|$SF_API_TOKEN|g" >> "$SED_SCRIPT_1"
     local SED_SCRIPT_2=$(platform_safe_mktemp)
     cat "$SED_SCRIPT_1" | sed -e 's/&/\\\&/g' > "$SED_SCRIPT_2"
     cat "$CLOUD_CONFIG_TEMPLATE" | sed -f "$SED_SCRIPT_2" > "$CLOUD_CONFIG"
@@ -349,10 +406,26 @@ deployment_delete_node() {
 deployment_create() {
     echo_if_verbose "Creating Deployment" "yellow"
 
-    deployment_create_network
+    if [ $# != 1 ]; then
+        echo_to_stderr "deployment_create() - expected a single arg - got $#"
+        exit 1
+    fi
 
-    local CLOUD_CONFIG=$(deployment_create_cloud_config "$@")
-    local NUMBER_OF_NODES=${9:-}
+    cat "$1" | jq . >& /dev/null
+    if [ $? != 0 ]; then
+        echo_to_stderr "deployment_create() - $1 does not appear to be a valid json document"
+        exit 1
+    fi
+
+    local CLOUD_CONFIG=$(deployment_create_cloud_config "$1")
+
+    local NUMBER_OF_NODES=$(cat "$1" | jq -r .number_of_nodes | sed -e 's/null//g')
+    if [ "$NUMBER_OF_NODES" == "" ]; then
+        echo_to_stderr "deployment_create() - couldn't find number_of_nodes property in $1"
+        exit 1
+    fi
+
+    deployment_create_network
 
     for i in `seq 1 $NUMBER_OF_NODES`; do
         deployment_create_node "$CLOUD_CONFIG"
@@ -408,12 +481,12 @@ deployment_cmd() {
     shift
     case "$COMMAND" in
         CR|CREATE)
-            if [ $# != 9 ]; then
-                echo "usage: `basename $0` [-v] deploy create <docs_domain> <api_domain> <docs_cert> <docs_key> <api_cert> <api_key> <api_credentials> <dhparam> <number_of_nodes>"
+            if [ $# != 1 ]; then
+                echo "usage: `basename $0` [-v] deploy create <config>"
                 exit 1
             fi
 
-            deployment_create "$@"
+            deployment_create "$1"
             ;;
 
         INS|INSPECT)
