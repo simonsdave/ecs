@@ -404,26 +404,29 @@ deployment_delete_node() {
 }
 
 deployment_create() {
-    echo_if_verbose "Creating Deployment" "yellow"
+    local JUST_GEN_CONFIG=${1:-}
+    local DEPLOYMENT_CONFIG=${2:-}
 
-    if [ $# != 1 ]; then
-        echo_to_stderr "deployment_create() - expected a single arg - got $#"
-        exit 1
-    fi
-
-    cat "$1" | jq . >& /dev/null
+    cat "$DEPLOYMENT_CONFIG" | jq . >& /dev/null
     if [ $? != 0 ]; then
-        echo_to_stderr "deployment_create() - $1 does not appear to be a valid json document"
+        echo_to_stderr "deployment_create() - $DEPLOYMENT_CONFIG does not appear to be a valid json document"
         exit 1
     fi
 
-    local CLOUD_CONFIG=$(deployment_create_cloud_config "$1")
+    local CLOUD_CONFIG=$(deployment_create_cloud_config "$DEPLOYMENT_CONFIG")
+
+    if [ $JUST_GEN_CONFIG == 1 ]; then
+        echo "cloud config @ $CLOUD_CONFIG"
+        exit 1
+    fi
 
     local NUMBER_OF_NODES=$(cat "$1" | jq -r .number_of_nodes | sed -e 's/null//g')
     if [ "$NUMBER_OF_NODES" == "" ]; then
         echo_to_stderr "deployment_create() - couldn't find number_of_nodes property in $1"
         exit 1
     fi
+
+    echo_if_verbose "Creating Deployment" "yellow"
 
     deployment_create_network
 
@@ -481,12 +484,19 @@ deployment_cmd() {
     shift
     case "$COMMAND" in
         CR|CREATE)
+            if [ "-c" == "${1:-}" ]; then
+                local JUST_GEN_CONFIG=1
+                shift
+            else
+                local JUST_GEN_CONFIG=0
+            fi
+
             if [ $# != 1 ]; then
-                echo "usage: `basename $0` [-v] deploy create <config>"
+                echo "usage: `basename $0` [-v] deploy create [-c] <config>"
                 exit 1
             fi
 
-            deployment_create "$1"
+            deployment_create $JUST_GEN_CONFIG "$1"
             ;;
 
         INS|INSPECT)
