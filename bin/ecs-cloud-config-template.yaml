@@ -85,7 +85,7 @@ coreos:
         ExecStart=/usr/bin/docker run \
           --name=signalfx \
           --privileged \
-          -e "SF_API_TOKEN=C-ecygVn1kS4ixyNPs6zJw" \
+          -e "SF_API_TOKEN=%SF_API_TOKEN%" \
           -v /proc:/mnt/proc:ro \
           -v /usr/share/coreos:/mnt/etc:ro \
           quay.io/signalfuse/collectd
