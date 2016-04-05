@@ -33,11 +33,11 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   * [16 Dec '16 - Splunk Logging Driver for Docker](http://blogs.splunk.com/2015/12/16/splunk-logging-driver-for-docker/)
   * for Splunk Logging Driver need @ least version 1.10 of docker
   * [CoreOS release channels](https://coreos.com/releases/) which indicate Alpha channel is required
-* add status page using [Cachet](https://docs.cachethq.io/docs/get-started-with-docker)
-  and [Pingdom](https://www.pingdom.com/)
-  * [Amazon RDS](http://aws.amazon.com/rds/)
-  * [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
-  ```bash
+  * [How to get HTTP Event Collectors enabled in Splunk Cloud?](https://answers.splunk.com/answers/323085/how-to-get-http-event-collectors-enabled-in-splunk.html)
+  * [HTTP Event Collector walkthrough](http://dev.splunk.com/view/event-collector/SP-CAAAE7F)
+* add status page using [StatusPage.io](https://www.statuspage.io)
+* how are we going to do SLA monitoring? can extract check results from [Pingdom](https://www.pingdom.com/) using the [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
+    ```bash
     >PINGDOM_USERNAME=...
     >PINGDOM_PASSWORD=...
     >PINGDOM_APPKEY=...
@@ -87,7 +87,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
       ]
     }
     ```
-  * [Cachet API for adding metrics](https://docs.cachethq.io/docs/get-metric-points)
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * document operational processes 
   * how to upgrade existing ECS cluster with new service code
@@ -98,6 +97,9 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   * how to increase and decrease size of ECS cluster
 * [Core OS  updates](https://coreos.com/using-coreos/updates/)
   * [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
+  * does nginx's # of active connections
+    [ngx_http_stub_status_module](http://nginx.org/en/docs/http/ngx_http_stub_status_module.html)
+    help with figuring out when it's ok to reboot?
 * [CoreOS Hardening](https://coreos.com/os/docs/latest/coreos-hardening-guide.html)
 
 ### Nice to Have
