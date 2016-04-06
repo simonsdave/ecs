@@ -89,9 +89,9 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 }
 ```
 
-* how should we describe the resources required by 1/ ecs service 2/ apidocs service
-* document operational processes 
-  * how to upgrade existing ECS cluster with new service code
+* in ```cloud-config.yaml``` how should we describe the resources required by ecs service and apidocs service
+* add support to ```ecsctl.sh``` for increasing and decreasing size of ECS cluster
+* how to upgrade existing ECS cluster with new service code
     * don't change IPs, DNS, forwarding rule, etc.
     * just want to replace nodes behind forward rule
     * think about using [docker tags](https://medium.com/@mccode/the-misunderstood-docker-tag-latest-af3babfd6375#.x4xg3qhgn)
@@ -113,8 +113,7 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 >sudo docker push simonsdave/cloudfeaster
 ```
 
-  * how to increase and decrease size of ECS cluster
-* [Core OS  updates](https://coreos.com/using-coreos/updates/)
+* [Core OS updates](https://coreos.com/using-coreos/updates/)
   * [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
   * does nginx's # of active connections
     [ngx_http_stub_status_module](http://nginx.org/en/docs/http/ngx_http_stub_status_module.html)
@@ -157,6 +156,15 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
   * 2-tier - LB in-front of ECS cluster
   * request servicing pipeline
 * add actual performance expectation numbers in API docs
+* add CoreOS updates to security section
+* add monitoring section
+  * note can't SSH into a deployment so gotta have other ways to understand a
+    deployment's operational behavior
+  * health checks - 1/ forwarding rule to node 2/ pingdom
+  * SignalFX - system metrics, custom metrics & "top" using [docker-collectd](https://github.com/signalfx/docker-collectd) and
+    [docker-collectd-plugin](https://github.com/signalfx/docker-collectd-plugin)
+  * StatusPage.io for quick visual check
+  * incident management
 
 ## CI / CD
 
