@@ -37,56 +37,58 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   * [HTTP Event Collector walkthrough](http://dev.splunk.com/view/event-collector/SP-CAAAE7F)
 * add status page using [StatusPage.io](https://www.statuspage.io)
 * how are we going to do SLA monitoring? can extract check results from [Pingdom](https://www.pingdom.com/) using the [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
-    ```bash
-    >PINGDOM_USERNAME=...
-    >PINGDOM_PASSWORD=...
-    >PINGDOM_APPKEY=...
-    >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/checks" | jq
-    >PINGDOM_CHECK_ID=...
-    >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/results/$PINGDOM_CHECK_ID?limit=1440" | jq . > formatted_last_day_of_check_results.json
-    >head -20 formatted_last_day_of_check_results.json
+
+```bash
+>PINGDOM_USERNAME=...
+>PINGDOM_PASSWORD=...
+>PINGDOM_APPKEY=...
+>curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/checks" | jq
+>PINGDOM_CHECK_ID=...
+>curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/results/$PINGDOM_CHECK_ID?limit=1440" | jq . > formatted_last_day_of_check_results.json
+>head -20 formatted_last_day_of_check_results.json
+{
+  "activeprobes": [
+    65,
+    34,
+    68,
+    72,
+    43,
+    82,
+    60
+  ],
+  "results": [
     {
-      "activeprobes": [
-        65,
-        34,
-        68,
-        72,
-        43,
-        82,
-        60
-      ],
-      "results": [
-        {
-          "probeid": 68,
-          "time": 1458570747,
-          "status": "down",
-          "statusdesc": "Timeout (> 30s)",
-          "statusdesclong": "Socket timeout, unable to connect to server"
-        },
-        {
-          "probeid": 72,
-    >tail -20 formatted_last_day_of_check_results.json
-          "statusdesclong": "OK"
-        },
-        {
-          "probeid": 82,
-          "time": 1458510867,
-          "status": "up",
-          "responsetime": 508,
-          "statusdesc": "OK",
-          "statusdesclong": "OK"
-        },
-        {
-          "probeid": 34,
-          "time": 1458510807,
-          "status": "up",
-          "responsetime": 132,
-          "statusdesc": "OK",
-          "statusdesclong": "OK"
-        }
-      ]
+      "probeid": 68,
+      "time": 1458570747,
+      "status": "down",
+      "statusdesc": "Timeout (> 30s)",
+      "statusdesclong": "Socket timeout, unable to connect to server"
+    },
+    {
+      "probeid": 72,
+>tail -20 formatted_last_day_of_check_results.json
+      "statusdesclong": "OK"
+    },
+    {
+      "probeid": 82,
+      "time": 1458510867,
+      "status": "up",
+      "responsetime": 508,
+      "statusdesc": "OK",
+      "statusdesclong": "OK"
+    },
+    {
+      "probeid": 34,
+      "time": 1458510807,
+      "status": "up",
+      "responsetime": 132,
+      "statusdesc": "OK",
+      "statusdesclong": "OK"
     }
-    ```
+  ]
+}
+```
+
 * how should we describe the resources required by 1/ ecs service 2/ apidocs service
 * document operational processes 
   * how to upgrade existing ECS cluster with new service code
@@ -94,6 +96,23 @@ Fine grained list of to do's in order to make ```ecs``` production ready
     * just want to replace nodes behind forward rule
     * think about using [docker tags](https://medium.com/@mccode/the-misunderstood-docker-tag-latest-af3babfd6375#.x4xg3qhgn)
       as an approach for identifying targets for upgrade
+
+```bash
+>sudo docker pull simonsdave/cloudfeaster:latest
+>sudo docker images
+REPOSITORY                    TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+simonsdave/cloudfeaster       latest              d3884baf3343        23 hours ago        769 MB
+ubuntu                        14.04               ab035c88d533        2 weeks ago         187.9 MB
+>sudo docker tag d3884baf3343 simonsdave/cloudfeaster:0.6.0
+>sudo docker images
+REPOSITORY                    TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+simonsdave/cloudfeaster       0.6.0               d3884baf3343        23 hours ago        769 MB
+simonsdave/cloudfeaster       latest              d3884baf3343        23 hours ago        769 MB
+ubuntu                        14.04               ab035c88d533        2 weeks ago         187.9 MB
+>sudo docker login
+>sudo docker push simonsdave/cloudfeaster
+```
+
   * how to increase and decrease size of ECS cluster
 * [Core OS  updates](https://coreos.com/using-coreos/updates/)
   * [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
