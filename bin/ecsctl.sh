@@ -420,9 +420,9 @@ deployment_create() {
         exit 1
     fi
 
-    local NUMBER_OF_NODES=$(cat "$1" | jq -r .number_of_nodes | sed -e 's/null//g')
+    local NUMBER_OF_NODES=$(cat "$DEPLOYMENT_CONFIG" | jq -r .number_of_nodes | sed -e 's/null//g')
     if [ "$NUMBER_OF_NODES" == "" ]; then
-        echo_to_stderr "deployment_create() - couldn't find number_of_nodes property in $1"
+        echo_to_stderr "deployment_create() - couldn't find number_of_nodes property in $DEPLOYMENT_CONFIG"
         exit 1
     fi
 
