@@ -350,7 +350,7 @@ documentation:
   displayName: Health
   description: |
     An HTTP GET to the ```/_health``` endpoint returns a JSON document
-    which describes the health of the service.
+    and HTTP status code which describes the health of the service.
   get:
     description: |
       The JSON document returned by an HTTP GET to the ```/_health```
@@ -359,37 +359,30 @@ documentation:
       The top level "status" property in the JSON document will be "green" if the service
       is healthy and "red" if there's a problem.
       The "details" property of the JSON document contains a red/green style health entry
-      for each service's components.
+      for each of the service's components.
       The overall health is "red" if any of the dependent services are unhealthy.
 
       Two types of health check are possible. A quick health check
       does not confirm the health of all service components and will
       respond quickly. A comprehensive health check does check
       all service components. The ```quick``` query string parameter
-      takes a boolean value to determine if a quick or comprehensive
+      is a boolean value and used to determine if a quick or comprehensive
       health check is performed.
 
       ##### Authentication
         * BASIC authentication using key and secret as described <a href="#Security">here</a>
 
       ##### Usage Expectations
-        * the external monitoring service will perform a quick health check every minute
-        * the external monitoring service will perform a comprehensive health check 5 minutes
-        * a load balancer sitting in front of the app tier will repeatedly and
-          frequently issue a quick health check
+        * external monitoring service will perform a quick health check every minute
+        * external monitoring service will perform a comprehensive health check 5 minutes
 
       ##### Performance Expectations
         * quick - 99% of the time &lt;&nbsp;50&nbsp;ms
-        * comprehensive - 99% of the time &lt;&nbsp;3,050 ms
-          (note 3,050 is determined by taking the default value for the
-          ```max_time_in_ms_to_wait_for_component_health_checks```
-          configuration option and adding 50 ms ie. changing the
-          configuration option can be used to change the performance
-          characteristics of the endpoint)
+        * comprehensive - 99% of the time &lt;&nbsp;nnn ms
 
       ##### Example
-      For example, below a sample of a healthy response to a request
-      for a quick health check.
+      Below is a sample of a healthy response to a request
+      for a comprehensive health check.
 
       ```bash
       >curl \
@@ -422,8 +415,9 @@ documentation:
         displayName: quick
         type: boolean
         description:
-          Determines if a quick or deep health check is performed.
-          quick is true by default.
+          Determines if a quick or comprehensive health check is performed.
+          If ```quick``` does not appear in the query string a quick health
+          check is performed.
         example: true
         required: false
     responses:
