@@ -168,4 +168,4 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 
 ## CI / CD
 
-* build ecs docker images from .travis.yml
+* ...
