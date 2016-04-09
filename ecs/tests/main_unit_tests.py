@@ -69,26 +69,18 @@ class TornadoIOLoopInstancePatcher(object):
         self._old_instance_static_method = None
 
 
-class TornadoHttpServerListenPatcher(object):
-    """this class uses an approach to patching with feels somewhat
-    barbaric given that mock isn't used. the appoach was used because
-    I couldn't figure out how to use mock to patch a static method.
-    """
+class TornadoHttpServerListenPatcher(Patcher):
 
     def __init__(self):
-        object.__init__(self)
 
-        self._old_listen_static_method = None
+        def the_patch(*args, **kwargs):
+            pass
 
-    def __enter__(self):
-        assert self._old_listen_static_method is None
-        self._old_listen_static_method = tornado.httpserver.HTTPServer.listen
-        tornado.httpserver.HTTPServer.listen = mock.Mock()
-        return self
+        patcher = mock.patch(
+            'tornado.httpserver.HTTPServer.listen',
+            the_patch)
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        tornado.httpserver.HTTPServer.listen = self._old_listen_static_method
-        self._old_listen_static_method = None
+        Patcher.__init__(self, patcher)
 
 
 class ServiceConfigFile(object):
