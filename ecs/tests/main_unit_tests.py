@@ -47,26 +47,21 @@ class IsLibcurlCompiledWithAsyncDNSResolverPatcher(Patcher):
         Patcher.__init__(self, patcher)
 
 
-class TornadoIOLoopInstancePatcher(object):
-    """this class uses an approach to patching with feels somewhat
-    barbaric given that mock isn't used. the appoach was used because
-    I couldn't figure out how to use mock to patch a static method.
-    """
+class TornadoIOLoopInstancePatcher(Patcher):
 
     def __init__(self):
-        object.__init__(self)
 
-        self._old_instance_static_method = None
+        def the_patch(*args, **kwargs):
+            pass
 
-    def __enter__(self):
-        assert self._old_instance_static_method is None
-        self._old_instance_static_method = tornado.ioloop.IOLoop.instance
-        tornado.ioloop.IOLoop.instance = mock.Mock()
-        return self
+        assert type(tornado.ioloop.IOLoop.instance()) == tornado.platform.epoll.EPollIOLoop
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        tornado.ioloop.IOLoop.instance = self._old_instance_static_method
-        self._old_instance_static_method = None
+        patcher = mock.patch(
+            'tornado.platform.epoll.EPollIOLoop.start',
+            the_patch)
+
+        print type(self)
+        Patcher.__init__(self, patcher)
 
 
 class TornadoHttpServerListenPatcher(Patcher):
