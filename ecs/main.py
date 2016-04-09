@@ -91,10 +91,20 @@ class Main(object):
         #
         #
         #
-        async_docker_remote_api.remote_docker_api_endpoint = tor_async_util.Config.instance.get(
+        async_docker_remote_api.docker_remote_api_endpoint = tor_async_util.Config.instance.get(
             self.config_section,
             'docker_remote_api',
             'http://172.17.42.1:2375')
+
+        async_docker_remote_api.connect_timeout = tor_async_util.Config.instance.get_int(
+            self.config_section,
+            'docker_remote_api_connect_timeout',
+            3000) / 1000.0
+
+        async_docker_remote_api.request_timeout = tor_async_util.Config.instance.get_int(
+            self.config_section,
+            'docker_remote_api_request_timeout',
+            5 * 60) / 1000.0
 
         #
         # configure tornado ...
@@ -180,7 +190,7 @@ class Main(object):
             'address': address,
             'port': port,
             'logging_level': logging.getLevelName(logging.getLogger().getEffectiveLevel()),
-            'docker_remote_api': async_docker_remote_api.remote_docker_api_endpoint,
+            'docker_remote_api': async_docker_remote_api.docker_remote_api_endpoint,
         }
         _logger.info(fmt.format(**args))
 

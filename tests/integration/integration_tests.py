@@ -47,11 +47,13 @@ class ServiceConfig(object):
         cp = ConfigParser()
         cp.add_section(section)
 
-        cp.set(section, 'ip', self._ip)
+        cp.set(section, 'address', self._ip)
         cp.set(section, 'port', self._port)
         cp.set(section, 'log_level', 'info')
         cp.set(section, 'max_concurrent_executing_http_requests', '250')
         cp.set(section, 'docker_remote_api', 'http://172.17.42.1:2375')
+        cp.set(section, 'docker_remote_api_connect_timeout', 3000)
+        cp.set(section, 'docker_remote_api_request_timeout', 300000)
 
         self.filename = tempfile.mktemp()
         with open(self.filename, 'w+') as fp:

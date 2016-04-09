@@ -3,30 +3,14 @@
 #
 
 #
-# configuration for the ecservice.py service
-#
-# instructions to create ecservice.py config tar file
-#
-#   >cd ~/.ecs
-#   >tar cvf ecs_config.tar *
-#   a config
-#   >gsutil cp ecs_config.tar gs://ecs-config/ecs_config.tar
-#   Copying file://ecs_config.tar [Content-Type=application/x-tar]...
-#   Uploading   gs://ecs-config/ecs_config.tar:                   2.5 KiB/2.5 KiB
-#   >
-#
-# create signed url to ecservice.py config tar
-# file sitting on google cloud storage bucket
-#
-#   >gsutil signurl -p notasecret -d 10m ~/Downloads/*.p12 gs://ecs-config/ecs_config.tar
-#   >
+# configuration for the ecservice.py
 #
 
 [ecs]
 #
 # address & port define the endpoint on which service listens
 #
-# default values of 127.0.0.1 and 80
+# default values of 127.0.0.1 and 8448
 #
 address=0.0.0.0
 port=80
@@ -62,4 +46,22 @@ max_concurrent_executing_http_requests=250
 # this configuration option defines the endpoint ecs uses
 # to talk with the Docker Remote API
 #
-docker_remote_api=http://172.17.42.1:4243
+# the default value is http://172.17.42.1:2375
+#
+docker_remote_api=http://172.17.42.1:2375
+
+#
+# this configuration option defines max time (in milliseconds)
+# that ecs will wait to connect with the Docker Remote API
+#
+# the default value is 3000
+#
+docker_remote_api_connect_timeout=3000
+
+#
+# this configuration option defines max time (in milliseconds)
+# that ecs will wait for a Docker Remote API request to complete
+#
+# the default value is 300000 = 5 * 60 * 1000 = 5 minutes
+#
+docker_remote_api_request_timeout=300000
