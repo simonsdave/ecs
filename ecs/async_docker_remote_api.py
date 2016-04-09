@@ -16,7 +16,7 @@ _logger = logging.getLogger(__name__)
 
 docker_remote_api_endpoint = 'http://172.17.42.1:2375'
 
-# max time to wait (in seconds) to connect to docker remote api 
+# max time to wait (in seconds) to connect to docker remote api
 connect_timeout = 10.0
 
 # max time to wait (in seconds) for a docker remote api request to complete

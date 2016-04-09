@@ -7,7 +7,6 @@ import os
 import sys
 import tempfile
 import unittest
-import uuid
 
 import mock
 import tornado.httpserver
