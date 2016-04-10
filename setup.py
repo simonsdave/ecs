@@ -27,7 +27,6 @@ reg_ex = re.compile(reg_ex_pattern)
 version = ""
 with open("ecs/__init__.py", "r") as fd:
     for line in fd:
-        print line
         match = reg_ex.match(line)
         if match:
             version = match.group("version")
