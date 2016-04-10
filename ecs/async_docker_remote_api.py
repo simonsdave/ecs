@@ -14,6 +14,7 @@ import tornado.ioloop
 
 _logger = logging.getLogger(__name__)
 
+
 docker_remote_api_endpoint = 'http://172.17.42.1:2375'
 
 # max time to wait (in seconds) to connect to docker remote api
@@ -23,18 +24,20 @@ connect_timeout = 10.0
 request_timeout = 5 * 60.0
 
 
-def _write_http_client_response_to_log(response):
-    tor_async_util.write_http_client_response_to_log(
-        _logger,
-        response,
-        'Remote Docker API')
+class AsyncAction(tor_async_util.AsyncAction):
+
+    def write_http_client_response_to_log(self, response):
+        tor_async_util.write_http_client_response_to_log(
+            _logger,
+            response,
+            'Remote Docker API')
 
 
-class AsyncHealthChecker(tor_async_util.AsyncAction):
+class AsyncHealthChecker(AsyncAction):
     """Async'ly check the health of the Docker Remote API."""
 
     def __init__(self, async_state=None):
-        tor_async_util.AsyncAction.__init__(self, async_state)
+        AsyncAction.__init__(self, async_state)
 
         self._callback = None
 
@@ -53,7 +56,7 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
             callback=self._on_http_client_fetch_done)
 
     def _on_http_client_fetch_done(self, response):
-        _write_http_client_response_to_log(response)
+        self.write_http_client_response_to_log(response)
 
         if response.code != httplib.OK:
             details = {
@@ -80,7 +83,7 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncImagePull(tor_async_util.AsyncAction):
+class AsyncImagePull(AsyncAction):
     """Async'ly pull an image."""
 
     # PFD = Pull Failure Details
@@ -95,7 +98,7 @@ class AsyncImagePull(tor_async_util.AsyncAction):
                  username=None,
                  password=None,
                  async_state=None):
-        tor_async_util.AsyncAction.__init__(self, async_state)
+        AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
         self.email = email
@@ -190,7 +193,7 @@ class AsyncImagePull(tor_async_util.AsyncAction):
             return
 
     def _on_http_client_fetch_done(self, response):
-        _write_http_client_response_to_log(response)
+        self.write_http_client_response_to_log(response)
 
         if self._image_found is True:
             self._call_callback(type(self).PFD_OK)
@@ -214,7 +217,7 @@ class AsyncImagePull(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerCreate(tor_async_util.AsyncAction):
+class AsyncContainerCreate(AsyncAction):
     """Async'ly create a container."""
 
     # CFD = Create Failure Details
@@ -223,7 +226,7 @@ class AsyncContainerCreate(tor_async_util.AsyncAction):
     CFD_ERROR_CREATING_CONTAINER = CFD_ERROR | 0x0001
 
     def __init__(self, docker_image, cmd, async_state=None):
-        tor_async_util.AsyncAction.__init__(self, async_state)
+        AsyncAction.__init__(self, async_state)
 
         self.docker_image = docker_image
         self.cmd = cmd
@@ -262,7 +265,7 @@ class AsyncContainerCreate(tor_async_util.AsyncAction):
             callback=self._on_create_container_http_client_fetch_done)
 
     def _on_create_container_http_client_fetch_done(self, response):
-        _write_http_client_response_to_log(response)
+        self.write_http_client_response_to_log(response)
 
         if response.code != httplib.CREATED:
             self._call_callback(type(self).CFD_ERROR_CREATING_CONTAINER)
@@ -280,7 +283,7 @@ class AsyncContainerCreate(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerStart(tor_async_util.AsyncAction):
+class AsyncContainerStart(AsyncAction):
     """Async'ly start a container."""
 
     # SFD = Start Failure Details
@@ -289,7 +292,7 @@ class AsyncContainerStart(tor_async_util.AsyncAction):
     SFD_ERROR_STARTING_CONTAINER = SFD_ERROR | 0x0001
 
     def __init__(self, container_id, async_state=None):
-        tor_async_util.AsyncAction.__init__(self, async_state)
+        AsyncAction.__init__(self, async_state)
 
         self.container_id = container_id
 
@@ -312,7 +315,7 @@ class AsyncContainerStart(tor_async_util.AsyncAction):
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
     def _on_http_client_fetch_done(self, response):
-        _write_http_client_response_to_log(response)
+        self.write_http_client_response_to_log(response)
 
         if response.code != httplib.NO_CONTENT:
             self._call_callback(type(self).SFD_ERROR_STARTING_CONTAINER)
@@ -329,7 +332,7 @@ class AsyncContainerStart(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerDelete(tor_async_util.AsyncAction):
+class AsyncContainerDelete(AsyncAction):
     """Async'ly delete a container."""
 
     # RFD = Delete Failure Details
@@ -338,7 +341,7 @@ class AsyncContainerDelete(tor_async_util.AsyncAction):
     DFD_ERROR_DELETING_CONTAINER = DFD_ERROR | 0x0001
 
     def __init__(self, container_id, async_state=None):
-        tor_async_util.AsyncAction.__init__(self, async_state)
+        AsyncAction.__init__(self, async_state)
 
         self.container_id = container_id
 
@@ -361,7 +364,7 @@ class AsyncContainerDelete(tor_async_util.AsyncAction):
             callback=self._on_http_client_fetch_done)
 
     def _on_http_client_fetch_done(self, response):
-        _write_http_client_response_to_log(response)
+        self.write_http_client_response_to_log(response)
 
         if response.code != httplib.NO_CONTENT:
             self._call_callback(type(self).DFD_ERROR_DELETING_CONTAINER)
@@ -378,7 +381,7 @@ class AsyncContainerDelete(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerStatus(tor_async_util.AsyncAction):
+class AsyncContainerStatus(AsyncAction):
     """Async'ly wait for a container to exit and return the
     container's status.
     """
@@ -390,7 +393,7 @@ class AsyncContainerStatus(tor_async_util.AsyncAction):
     SFD_WAITED_TOO_LONG = SFD_ERROR | 0x0002
 
     def __init__(self, container_id, async_state=None):
-        tor_async_util.AsyncAction.__init__(self, async_state)
+        AsyncAction.__init__(self, async_state)
 
         self.container_id = container_id
 
@@ -417,7 +420,7 @@ class AsyncContainerStatus(tor_async_util.AsyncAction):
             callback=self._on_http_client_fetch_done)
 
     def _on_http_client_fetch_done(self, response):
-        _write_http_client_response_to_log(response)
+        self.write_http_client_response_to_log(response)
 
         if response.code != httplib.OK:
             self._call_callback(type(self).SFD_ERROR_FETCHING_CONTAINER_STATUS)
@@ -446,7 +449,7 @@ class AsyncContainerStatus(tor_async_util.AsyncAction):
         self._callback = None
 
 
-class AsyncContainerLogs(tor_async_util.AsyncAction):
+class AsyncContainerLogs(AsyncAction):
     """Async'ly fetch a container's stdout and stderr.
 
     See API reference
@@ -469,7 +472,7 @@ class AsyncContainerLogs(tor_async_util.AsyncAction):
     FFD_ERROR_FETCHING_CONTAINER_LOGS = FFD_ERROR | 0x0002
 
     def __init__(self, container_id, async_state=None):
-        tor_async_util.AsyncAction.__init__(self, async_state)
+        AsyncAction.__init__(self, async_state)
 
         self.container_id = container_id
 
@@ -504,7 +507,7 @@ class AsyncContainerLogs(tor_async_util.AsyncAction):
             callback=self._on_http_client_fetch_done)
 
     def _on_http_client_fetch_done(self, response):
-        _write_http_client_response_to_log(response)
+        self.write_http_client_response_to_log(response)
 
         if response.code == httplib.NOT_FOUND:
             self._call_callback(type(self).FFD_CONTAINER_NOT_FOUND)
