@@ -54,6 +54,14 @@ class Main(object):
 
         self.config_section = 'ecs'
 
+        # this sort of odd setting and use of the address, port,
+        # max_concurrent_executing_http_requests and logging_level
+        # properties is done to enable improved unit testing
+        self.address = '127.0.0.1'
+        self.port = 8448
+        self.logging_level = logging.INFO
+        self.max_concurrent_executing_http_requests = 10
+
     def configure(self):
         """Perform all mainline configuration actions. configure() and
         listen() are distinct methods to allow derived classes to be
@@ -78,18 +86,19 @@ class Main(object):
         #
         # configure logging ...
         #
-        logging_level = tor_async_util.Config.instance.get_logging_level(
+        self.logging_level = tor_async_util.Config.instance.get_logging_level(
             self.config_section,
-            'log_level')
+            'log_level',
+            self.logging_level)
 
         logging.Formatter.converter = time.gmtime   # remember gmt = utc
         logging.basicConfig(
-            level=logging_level,
+            level=self.logging_level,
             datefmt='%Y-%m-%dT%H:%M:%S',
             format='%(asctime)s.%(msecs)03d+00:00 %(levelname)s %(module)s %(message)s')
 
         #
-        #
+        # configure docker remote API
         #
         async_docker_remote_api.docker_remote_api_endpoint = tor_async_util.Config.instance.get(
             self.config_section,
@@ -99,26 +108,32 @@ class Main(object):
         async_docker_remote_api.connect_timeout = tor_async_util.Config.instance.get_int(
             self.config_section,
             'docker_remote_api_connect_timeout',
-            3000) / 1000.0
+            3 * 1000)
 
         async_docker_remote_api.request_timeout = tor_async_util.Config.instance.get_int(
             self.config_section,
             'docker_remote_api_request_timeout',
-            5 * 60) / 1000.0
+            5 * 60 * 1000)
 
         #
         # configure tornado ...
         #
-        tor_async_util.install_sigint_handler()
+        self.address = tor_async_util.Config.instance.get(
+            self.config_section,
+            'address',
+            self.address)
+        self.port = tor_async_util.Config.instance.get_int(
+            self.config_section,
+            'port',
+            self.port)
 
-        async_http_client = 'tornado.curl_httpclient.CurlAsyncHTTPClient'
-        max_concurrent_executing_http_requests = tor_async_util.Config.instance.get_int(
+        self.max_concurrent_executing_http_requests = tor_async_util.Config.instance.get_int(
             self.config_section,
             'max_concurrent_executing_http_requests',
-            10)
+            self.max_concurrent_executing_http_requests)
         tornado.httpclient.AsyncHTTPClient.configure(
-            async_http_client,
-            max_clients=max_concurrent_executing_http_requests)
+            'tornado.curl_httpclient.CurlAsyncHTTPClient',
+            max_clients=self.max_concurrent_executing_http_requests)
 
         if not tor_async_util.is_libcurl_compiled_with_async_dns_resolver():
             msg = (
@@ -127,6 +142,11 @@ class Main(object):
                 'may result in timeouts on async requests'
             )
             _logger.warning(msg)
+
+        #
+        # general configuration stuff ...
+        #
+        tor_async_util.install_sigint_handler()
 
     def listen(self):
         """Start Tornado listening for inbound requests.
@@ -159,15 +179,6 @@ class Main(object):
 
         app = tornado.web.Application(handlers=handlers, **settings)
 
-        address = tor_async_util.Config.instance.get(
-            self.config_section,
-            'address',
-            '127.0.0.1')
-        port = tor_async_util.Config.instance.get_int(
-            self.config_section,
-            'port',
-            8448)
-
         #
         # log a startup message - note this is done before
         # starting the http listener in case the listener
@@ -187,8 +198,8 @@ class Main(object):
             'api_version': ecs.__api_version__,
             'config_file': tor_async_util.Config.instance.config_file,
             'config_section': self.config_section,
-            'address': address,
-            'port': port,
+            'address': self.address,
+            'port': self.port,
             'logging_level': logging.getLevelName(logging.getLogger().getEffectiveLevel()),
             'docker_remote_api': async_docker_remote_api.docker_remote_api_endpoint,
         }
@@ -198,6 +209,6 @@ class Main(object):
         # start listening for and processing requests ...
         #
         http_server = tornado.httpserver.HTTPServer(app, xheaders=True)
-        http_server.listen(port, address=address)
+        http_server.listen(self.port, address=self.address)
 
         tornado.ioloop.IOLoop.instance().start()

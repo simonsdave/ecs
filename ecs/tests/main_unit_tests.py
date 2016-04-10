@@ -3,6 +3,7 @@ validate ..main
 """
 
 from ConfigParser import ConfigParser
+import logging
 import os
 import sys
 import tempfile
@@ -12,6 +13,7 @@ import mock
 import tornado.httpserver
 
 from ..main import Main
+from .. import async_docker_remote_api
 
 
 class Patcher(object):
@@ -60,7 +62,6 @@ class TornadoIOLoopInstancePatcher(Patcher):
             'tornado.platform.epoll.EPollIOLoop.start',
             the_patch)
 
-        print type(self)
         Patcher.__init__(self, patcher)
 
 
@@ -85,6 +86,14 @@ class ServiceConfigFile(object):
 
         self.section = section
 
+        self.address = '1.1.1.1'
+        self.port = 5555
+        self.logging_level = logging.DEBUG
+        self.max_concurrent_executing_http_requests = 250
+        self.docker_remote_api = 'http://2.2.2.2:6666'
+        self.docker_remote_api_connect_timeout = 50
+        self.docker_remote_api_request_timeout = 500
+
         self.filename = None
 
     def __str__(self):
@@ -96,13 +105,13 @@ class ServiceConfigFile(object):
         cp = ConfigParser()
         cp.add_section(self.section)
 
-        cp.set(self.section, 'address', '127.0.0.1')
-        cp.set(self.section, 'port', 8448)
-        cp.set(self.section, 'log_level', 'debug')
-        cp.set(self.section, 'max_concurrent_executing_http_requests', 250)
-        cp.set(self.section, 'docker_remote_api', 'http://127.0.0.1:5000')
-        cp.set(self.section, 'docker_remote_api_connect_timeout', 50)
-        cp.set(self.section, 'docker_remote_api_request_timeout', 500)
+        cp.set(self.section, 'address', self.address)
+        cp.set(self.section, 'port', self.port)
+        cp.set(self.section, 'log_level', logging.getLevelName(self.logging_level))
+        cp.set(self.section, 'max_concurrent_executing_http_requests', self.max_concurrent_executing_http_requests)
+        cp.set(self.section, 'docker_remote_api', self.docker_remote_api)
+        cp.set(self.section, 'docker_remote_api_connect_timeout', self.docker_remote_api_connect_timeout)
+        cp.set(self.section, 'docker_remote_api_request_timeout', self.docker_remote_api_request_timeout)
 
         self.filename = tempfile.mktemp()
         with open(self.filename, 'w+') as fp:
@@ -141,32 +150,98 @@ class SysDotArgcPatcher(object):
 class MainTestCase(unittest.TestCase):
 
     def test_libcurl_async_dns_resolver(self):
-        config_section = 'boo'
-        with ServiceConfigFile(config_section) as service_config_file:
+        main = Main()
+        with ServiceConfigFile(main.config_section) as service_config_file:
             sys_dot_arv = [
                 'service',
-                '--config=%s' % service_config_file,
+                '--config=%s' % service_config_file.filename,
             ]
             with SysDotArgcPatcher(sys_dot_arv):
                 with TornadoHttpServerListenPatcher():
                     with TornadoIOLoopInstancePatcher():
                         with IsLibcurlCompiledWithAsyncDNSResolverPatcher(True):
-                            main = Main()
                             main.configure()
                         with IsLibcurlCompiledWithAsyncDNSResolverPatcher(False):
-                            main = Main()
                             main.configure()
 
-    def test_happy_path(self):
-        config_section = 'boo'
-        with ServiceConfigFile(config_section) as service_config_file:
+    def test_configuration(self):
+        main = Main()
+        with ServiceConfigFile(main.config_section) as service_config_file:
+
+            self.assertNotEqual(
+                service_config_file.address,
+                main.address)
+
+            self.assertNotEqual(
+                service_config_file.port,
+                main.port)
+
+            self.assertNotEqual(
+                service_config_file.logging_level,
+                main.logging_level)
+
+            self.assertNotEqual(
+                service_config_file.max_concurrent_executing_http_requests,
+                main.max_concurrent_executing_http_requests)
+
+            self.assertNotEqual(
+                service_config_file.docker_remote_api,
+                async_docker_remote_api.docker_remote_api_endpoint)
+
+            self.assertNotEqual(
+                service_config_file.docker_remote_api_connect_timeout,
+                async_docker_remote_api.connect_timeout)
+
+            self.assertNotEqual(
+                service_config_file.docker_remote_api_request_timeout,
+                async_docker_remote_api.request_timeout)
+
             sys_dot_arv = [
                 'service',
-                '--config=%s' % service_config_file,
+                '--config=%s' % service_config_file.filename,
             ]
             with SysDotArgcPatcher(sys_dot_arv):
                 with TornadoHttpServerListenPatcher():
                     with TornadoIOLoopInstancePatcher():
-                        main = Main()
+                        main.configure()
+
+                        self.assertEqual(
+                            service_config_file.address,
+                            main.address)
+
+                        self.assertEqual(
+                            service_config_file.port,
+                            main.port)
+
+                        self.assertEqual(
+                            service_config_file.logging_level,
+                            main.logging_level)
+
+                        self.assertEqual(
+                            service_config_file.max_concurrent_executing_http_requests,
+                            main.max_concurrent_executing_http_requests)
+
+                        self.assertEqual(
+                            service_config_file.docker_remote_api,
+                            async_docker_remote_api.docker_remote_api_endpoint)
+
+                        self.assertEqual(
+                            service_config_file.docker_remote_api_connect_timeout,
+                            async_docker_remote_api.connect_timeout)
+
+                        self.assertEqual(
+                            service_config_file.docker_remote_api_request_timeout,
+                            async_docker_remote_api.request_timeout)
+
+    def test_happy_path(self):
+        main = Main()
+        with ServiceConfigFile(main.config_section) as service_config_file:
+            sys_dot_arv = [
+                'service',
+                '--config=%s' % service_config_file.filename,
+            ]
+            with SysDotArgcPatcher(sys_dot_arv):
+                with TornadoHttpServerListenPatcher():
+                    with TornadoIOLoopInstancePatcher():
                         main.configure()
                         main.listen()
