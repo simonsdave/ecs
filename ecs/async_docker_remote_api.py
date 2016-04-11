@@ -32,8 +32,13 @@ class AsyncAction(tor_async_util.AsyncAction):
             response,
             'Remote Docker API')
 
-    def ms_to_secs(self, ms):
-        return ms / 1000.0
+
+class HTTPRequest(tornado.httpclient.HTTPRequest):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['connect_timeout'] = connect_timeout / 1000.0
+        kwargs['request_timeout'] = request_timeout / 1000.0
+        tornado.httpclient.HTTPRequest.__init__(self, *args, **kwargs)
 
 
 class AsyncHealthChecker(AsyncAction):
@@ -48,11 +53,9 @@ class AsyncHealthChecker(AsyncAction):
         assert self._callback is None
         self._callback = callback
 
-        request = tornado.httpclient.HTTPRequest(
+        request = HTTPRequest(
             '%s/version' % docker_remote_api_endpoint,
-            method='GET',
-            connect_timeout=self.ms_to_secs(connect_timeout),
-            request_timeout=self.ms_to_secs(request_timeout))
+            method='GET')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
@@ -130,13 +133,11 @@ class AsyncImagePull(AsyncAction):
             headers['X-Registry-Auth'] = base64.b64encode(x_registry_auth_as_str)
 
         url_fmt = '%s/images/create?fromImage=%s'
-        request = tornado.httpclient.HTTPRequest(
+        request = HTTPRequest(
             url_fmt % (docker_remote_api_endpoint, self.docker_image),
             method='POST',
             headers=headers,
             allow_nonstandard_methods=True,
-            connect_timeout=self.ms_to_secs(connect_timeout),
-            request_timeout=self.ms_to_secs(request_timeout),
             streaming_callback=self._on_chunk)
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
@@ -255,13 +256,11 @@ class AsyncContainerCreate(AsyncAction):
             'Content-Type': 'application/json',
         }
 
-        request = tornado.httpclient.HTTPRequest(
+        request = HTTPRequest(
             '%s/containers/create' % docker_remote_api_endpoint,
             method='POST',
             headers=tornado.httputil.HTTPHeaders(headers),
-            body=json.dumps(body),
-            connect_timeout=self.ms_to_secs(connect_timeout),
-            request_timeout=self.ms_to_secs(request_timeout))
+            body=json.dumps(body))
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
@@ -308,12 +307,10 @@ class AsyncContainerStart(AsyncAction):
         self._callback = callback
 
         url_fmt = '%s/containers/%s/start'
-        request = tornado.httpclient.HTTPRequest(
+        request = HTTPRequest(
             url_fmt % (docker_remote_api_endpoint, self.container_id),
             method='POST',
-            allow_nonstandard_methods=True,
-            connect_timeout=self.ms_to_secs(connect_timeout),
-            request_timeout=self.ms_to_secs(request_timeout))
+            allow_nonstandard_methods=True)
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(request, callback=self._on_http_client_fetch_done)
 
@@ -356,11 +353,9 @@ class AsyncContainerDelete(AsyncAction):
         assert self._callback is None
         self._callback = callback
 
-        request = tornado.httpclient.HTTPRequest(
+        request = HTTPRequest(
             '%s/containers/%s' % (docker_remote_api_endpoint, self.container_id),
-            method='DELETE',
-            connect_timeout=self.ms_to_secs(connect_timeout),
-            request_timeout=self.ms_to_secs(request_timeout))
+            method='DELETE')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
@@ -412,11 +407,9 @@ class AsyncContainerStatus(AsyncAction):
         self._fetch()
 
     def _fetch(self):
-        request = tornado.httpclient.HTTPRequest(
+        request = HTTPRequest(
             '%s/containers/%s/json' % (docker_remote_api_endpoint, self.container_id),
-            method='GET',
-            connect_timeout=self.ms_to_secs(connect_timeout),
-            request_timeout=self.ms_to_secs(request_timeout))
+            method='GET')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
@@ -499,11 +492,7 @@ class AsyncContainerLogs(AsyncAction):
             1 if stdout else 0,
             1 if stderr else 0,
         )
-        request = tornado.httpclient.HTTPRequest(
-            url,
-            method='GET',
-            connect_timeout=self.ms_to_secs(connect_timeout),
-            request_timeout=self.ms_to_secs(request_timeout))
+        request = HTTPRequest(url, method='GET')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
