@@ -192,7 +192,7 @@ delete_forwarding_rule() {
 
 deployment_create_network() {
     echo_if_verbose "Creating Network" "blue"
-    gcloud compute networks create $NETWORK_NAME
+    gcloud compute networks create $NETWORK_NAME >& /dev/null
 
     echo_if_verbose "Creating Firewall Rules" "blue"
     create_firewall_rules
