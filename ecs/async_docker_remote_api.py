@@ -36,6 +36,9 @@ class AsyncAction(tor_async_util.AsyncAction):
 class HTTPRequest(tornado.httpclient.HTTPRequest):
 
     def __init__(self, *args, **kwargs):
+        assert 1 == len(args)
+        args[0].startswith('/')
+        args = ['%s%s' % (docker_remote_api_endpoint, args[0])]
         kwargs['connect_timeout'] = connect_timeout / 1000.0
         kwargs['request_timeout'] = request_timeout / 1000.0
         tornado.httpclient.HTTPRequest.__init__(self, *args, **kwargs)
@@ -53,9 +56,7 @@ class AsyncHealthChecker(AsyncAction):
         assert self._callback is None
         self._callback = callback
 
-        request = HTTPRequest(
-            '%s/version' % docker_remote_api_endpoint,
-            method='GET')
+        request = HTTPRequest('/version', method='GET')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
@@ -132,9 +133,8 @@ class AsyncImagePull(AsyncAction):
             )
             headers['X-Registry-Auth'] = base64.b64encode(x_registry_auth_as_str)
 
-        url_fmt = '%s/images/create?fromImage=%s'
         request = HTTPRequest(
-            url_fmt % (docker_remote_api_endpoint, self.docker_image),
+            '/images/create?fromImage=%s' % self.docker_image,
             method='POST',
             headers=headers,
             allow_nonstandard_methods=True,
@@ -257,7 +257,7 @@ class AsyncContainerCreate(AsyncAction):
         }
 
         request = HTTPRequest(
-            '%s/containers/create' % docker_remote_api_endpoint,
+            '/containers/create',
             method='POST',
             headers=tornado.httputil.HTTPHeaders(headers),
             body=json.dumps(body))
@@ -306,9 +306,8 @@ class AsyncContainerStart(AsyncAction):
         assert self._callback is None
         self._callback = callback
 
-        url_fmt = '%s/containers/%s/start'
         request = HTTPRequest(
-            url_fmt % (docker_remote_api_endpoint, self.container_id),
+            '/containers/%s/start' % self.container_id,
             method='POST',
             allow_nonstandard_methods=True)
         http_client = tornado.httpclient.AsyncHTTPClient()
@@ -354,7 +353,7 @@ class AsyncContainerDelete(AsyncAction):
         self._callback = callback
 
         request = HTTPRequest(
-            '%s/containers/%s' % (docker_remote_api_endpoint, self.container_id),
+            '/containers/%s' % self.container_id,
             method='DELETE')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
@@ -408,7 +407,7 @@ class AsyncContainerStatus(AsyncAction):
 
     def _fetch(self):
         request = HTTPRequest(
-            '%s/containers/%s/json' % (docker_remote_api_endpoint, self.container_id),
+            '/containers/%s/json' % self.container_id,
             method='GET')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
@@ -486,13 +485,12 @@ class AsyncContainerLogs(AsyncAction):
         self._fetch_logs(False, True)
 
     def _fetch_logs(self, stdout, stderr):
-        url = '%s/containers/%s/logs?stdout=%d&stderr=%d&timestamps=0&tail=all' % (
-            docker_remote_api_endpoint,
+        path = '/containers/%s/logs?stdout=%d&stderr=%d&timestamps=0&tail=all' % (
             self.container_id,
             1 if stdout else 0,
             1 if stderr else 0,
         )
-        request = HTTPRequest(url, method='GET')
+        request = HTTPRequest(path, method='GET')
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_client.fetch(
             request,
