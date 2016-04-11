@@ -11,7 +11,7 @@ of the deployment.
 Sanity tests verify end-to-end functional correctness
 of a cloud hosted ECS deployment.
 
-## [Performance](performance)
+## [Load](load)
 
 Tests and documentation to think through, determine and validate
-service performance.
+service performance and stability under load/stress.

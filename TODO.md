@@ -6,6 +6,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
+* write some integration tests for private repos
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
   rather than just returning
@@ -143,8 +144,7 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 
 ## Stability
 
-* (long running) load/stress test
-* write some integration tests for private repos
+* setup and execute long running stress tests against an ECS deployment
 
 ## Documentation
 
