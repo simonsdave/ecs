@@ -71,13 +71,6 @@ class ECSHttpLocust(HttpLocust):
     min_wait = 0
     max_wait = 0
 
-    #
-    # ```host``` points to the ECS deployment being load tested
-    #
-    # :TODO: how to get this to point to a different deployment?
-    #
-    host = 'http://127.0.0.1:8448'
-
     def __init__(self, *args, **kwargs):
         HttpLocust.__init__(self, *args, **kwargs)
 
