@@ -31,9 +31,16 @@ if not _verify_ids_cert:
 # defines the relatively likihood that a locust will run a
 # particular taskset
 #
-_noop_weight = 50
-_version_weight = 50
-assert 100 == (_noop_weight + _version_weight)
+_noop_weight = 20
+_version_weight = 40
+_quick_health_check_weight = 30
+_comprehensive_health_check_weight = 10
+assert 100 == (
+    _noop_weight +
+    _version_weight +
+    _quick_health_check_weight +
+    _comprehensive_health_check_weight
+)
 
 
 def _is_percent_of_time(percent_of_time):
@@ -83,9 +90,11 @@ class NoOpBehavior(ECSTaskSet):
 
     @task
     def check_noop(self):
-        response = self.client.get('/v1.1/_noop')
-        print '%s: /_noop\t%s\t%d' % (
+        url = '/v1.1/_noop'
+        response = self.client.get(url)
+        print '%s: %s\t%s\t%d' % (
             self.locust,
+            url,
             response.status_code,
             int(1000 * response.elapsed.total_seconds()))
 
@@ -104,9 +113,11 @@ class VersionBehavior(ECSTaskSet):
 
     @task
     def check_version(self):
-        response = self.client.get('/v1.1/_version')
-        print '%s: /_version\t%s\t%d' % (
+        url = '/v1.1/_version'
+        response = self.client.get(url)
+        print '%s: %s\t%s\t%d' % (
             self.locust,
+            url,
             response.status_code,
             int(1000 * response.elapsed.total_seconds()))
 
@@ -119,3 +130,49 @@ class VersionLocust(ECSHttpLocust):
 
     def __str__(self):
         return 'Version-Locust-%s' % self.locust_id
+
+
+class QuickHealthBehavior(ECSTaskSet):
+
+    @task
+    def check_version(self):
+        url = '/v1.1/_health?quick=true'
+        response = self.client.get(url)
+        print '%s: %s\t%s\t%d' % (
+            self.locust,
+            url,
+            response.status_code,
+            int(1000 * response.elapsed.total_seconds()))
+
+
+class QuickHealthLocust(ECSHttpLocust):
+
+    task_set = QuickHealthBehavior
+
+    weight = _quick_health_check_weight
+
+    def __str__(self):
+        return 'Quick-Health-Locust-%s' % self.locust_id
+
+
+class ComprehensiveHealthBehavior(ECSTaskSet):
+
+    @task
+    def check_version(self):
+        url = '/v1.1/_health?quick=false'
+        response = self.client.get(url)
+        print '%s: %s\t%s\t%d' % (
+            self.locust,
+            url,
+            response.status_code,
+            int(1000 * response.elapsed.total_seconds()))
+
+
+class ComprehensiveHealthLocust(ECSHttpLocust):
+
+    task_set = ComprehensiveHealthBehavior
+
+    weight = _comprehensive_health_check_weight
+
+    def __str__(self):
+        return 'Comprehensive-Health-Locust-%s' % self.locust_id
