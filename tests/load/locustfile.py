@@ -27,9 +27,13 @@ if not _verify_ids_cert:
 """
 
 #
-# the variables below control the shape of the load test traffic
+# with more than one locust executing, the weight attributes
+# defines the relatively likihood that a locust will run a
+# particular taskset
 #
-_noop_weight = 100
+_noop_weight = 50
+_version_weight = 50
+assert 100 == (_noop_weight + _version_weight)
 
 
 def _is_percent_of_time(percent_of_time):
@@ -56,6 +60,13 @@ class ECSTaskSet(TaskSet):
     min_wait = 0
     max_wait = 0
 
+    def __init__(self, *args, **kwargs):
+        TaskSet.__init__(self, *args, **kwargs)
+
+        self.locust_id = uuid.uuid4().hex
+
+        print 'Created %s' % self
+
 
 class ECSHttpLocust(HttpLocust):
     """An abstract base class for all HTTP locusts."""
@@ -78,9 +89,9 @@ class ECSHttpLocust(HttpLocust):
 class NoOpBehavior(ECSTaskSet):
 
     @task
-    def check_users_service(self):
+    def check_noop(self):
         response = self.client.get('/v1.1/_noop')
-        print "%s: /_noop\t%s\t%d" % (
+        print '%s: /_noop\t%s\t%d' % (
             self.locust,
             response.status_code,
             int(1000 * response.elapsed.total_seconds()))
@@ -88,24 +99,30 @@ class NoOpBehavior(ECSTaskSet):
 
 class NoOpLocust(ECSHttpLocust):
 
-    #
-    # ```task_set``` defines the behavior for a ```AppMonitor```.
-    # ```task_set``` is required by locust.
-    #
     task_set = NoOpBehavior
 
-    #
-    # with more than one locust executing, the weight attribute
-    # defines the relatively likihood for this locust will run
-    #
     weight = _noop_weight
 
-    def __init__(self, *args, **kwargs):
-        ECSHttpLocust.__init__(self, *args, **kwargs)
+    def __str__(self):
+        return 'NoOp-Locust-%s' % self.locust_id
 
-        self.noop_locust_id = uuid.uuid4().hex
 
-        print "Created '%s'" % self
+class VersionBehavior(ECSTaskSet):
+
+    @task
+    def check_version(self):
+        response = self.client.get('/v1.1/_version')
+        print '%s: /_version\t%s\t%d' % (
+            self.locust,
+            response.status_code,
+            int(1000 * response.elapsed.total_seconds()))
+
+
+class VersionLocust(ECSHttpLocust):
+
+    task_set = VersionBehavior
+
+    weight = _version_weight
 
     def __str__(self):
-        return "NoOp-Locust-%s" % self.noop_locust_id
+        return 'Version-Locust-%s' % self.locust_id
