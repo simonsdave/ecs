@@ -60,13 +60,6 @@ class ECSTaskSet(TaskSet):
     min_wait = 0
     max_wait = 0
 
-    def __init__(self, *args, **kwargs):
-        TaskSet.__init__(self, *args, **kwargs)
-
-        self.locust_id = uuid.uuid4().hex
-
-        print 'Created %s' % self
-
 
 class ECSHttpLocust(HttpLocust):
     """An abstract base class for all HTTP locusts."""
@@ -84,6 +77,13 @@ class ECSHttpLocust(HttpLocust):
     # :TODO: how to get this to point to a different deployment?
     #
     host = 'http://127.0.0.1:8448'
+
+    def __init__(self, *args, **kwargs):
+        HttpLocust.__init__(self, *args, **kwargs)
+
+        self.locust_id = uuid.uuid4().hex
+
+        print 'Created %s' % self
 
 
 class NoOpBehavior(ECSTaskSet):
