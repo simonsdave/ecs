@@ -31,11 +31,11 @@ if not _verify_ids_cert:
 # defines the relatively likihood that a locust will run a
 # particular taskset
 #
-_noop_weight = 3
-_version_weight = 2
+_noop_weight = 5
+_version_weight = 5
 _quick_health_check_weight = 10
 _comprehensive_health_check_weight = 5
-_tasks_happy_path_weight = 80
+_tasks_happy_path_weight = 75
 assert 100 == (
     _noop_weight +
     _version_weight +
@@ -191,7 +191,7 @@ class TasksHappyPathBehavior(ECSTaskSet):
             1000 * response.elapsed.total_seconds())
 
 
-class ComprehensiveHealthLocust(ECSHttpLocust):
+class TasksHappyPathLocust(ECSHttpLocust):
 
     task_set = TasksHappyPathBehavior
 

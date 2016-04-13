@@ -6,7 +6,6 @@ import sys
 import dateutil.parser
 import numpy
 
-# [2016-04-12 17:00:22,238] vagrant-ubuntu-trusty-64/INFO/stdout: Tasks-Happy-Path    eefb5e7652e14225af7f2bcbb493bcfe    500 665.69
 
 class Response(object):
 
@@ -15,7 +14,7 @@ class Response(object):
     @classmethod
     def response_times_by_request_type(cls, request_type):
         return [response.response_time for response in cls.responses[request_type]]
-                
+
     def __init__(self, request_type, timestamp, status_code, response_time):
         object.__init__(self)
 
@@ -27,9 +26,14 @@ class Response(object):
             type(self).responses[request_type] = []
         type(self).responses[request_type].append(self)
 
- 
+
 if __name__ == '__main__':
-    reg_ex_pattern = r'^\s*\[(?P<timestamp>.*)\].*:\s+(?P<request_type>.+)\t(?P<locust_id>.+)\t+(?P<status_code>\d+)\t(?P<response_time>\d+\.\d+)\s*$'
+    reg_ex_pattern = (
+        r'^\s*\[(?P<timestamp>.*)\].*:\s+(?P<request_type>.+)\t'
+        r'(?P<locust_id>.+)\t+'
+        r'(?P<status_code>\d+)\t'
+        r'(?P<response_time>\d+\.\d+)\s*$'
+    )
     reg_ex = re.compile(reg_ex_pattern)
 
     data = {}
