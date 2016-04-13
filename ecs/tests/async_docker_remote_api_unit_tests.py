@@ -197,15 +197,24 @@ class AsyncImagePullTestCase(unittest.TestCase):
         self.assertTrue(aip.async_state is async_state)
 
     def test_error_pulling_image(self):
-        response = mock.Mock(
-            code=httplib.NOT_FOUND,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
+        responses = [
+            mock.Mock(
+                code=httplib.NOT_FOUND,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+            mock.Mock(
+                code=httplib.NOT_FOUND,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+        ]
 
-        with AsyncHttpClientFetchPatcher(response=response):
+        with AsyncHttpClientFetchPatcher(responses=responses):
             callback = mock.Mock()
             aip = AsyncImagePull(
                 docker_image=uuid.uuid4().hex,
@@ -214,134 +223,30 @@ class AsyncImagePullTestCase(unittest.TestCase):
                 password=uuid.uuid4().hex)
             aip.pull(callback)
             callback.assert_called_once_with(False, None, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_ERROR_PULLING_IMAGE)
+            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_ERROR_GETTING_IMAGE_STATUS)
 
     def test_image_not_found(self):
-        docker_image = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-
-        chunks = [
-            (
-                '{"errorDetail":{"message":"Error: image %s not found"},'
-                '"error":"Error: image %s not found"}\n'
-            ) % (docker_image, docker_image),
+        responses = [
+            mock.Mock(
+                code=httplib.NOT_FOUND,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+            mock.Mock(
+                code=httplib.OK,
+                body=json.dumps([]),
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
         ]
 
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
+        with AsyncHttpClientFetchPatcher(responses=responses):
             callback = mock.Mock()
             aip = AsyncImagePull(
-                docker_image=docker_image,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_image_not_found_invalid_namespace_name(self):
-        docker_image = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-
-        chunks = [
-            'Invalid namespace name (%s). Only [a-z0-9-_] are allowed\n' % docker_image,
-        ]
-
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_image_not_found_invalid_repo_name(self):
-        docker_image = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-
-        chunks = [
-            'Invalid repository name (%s), only [a-z0-9-_.] are allowed\n' % docker_image,
-        ]
-
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_image_not_found_cannot_connect_to_registry(self):
-        docker_image = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-
-        chunks = [
-            'random stuff "no such host" other random stuff'
-        ]
-
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
-                email=uuid.uuid4().hex,
-                username=uuid.uuid4().hex,
-                password=uuid.uuid4().hex)
-            aip.pull(callback)
-            callback.assert_called_once_with(True, False, aip)
-            self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
-
-    def test_repo_name_component_must_match(self):
-        docker_image = uuid.uuid4().hex
-
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-
-        chunks = [
-            'bindle bindle bear repository name component must match bla bla bla'
-        ]
-
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
-            callback = mock.Mock()
-            aip = AsyncImagePull(
-                docker_image=docker_image,
+                docker_image=uuid.uuid4().hex,
                 email=uuid.uuid4().hex,
                 username=uuid.uuid4().hex,
                 password=uuid.uuid4().hex)
@@ -350,23 +255,34 @@ class AsyncImagePullTestCase(unittest.TestCase):
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_IMAGE_NOT_FOUND)
 
     def test_happy_path_with_creds(self):
-        response = mock.Mock(
-            code=httplib.OK,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-
         docker_image = uuid.uuid4().hex
 
-        chunks = [
-            'ok',
-            'great',
-            r'{"status":"Status: Image is up to date for %s"}' % docker_image,
+        image_status_response_body = [
+            {
+                'RepoTags': [
+                    docker_image,
+                ],
+            },
         ]
 
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
+        responses = [
+            mock.Mock(
+                code=httplib.NOT_FOUND,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+            mock.Mock(
+                code=httplib.OK,
+                body=json.dumps(image_status_response_body),
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+        ]
+
+        with AsyncHttpClientFetchPatcher(responses=responses):
             callback = mock.Mock()
             aip = AsyncImagePull(
                 docker_image=docker_image,
@@ -377,24 +293,35 @@ class AsyncImagePullTestCase(unittest.TestCase):
             callback.assert_called_once_with(True, True, aip)
             self.assertEqual(aip.pull_failure_detail, type(aip).PFD_OK)
 
-    def test_happy_path_no_creds(self):
-        response = mock.Mock(
-            code=httplib.OK,
-            body=None,
-            time_info={},
-            request_time=0.042,
-            effective_url='http://www.bindle.com',
-            request=mock.Mock(method='GET'))
-
+    def test_happy_path_with_no_creds(self):
         docker_image = uuid.uuid4().hex
 
-        chunks = [
-            'ok',
-            'great',
-            r'{"status":"Status: Downloaded newer image for %s"}' % docker_image,
+        image_status_response_body = [
+            {
+                'RepoTags': [
+                    docker_image,
+                ],
+            },
         ]
 
-        with AsyncHttpClientFetchPatcher(response=response, chunks=chunks):
+        responses = [
+            mock.Mock(
+                code=httplib.NOT_FOUND,
+                body=None,
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+            mock.Mock(
+                code=httplib.OK,
+                body=json.dumps(image_status_response_body),
+                time_info={},
+                request_time=0.042,
+                effective_url='http://www.bindle.com',
+                request=mock.Mock(method='GET')),
+        ]
+
+        with AsyncHttpClientFetchPatcher(responses=responses):
             callback = mock.Mock()
             aip = AsyncImagePull(docker_image=docker_image)
             aip.pull(callback)

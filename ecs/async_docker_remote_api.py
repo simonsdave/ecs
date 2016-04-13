@@ -5,7 +5,6 @@ import datetime
 import httplib
 import json
 import logging
-import re
 
 import semantic_version
 import tor_async_util
@@ -96,7 +95,7 @@ class AsyncImagePull(AsyncAction):
     # PFD = Pull Failure Details
     PFD_OK = 0x0000
     PFD_ERROR = 0x0080
-    PFD_ERROR_PULLING_IMAGE = PFD_ERROR | 0x0001
+    PFD_ERROR_GETTING_IMAGE_STATUS = PFD_ERROR | 0x0001
     PFD_IMAGE_NOT_FOUND = 0x0002
 
     def __init__(self,
@@ -138,78 +137,37 @@ class AsyncImagePull(AsyncAction):
             method='POST',
             headers=headers,
             allow_nonstandard_methods=True,
-            streaming_callback=self._on_chunk)
+            streaming_callback=self._pull_on_chunk)
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_client.fetch(request, callback=self._on_http_client_fetch_done)
+        http_client.fetch(request, callback=self._pull_on_http_client_fetch_done)
 
-    def _on_chunk(self, chunk):
-        chunk = chunk.strip()
+    def _pull_on_chunk(self, chunk):
+        _logger.info(chunk.strip())
 
-        #
-        # network connectivity can generate a "no such host" error
-        # that we'll choose to interpret as the requested image could
-        # not be found
-        #
-        if 'no such host' in chunk:
-            self._image_found = False
-            return
-
-        #
-        # the not found error will be raised by the docker remote
-        # API under one of two conditions 1/ the image really can't
-        # be found or 2/ the request isn't authorized to access
-        # the image
-        #
-        if re.search(r'%s:? not found' % self.docker_image, chunk):
-            self._image_found = False
-            return
-
-        #
-        # invalid image names generate a message that starts with
-        # 'Invalid namespace name' or 'Invalid repository name' and
-        # we'll treat this as an image
-        # not found
-        #
-        if 'Invalid namespace name' in chunk:
-            self._image_found = False
-            return
-
-        if 'Invalid repository name' in chunk:
-            self._image_found = False
-            return
-
-        if 'repository name component must match' in chunk:
-            self._image_found = False
-            return
-
-        #
-        # test for messages that indicate the image has been
-        # successfully downloaded
-        #
-        success_msg = r'{"status":"Status: Image is up to date for %s"}' % self.docker_image
-        if chunk == success_msg:
-            self._image_found = True
-            return
-
-        success_msg = r'{"status":"Status: Downloaded newer image for %s"}' % self.docker_image
-        if chunk == success_msg:
-            self._image_found = True
-            return
-
-    def _on_http_client_fetch_done(self, response):
+    def _pull_on_http_client_fetch_done(self, response):
         self.write_http_client_response_to_log(response)
 
-        if self._image_found is True:
-            self._call_callback(type(self).PFD_OK)
+        request = HTTPRequest(
+            '/images/json?filter=%s' % self.docker_image.split(':')[0],
+            method='GET')
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_client.fetch(request, callback=self._images_on_http_client_fetch_done)
+
+    def _images_on_http_client_fetch_done(self, response):
+        self.write_http_client_response_to_log(response)
+
+        if response.code != httplib.OK:
+            self._call_callback(type(self).PFD_ERROR_GETTING_IMAGE_STATUS)
             return
 
-        if self._image_found is False:
-            self._call_callback(type(self).PFD_IMAGE_NOT_FOUND)
-            return
+        response_body = json.loads(response.body)
+        for repo in response_body:
+            for tag in repo.get('RepoTags', []):
+                if tag == self.docker_image:
+                    self._call_callback(type(self).PFD_OK)
+                    return
 
-        assert self._image_found is None
-
-        self._call_callback(type(self).PFD_ERROR_PULLING_IMAGE)
+        self._call_callback(type(self).PFD_IMAGE_NOT_FOUND)
 
     def _call_callback(self, pull_failure_detail):
         assert self._callback is not None
