@@ -1,2 +1,4 @@
-pyzmq==15.2.0
 locustio==0.7.3
+numpy==1.11.0
+python-dateutil==2.5.2
+pyzmq==15.2.0
