@@ -6,6 +6,11 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
+* /tasks needs to better handle scenerio where multiple clients are doing
+  docker pulls @ the same time - load tests are currently failing because
+  we're ignoring ```Repository .+ already being pulled by another client. Waiting.```
+  ```_on_chunk()``` messages
+* load tests need to run against real ECS deployment (handle HTTPS, authentication, etc)
 * write some integration tests for private repos
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
