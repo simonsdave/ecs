@@ -31,15 +31,17 @@ if not _verify_ids_cert:
 # defines the relatively likihood that a locust will run a
 # particular taskset
 #
-_noop_weight = 20
-_version_weight = 40
-_quick_health_check_weight = 30
-_comprehensive_health_check_weight = 10
+_noop_weight = 3
+_version_weight = 2
+_quick_health_check_weight = 10
+_comprehensive_health_check_weight = 5
+_tasks_happy_path_weight = 80
 assert 100 == (
     _noop_weight +
     _version_weight +
     _quick_health_check_weight +
-    _comprehensive_health_check_weight
+    _comprehensive_health_check_weight +
+    _tasks_happy_path_weight
 )
 
 
@@ -90,13 +92,11 @@ class NoOpBehavior(ECSTaskSet):
 
     @task
     def check_noop(self):
-        url = '/v1.1/_noop'
-        response = self.client.get(url)
-        print '%s: %s\t%s\t%d' % (
-            self.locust,
-            url,
+        response = self.client.get('/v1.1/_noop')
+        print 'NoOp\t%s\t%s\t%.2f' % (
+            self.locust.locust_id,
             response.status_code,
-            int(1000 * response.elapsed.total_seconds()))
+            1000 * response.elapsed.total_seconds())
 
 
 class NoOpLocust(ECSHttpLocust):
@@ -112,14 +112,12 @@ class NoOpLocust(ECSHttpLocust):
 class VersionBehavior(ECSTaskSet):
 
     @task
-    def check_version(self):
-        url = '/v1.1/_version'
-        response = self.client.get(url)
-        print '%s: %s\t%s\t%d' % (
-            self.locust,
-            url,
+    def version(self):
+        response = self.client.get('/v1.1/_version')
+        print 'Version\t%s\t%s\t%.2f' % (
+            self.locust.locust_id,
             response.status_code,
-            int(1000 * response.elapsed.total_seconds()))
+            1000 * response.elapsed.total_seconds())
 
 
 class VersionLocust(ECSHttpLocust):
@@ -135,14 +133,12 @@ class VersionLocust(ECSHttpLocust):
 class QuickHealthBehavior(ECSTaskSet):
 
     @task
-    def check_version(self):
-        url = '/v1.1/_health?quick=true'
-        response = self.client.get(url)
-        print '%s: %s\t%s\t%d' % (
-            self.locust,
-            url,
+    def quick_health_check(self):
+        response = self.client.get('/v1.1/_health?quick=true')
+        print 'Health-Check-Quick\t%s\t%s\t%.2f' % (
+            self.locust.locust_id,
             response.status_code,
-            int(1000 * response.elapsed.total_seconds()))
+            1000 * response.elapsed.total_seconds())
 
 
 class QuickHealthLocust(ECSHttpLocust):
@@ -158,21 +154,48 @@ class QuickHealthLocust(ECSHttpLocust):
 class ComprehensiveHealthBehavior(ECSTaskSet):
 
     @task
-    def check_version(self):
-        url = '/v1.1/_health?quick=false'
-        response = self.client.get(url)
-        print '%s: %s\t%s\t%d' % (
-            self.locust,
-            url,
+    def comprehensive_health_check(self):
+        response = self.client.get('/v1.1/_health?quick=false')
+        print 'Health-Check-Comprehensive\t%s\t%s\t%.2f' % (
+            self.locust.locust_id,
             response.status_code,
-            int(1000 * response.elapsed.total_seconds()))
+            1000 * response.elapsed.total_seconds())
 
 
 class ComprehensiveHealthLocust(ECSHttpLocust):
 
     task_set = ComprehensiveHealthBehavior
 
-    weight = _comprehensive_health_check_weight
+    weight = _tasks_happy_path_weight
 
     def __str__(self):
-        return 'Comprehensive-Health-Locust-%s' % self.locust_id
+        return 'Tasks-Happy-Path-Locust-%s' % self.locust_id
+
+
+class TasksHappyPathBehavior(ECSTaskSet):
+
+    @task
+    def happy_path_task(self):
+        url = '/v1.1/tasks?comment=happy_path'
+        body = {
+            'docker_image': 'ubuntu:14.04',
+            'cmd': [
+                'echo',
+                'hello world',
+            ],
+        }
+        response = self.client.post(url, json=body)
+        print 'Tasks-Happy-Path\t%s\t%s\t%.2f' % (
+            self.locust.locust_id,
+            response.status_code,
+            1000 * response.elapsed.total_seconds())
+
+
+class ComprehensiveHealthLocust(ECSHttpLocust):
+
+    task_set = TasksHappyPathBehavior
+
+    weight = _tasks_happy_path_weight
+
+    def __str__(self):
+        return 'Tasks-Happy-Path-Locust-%s' % self.locust_id
