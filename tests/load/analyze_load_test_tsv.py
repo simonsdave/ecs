@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import re
 import sys
 
@@ -14,6 +15,10 @@ class Response(object):
     @classmethod
     def response_times_by_request_type(cls, request_type):
         return [response.response_time for response in cls.responses[request_type]]
+
+    @classmethod
+    def total_number_responses(cls):
+        return sum([len(responses) for (response_type, responses) in cls.responses.iteritems()])
 
     def __init__(self, request_type, timestamp, status_code, response_time):
         object.__init__(self)
@@ -36,6 +41,8 @@ if __name__ == '__main__':
     )
     reg_ex = re.compile(reg_ex_pattern)
 
+    first_timestamp = datetime.datetime(2990, 1, 1)
+    last_timestamp = datetime.datetime(1990, 1, 1)
     data = {}
 
     for line in sys.stdin:
@@ -48,8 +55,20 @@ if __name__ == '__main__':
 
             Response(request_type, timestamp, status_code, response_time)
 
+            first_timestamp = min(timestamp, first_timestamp)
+            last_timestamp = max(timestamp, last_timestamp)
+
+    print '%d from %s to %s' % (
+        Response.total_number_responses(),
+        first_timestamp,
+        last_timestamp,
+    )
     percentiles = [50, 70, 90, 95, 99]
     for request_type in Response.responses.keys():
         print request_type
         responses = numpy.array(Response.response_times_by_request_type(request_type))
-        print numpy.percentile(responses, percentiles)
+        print '-- %d (%.0f%%) %s' % (
+            len(responses),
+            round(100.0 * (len(responses) * 1.0) / Response.total_number_responses()),
+            numpy.percentile(responses, percentiles),
+        )
