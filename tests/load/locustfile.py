@@ -62,23 +62,12 @@ def _is_percent_of_time(percent_of_time):
 class ECSTaskSet(TaskSet):
     """An abstract base class for all tasksets."""
 
-    #
-    # ```min_wait``` and ```max_wait``` define the time in milliseconds
-    # that a simulated entity will wait between executing each task
-    #
     min_wait = 0
     max_wait = 0
 
 
 class ECSHttpLocust(HttpLocust):
     """An abstract base class for all HTTP locusts."""
-
-    #
-    # ```min_wait``` and ```max_wait``` define the time in milliseconds
-    # that a simulated entity will wait between executing each task
-    #
-    min_wait = 0
-    max_wait = 0
 
     def __init__(self, *args, **kwargs):
         HttpLocust.__init__(self, *args, **kwargs)
@@ -89,6 +78,9 @@ class ECSHttpLocust(HttpLocust):
 
 
 class NoOpBehavior(ECSTaskSet):
+
+    min_wait = 2
+    max_wait = 3
 
     @task
     def check_noop(self):
@@ -111,6 +103,9 @@ class NoOpLocust(ECSHttpLocust):
 
 class VersionBehavior(ECSTaskSet):
 
+    min_wait = 2
+    max_wait = 3
+
     @task
     def version(self):
         response = self.client.get('/v1.1/_version')
@@ -131,6 +126,9 @@ class VersionLocust(ECSHttpLocust):
 
 
 class QuickHealthBehavior(ECSTaskSet):
+
+    min_wait = 2
+    max_wait = 3
 
     @task
     def quick_health_check(self):
@@ -153,6 +151,9 @@ class QuickHealthLocust(ECSHttpLocust):
 
 class ComprehensiveHealthBehavior(ECSTaskSet):
 
+    min_wait = 2
+    max_wait = 3
+
     @task
     def comprehensive_health_check(self):
         response = self.client.get('/v1.1/_health?quick=false')
@@ -173,6 +174,9 @@ class ComprehensiveHealthLocust(ECSHttpLocust):
 
 
 class TasksHappyPathBehavior(ECSTaskSet):
+
+    min_wait = 0
+    max_wait = 0
 
     @task
     def happy_path_task(self):
