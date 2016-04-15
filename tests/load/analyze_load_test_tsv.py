@@ -69,11 +69,11 @@ if __name__ == '__main__':
     print ''
 
     percentiles = [50, 60, 70, 80, 90, 95, 99]
-    fmt = '%-20s %5d (%2.0f%%)' + ' %9.2f' * (1 + len(percentiles) + 1)
+    fmt = '%-25s %5d (%2.0f%%)' + ' %9.2f' * (1 + len(percentiles) + 1)
     request_types = Response.responses.keys()
     request_types.sort()
 
-    title_fmt = '%-20s %11s' + '%10s' * (1 + len(percentiles) + 1)
+    title_fmt = '%-25s %11s' + '%10s' * (1 + len(percentiles) + 1)
     args = [
         'Request Type',
         'Number',
