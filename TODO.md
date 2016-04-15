@@ -153,6 +153,8 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 
 ## Stability
 
+* need to plat results of [load tests](tests/load) - consider using [Plotly](https://plot.ly) -
+  [this](https://plot.ly/~ckaiwu/105/prices/) is probably a good example
 * setup and execute long running stress tests against an ECS deployment
 
 ## Documentation
