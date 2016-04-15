@@ -13,7 +13,7 @@ class Response(object):
     responses = {}
 
     @classmethod
-    def response_times_by_request_type(cls, request_type):
+    def response_times_for_request_type(cls, request_type):
         return [response.response_time for response in cls.responses[request_type]]
 
     @classmethod
@@ -58,17 +58,45 @@ if __name__ == '__main__':
             first_timestamp = min(timestamp, first_timestamp)
             last_timestamp = max(timestamp, last_timestamp)
 
-    print '%d from %s to %s' % (
+    overall_title = '%d from %s to %s' % (
         Response.total_number_responses(),
         first_timestamp,
         last_timestamp,
     )
-    percentiles = [50, 70, 90, 95, 99]
-    for request_type in Response.responses.keys():
-        print request_type
-        responses = numpy.array(Response.response_times_by_request_type(request_type))
-        print '-- %d (%.0f%%) %s' % (
+    print '=' * len(overall_title)
+    print overall_title
+    print '=' * len(overall_title)
+    print ''
+
+    percentiles = [50, 60, 70, 80, 90, 95, 99]
+    fmt = '%-20s %5d (%2.0f%%)' + ' %9.2f' * (1 + len(percentiles) + 1)
+    request_types = Response.responses.keys()
+    request_types.sort()
+
+    title_fmt = '%-20s %11s' + '%10s' * (1 + len(percentiles) + 1)
+    args = [
+        'Request Type',
+        'Number',
+        'Min',
+    ]
+    args.extend(percentiles)
+    args.append('Max')
+    title = title_fmt % tuple(args)
+    print title
+    print '-' * len(title)
+
+    for request_type in request_types:
+        # responses = numpy.array(Response.response_times_for_request_type(request_type))
+        responses = Response.response_times_for_request_type(request_type)
+        args = [
+            request_type,
             len(responses),
             round(100.0 * (len(responses) * 1.0) / Response.total_number_responses()),
-            numpy.percentile(responses, percentiles),
-        )
+            min(responses),
+        ]
+        args.extend(numpy.percentile(numpy.array(responses), percentiles))
+        args.append(max(responses))
+        print fmt % tuple(args)
+
+    print ''
+    print '=' * len(overall_title)
