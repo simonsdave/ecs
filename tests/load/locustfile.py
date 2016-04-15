@@ -189,6 +189,7 @@ class TasksBehavior(ECSTaskSet):
                 ],
             },
             'expected_status_code': 201,
+            'weight': 80,
         },
         {
             'name': 'Image-Not-Found',
@@ -200,19 +201,24 @@ class TasksBehavior(ECSTaskSet):
                 ],
             },
             'expected_status_code': 404,
+            'weight': 10,
         },
         {
             'name': 'Bad-Request-Body',
             'body': {
             },
             'expected_status_code': 400,
+            'weight': 10,
         },
     ]
 
     @task
     def task(self):
-        templates = type(self)._templates
-        template = templates[random.randint(0, len(templates) - 1)]
+        weighted_templates = []
+        for template in type(self)._templates:
+            weighted_templates.extend([template] * template['weight'])
+
+        template = weighted_templates[random.randint(0, len(weighted_templates) - 1)]
 
         url = '/v1.1/tasks?comment=%s' % template['name'].lower()
         body = template['body']
