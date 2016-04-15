@@ -149,7 +149,7 @@ class QuickHealthLocust(ECSHttpLocust):
         return 'Quick-Health-Locust-%s' % self.locust_id
 
 
-class ComprehensiveHealthBehavior(ECSTaskSet):
+class SlowHealthBehavior(ECSTaskSet):
 
     min_wait = 2
     max_wait = 3
@@ -157,15 +157,15 @@ class ComprehensiveHealthBehavior(ECSTaskSet):
     @task
     def comprehensive_health_check(self):
         response = self.client.get('/v1.1/_health?quick=false')
-        print 'Health-Check-Comprehensive\t%s\t%s\t%.2f' % (
+        print 'Health-Check-Slow\t%s\t%s\t%.2f' % (
             self.locust.locust_id,
             response.status_code,
             1000 * response.elapsed.total_seconds())
 
 
-class ComprehensiveHealthLocust(ECSHttpLocust):
+class SlowHealthLocust(ECSHttpLocust):
 
-    task_set = ComprehensiveHealthBehavior
+    task_set = SlowHealthBehavior
 
     weight = _tasks_happy_path_weight
 
