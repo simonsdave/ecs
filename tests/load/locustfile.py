@@ -34,13 +34,13 @@ if not _verify_ids_cert:
 _noop_weight = 5
 _version_weight = 5
 _quick_health_check_weight = 10
-_comprehensive_health_check_weight = 5
+_slow_health_check_weight = 5
 _tasks_weight = 75
 assert 100 == (
     _noop_weight +
     _version_weight +
     _quick_health_check_weight +
-    _comprehensive_health_check_weight +
+    _slow_health_check_weight +
     _tasks_weight
 )
 
@@ -167,7 +167,7 @@ class SlowHealthLocust(ECSHttpLocust):
 
     task_set = SlowHealthBehavior
 
-    weight = _tasks_weight
+    weight = _slow_health_check_weight
 
     def __str__(self):
         return 'Tasks-Happy-Path-Locust-%s' % self.locust_id
