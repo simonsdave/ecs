@@ -39,6 +39,8 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   * [CoreOS release channels](https://coreos.com/releases/) which indicate Alpha channel is required
   * [How to get HTTP Event Collectors enabled in Splunk Cloud?](https://answers.splunk.com/answers/323085/how-to-get-http-event-collectors-enabled-in-splunk.html)
   * [HTTP Event Collector walkthrough](http://dev.splunk.com/view/event-collector/SP-CAAAE7F)
+  * [30 Apr '15 - Integrating Splunk with Docker, CoreOS, and JournalD](http://blogs.splunk.com/2015/04/30/integrating-splunk-with-docker-coreos-and-journald/)
+  * [14 Apr '16 - Sending Error Logs using Docker, Vagrant and SumoLogic](http://www.macadamian.com/2016/04/14/sending-error-logs-using-docker-vagrant-and-sumologic)
 * add status page using [StatusPage.io](https://www.statuspage.io)
 * how are we going to do SLA monitoring? can extract check results from [Pingdom](https://www.pingdom.com/) using the [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
 
@@ -126,6 +128,8 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 
 ### Nice to Have
 
+* consider using [CoreOS Ignition](https://coreos.com/blog/introducing-ignition.html)
+  when it gets to the beta channel
 * 401 from api domain should return json content type
 * remove nginx version # from all responses
 * remove SSH access to nodes in ECS cluster
