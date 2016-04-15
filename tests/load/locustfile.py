@@ -35,13 +35,13 @@ _noop_weight = 5
 _version_weight = 5
 _quick_health_check_weight = 10
 _comprehensive_health_check_weight = 5
-_tasks_happy_path_weight = 75
+_tasks_weight = 75
 assert 100 == (
     _noop_weight +
     _version_weight +
     _quick_health_check_weight +
     _comprehensive_health_check_weight +
-    _tasks_happy_path_weight
+    _tasks_weight
 )
 
 
@@ -167,39 +167,77 @@ class SlowHealthLocust(ECSHttpLocust):
 
     task_set = SlowHealthBehavior
 
-    weight = _tasks_happy_path_weight
+    weight = _tasks_weight
 
     def __str__(self):
         return 'Tasks-Happy-Path-Locust-%s' % self.locust_id
 
 
-class TasksHappyPathBehavior(ECSTaskSet):
+class TasksBehavior(ECSTaskSet):
 
     min_wait = 0
     max_wait = 0
 
+    _templates = [
+        {
+            'name': 'Happy-Path',
+            'body': {
+                'docker_image': 'ubuntu:14.04',
+                'cmd': [
+                    'echo',
+                    'hello world',
+                ],
+            },
+            'expected_status_code': 201,
+        },
+        {
+            'name': 'Image-Not-Found',
+            'body': {
+                'docker_image': 'bindle:berry',
+                'cmd': [
+                    'echo',
+                    'hello world',
+                ],
+            },
+            'expected_status_code': 404,
+        },
+        {
+            'name': 'Bad-Request-Body',
+            'body': {
+            },
+            'expected_status_code': 400,
+        },
+    ]
+
     @task
-    def happy_path_task(self):
-        url = '/v1.1/tasks?comment=happy_path'
-        body = {
-            'docker_image': 'ubuntu:14.04',
-            'cmd': [
-                'echo',
-                'hello world',
-            ],
-        }
-        response = self.client.post(url, json=body)
-        print 'Tasks-Happy-Path\t%s\t%s\t%.2f' % (
-            self.locust.locust_id,
-            response.status_code,
-            1000 * response.elapsed.total_seconds())
+    def task(self):
+        templates = type(self)._templates
+        template = templates[random.randint(0, len(templates) - 1)]
+
+        url = '/v1.1/tasks?comment=%s' % template['name'].lower()
+        body = template['body']
+        with self.client.post(url, json=body, catch_response=True) as response:
+            print 'Tasks-%s\t%s\t%s\t%.2f' % (
+                template['name'],
+                self.locust.locust_id,
+                response.status_code,
+                1000 * response.elapsed.total_seconds())
+
+            if response.status_code == template['expected_status_code']:
+                response.success()
+            else:
+                msg = 'Got status code %d and expected %d' % (
+                    response.status_code,
+                    template['expected_status_code'],
+                )
+                response.failure(msg)
 
 
-class TasksHappyPathLocust(ECSHttpLocust):
+class TasksLocust(ECSHttpLocust):
 
-    task_set = TasksHappyPathBehavior
+    task_set = TasksBehavior
 
-    weight = _tasks_happy_path_weight
+    weight = _tasks_weight
 
     def __str__(self):
-        return 'Tasks-Happy-Path-Locust-%s' % self.locust_id
+        return 'Tasks-Locust-%s' % self.locust_id
