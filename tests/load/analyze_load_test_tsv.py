@@ -17,14 +17,22 @@ class Response(object):
         return [response.response_time for response in cls.responses[request_type]]
 
     @classmethod
+    def successes_for_request_type(cls, request_type):
+        return [response for response in cls.responses[request_type] if response.success]
+
+    @classmethod
+    def failures_for_request_type(cls, request_type):
+        return [response for response in cls.responses[request_type] if not response.success]
+
+    @classmethod
     def total_number_responses(cls):
         return sum([len(responses) for (response_type, responses) in cls.responses.iteritems()])
 
-    def __init__(self, request_type, timestamp, status_code, response_time):
+    def __init__(self, request_type, timestamp, success, response_time):
         object.__init__(self)
 
         self.timestamp = timestamp
-        self.status_code = status_code
+        self.success = success
         self.response_time = response_time
 
         if request_type not in type(self).responses:
@@ -36,7 +44,7 @@ if __name__ == '__main__':
     reg_ex_pattern = (
         r'^\s*\[(?P<timestamp>.*)\].*:\s+(?P<request_type>.+)\t'
         r'(?P<locust_id>.+)\t+'
-        r'(?P<status_code>\d+)\t'
+        r'(?P<success>\d)\t'
         r'(?P<response_time>\d+\.\d+)\s*$'
     )
     reg_ex = re.compile(reg_ex_pattern)
@@ -50,10 +58,10 @@ if __name__ == '__main__':
         if match:
             timestamp = dateutil.parser.parse(match.group('timestamp'))
             request_type = match.group('request_type')
-            status_code = match.group('status_code')
+            success = int(match.group('success'))
             response_time = float(match.group('response_time'))
 
-            Response(request_type, timestamp, status_code, response_time)
+            Response(request_type, timestamp, success, response_time)
 
             first_timestamp = min(timestamp, first_timestamp)
             last_timestamp = max(timestamp, last_timestamp)
@@ -69,14 +77,16 @@ if __name__ == '__main__':
     print ''
 
     percentiles = [50, 60, 70, 80, 90, 95, 99]
-    fmt = '%-25s %5d (%2.0f%%)' + ' %9.0f' * (1 + len(percentiles) + 1)
+    fmt = '%-25s %5d %5d %3.0f%%' + ' %9.0f' * (1 + len(percentiles) + 1)
     request_types = Response.responses.keys()
     request_types.sort()
 
-    title_fmt = '%-25s %11s' + '%10s' * (1 + len(percentiles) + 1)
+    title_fmt = '%-25s %5s %5s %4s' + '%10s' * (1 + len(percentiles) + 1)
     args = [
         'Request Type',
-        'Number',
+        'Ok',
+        'Error',
+        '',
         'Min',
     ]
     args.extend(percentiles)
@@ -90,7 +100,8 @@ if __name__ == '__main__':
         responses = Response.response_times_for_request_type(request_type)
         args = [
             request_type,
-            len(responses),
+            len(Response.successes_for_request_type(request_type)),
+            len(Response.failures_for_request_type(request_type)),
             round(100.0 * (len(responses) * 1.0) / Response.total_number_responses()),
             min(responses),
         ]

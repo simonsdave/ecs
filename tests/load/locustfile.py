@@ -4,6 +4,7 @@
 # this locustfile is expected to called from a BASH script
 #
 
+import httplib
 import random
 import uuid
 
@@ -85,9 +86,9 @@ class NoOpBehavior(ECSTaskSet):
     @task
     def check_noop(self):
         response = self.client.get('/v1.1/_noop')
-        print 'NoOp\t%s\t%s\t%.2f' % (
+        print 'NoOp\t%s\t%d\t%.2f' % (
             self.locust.locust_id,
-            response.status_code,
+            1 if response.status_code == httplib.OK else 0,
             1000 * response.elapsed.total_seconds())
 
 
@@ -109,9 +110,9 @@ class VersionBehavior(ECSTaskSet):
     @task
     def version(self):
         response = self.client.get('/v1.1/_version')
-        print 'Version\t%s\t%s\t%.2f' % (
+        print 'Version\t%s\t%d\t%.2f' % (
             self.locust.locust_id,
-            response.status_code,
+            1 if response.status_code == httplib.OK else 0,
             1000 * response.elapsed.total_seconds())
 
 
@@ -133,9 +134,9 @@ class QuickHealthBehavior(ECSTaskSet):
     @task
     def quick_health_check(self):
         response = self.client.get('/v1.1/_health?quick=true')
-        print 'Health-Check-Quick\t%s\t%s\t%.2f' % (
+        print 'Health-Check-Quick\t%s\t%d\t%.2f' % (
             self.locust.locust_id,
-            response.status_code,
+            1 if response.status_code == httplib.OK else 0,
             1000 * response.elapsed.total_seconds())
 
 
@@ -157,9 +158,9 @@ class SlowHealthBehavior(ECSTaskSet):
     @task
     def comprehensive_health_check(self):
         response = self.client.get('/v1.1/_health?quick=false')
-        print 'Health-Check-Slow\t%s\t%s\t%.2f' % (
+        print 'Health-Check-Slow\t%s\t%d\t%.2f' % (
             self.locust.locust_id,
-            response.status_code,
+            1 if response.status_code == httplib.OK else 0,
             1000 * response.elapsed.total_seconds())
 
 
@@ -223,10 +224,10 @@ class TasksBehavior(ECSTaskSet):
         url = '/v1.1/tasks?comment=%s' % template['name'].lower()
         body = template['body']
         with self.client.post(url, json=body, catch_response=True) as response:
-            print 'Tasks-%s\t%s\t%s\t%.2f' % (
+            print 'Tasks-%s\t%s\t%d\t%.2f' % (
                 template['name'],
                 self.locust.locust_id,
-                response.status_code,
+                1 if response.status_code == template['expected_status_code'] else 0,
                 1000 * response.elapsed.total_seconds())
 
             if response.status_code == template['expected_status_code']:
