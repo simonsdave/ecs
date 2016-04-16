@@ -35,14 +35,19 @@ if [ $# == 0 ]; then
     ECS_PID=$!
 
     if [ $VERBOSE == 1 ]; then
-        echo "Started ECS - PID = ECS_PID; config file  '$ECS_CONFIG_FILE'"
+        echo "Started ECS - PID = $ECS_PID; config file  '$ECS_CONFIG_FILE'"
     fi
 else
     ECS_ENDPOINT=$1
 fi
 
-LOG_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
+LOCUST_LOG_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
 LOCUST_OUTPUT_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
+
+if [ $VERBOSE == 1 ]; then
+    echo "Find locust log file @ '$LOCUST_LOG_FILE'"
+    echo "Find locust output @ '$LOCUST_OUTPUT_FILE'"
+fi
 
 locust \
     --locustfile="$SCRIPT_DIR_NAME/locustfile.py" \
@@ -51,13 +56,10 @@ locust \
     --clients=25 \
     --hatch-rate=5 \
     --host=$ECS_ENDPOINT \
-    --logfile="$LOG_FILE" \
+    --logfile="$LOCUST_LOG_FILE" \
     >& "$LOCUST_OUTPUT_FILE"
 
-echo "Find log file @ '$LOG_FILE'"
-echo "Find locust output @ '$LOCUST_OUTPUT_FILE'"
-
-"$SCRIPT_DIR_NAME/analyze_load_test_tsv.py" < "$LOG_FILE"
+"$SCRIPT_DIR_NAME/analyze_load_test_tsv.py" < "$LOCUST_LOG_FILE"
 
 if [ "${ECS_PID:-}" != "" ]; then
     kill $ECS_PID
