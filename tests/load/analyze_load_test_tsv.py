@@ -55,7 +55,6 @@ class Main(object):
 
         first_timestamp = datetime.datetime(2990, 1, 1)
         last_timestamp = datetime.datetime(1990, 1, 1)
-        data = {}
 
         for line in sys.stdin:
             match = reg_ex.match(line)
@@ -100,7 +99,6 @@ class Main(object):
         print '-' * len(title)
 
         for request_type in request_types:
-            # responses = numpy.array(Response.response_times_for_request_type(request_type))
             responses = Response.response_times_for_request_type(request_type)
             args = [
                 request_type,
