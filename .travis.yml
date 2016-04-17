@@ -5,6 +5,7 @@ sudo: required
 dist: trusty
 install:
   - source cfg4dev
+  - pip install --requirement tests/load/requirements.txt
   - pip install coveralls
   - nvm install 4.1.0
   - npm i -g raml2md
