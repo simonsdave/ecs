@@ -11,34 +11,56 @@ import numpy
 
 class Response(object):
 
-    responses = {}
+    responses = []
+
+    responses_by_request_type = {}
+
+    responses_by_locust_id = {}
+
+    @classmethod
+    def request_types(cls):
+        return cls.responses_by_request_type.keys()
 
     @classmethod
     def response_times_for_request_type(cls, request_type):
-        return [response.response_time for response in cls.responses[request_type]]
+        return [response.response_time for response in cls.responses_by_request_type[request_type]]
 
     @classmethod
     def successes_for_request_type(cls, request_type):
-        return [response for response in cls.responses[request_type] if response.success]
+        return [response for response in cls.responses_by_request_type[request_type] if response.success]
 
     @classmethod
     def failures_for_request_type(cls, request_type):
-        return [response for response in cls.responses[request_type] if not response.success]
+        return [response for response in cls.responses_by_request_type[request_type] if not response.success]
+
+    @classmethod
+    def number_of_locusts(cls):
+        return len(cls.responses_by_locust_id.keys())
 
     @classmethod
     def total_number_responses(cls):
-        return sum([len(responses) for (response_type, responses) in cls.responses.iteritems()])
+        return len(cls.responses)
 
-    def __init__(self, request_type, timestamp, success, response_time):
+    def __init__(self, locust_id, request_type, timestamp, success, response_time):
         object.__init__(self)
 
+        self.locust_id = locust_id
+        self.request_type = request_type
         self.timestamp = timestamp
         self.success = success
         self.response_time = response_time
 
-        if request_type not in type(self).responses:
-            type(self).responses[request_type] = []
-        type(self).responses[request_type].append(self)
+        type(self).responses.append(self)
+
+        if self.request_type not in type(self).responses_by_request_type:
+            type(self).responses_by_request_type[self.request_type] = []
+        type(self).responses_by_request_type[self.request_type].append(self)
+
+        if locust_id not in type(self).responses_by_locust_id:
+            type(self).responses_by_locust_id[locust_id] = {}
+        if self.request_type not in type(self).responses_by_locust_id[locust_id]:
+            type(self).responses_by_locust_id[locust_id][self.request_type] = []
+        type(self).responses_by_locust_id[locust_id][self.request_type].append(self)
 
 
 class Main(object):
@@ -46,7 +68,8 @@ class Main(object):
     def analyze(self):
 
         reg_ex_pattern = (
-            r'^\s*\[(?P<timestamp>.*)\].*:\s+(?P<request_type>.+)\t'
+            r'^\s*\[(?P<timestamp>.*)\].*:\s+'
+            r'(?P<request_type>.+)\t'
             r'(?P<locust_id>.+)\t+'
             r'(?P<success>\d)\t'
             r'(?P<response_time>\d+\.\d+)\s*$'
@@ -60,17 +83,19 @@ class Main(object):
             match = reg_ex.match(line)
             if match:
                 timestamp = dateutil.parser.parse(match.group('timestamp'))
+                locust_id = match.group('locust_id')
                 request_type = match.group('request_type')
                 success = int(match.group('success'))
                 response_time = float(match.group('response_time'))
 
-                Response(request_type, timestamp, success, response_time)
+                Response(locust_id, request_type, timestamp, success, response_time)
 
                 first_timestamp = min(timestamp, first_timestamp)
                 last_timestamp = max(timestamp, last_timestamp)
 
-        overall_title = '%d from %s to %s' % (
+        overall_title = '%d @ %d from %s to %s' % (
             Response.total_number_responses(),
+            Response.number_of_locusts(),
             first_timestamp,
             last_timestamp,
         )
@@ -79,9 +104,17 @@ class Main(object):
         print '=' * len(overall_title)
         print ''
 
+        """
+        for (locust_id, responses_by_request_type) in Response.responses_by_locust_id.iteritems():
+            print '%s' % locust_id
+            for (request_type, responses) in responses_by_request_type.iteritems():
+                print '-- %s %d' % (request_type, len(responses))
+            print ''
+        """
+
         percentiles = [50, 60, 70, 80, 90, 95, 99]
         fmt = '%-25s %5d %5d %3.0f%%' + ' %9.0f' * (1 + len(percentiles) + 1)
-        request_types = Response.responses.keys()
+        request_types = Response.request_types()
         request_types.sort()
 
         title_fmt = '%-25s %5s %5s %4s' + '%10s' * (1 + len(percentiles) + 1)
