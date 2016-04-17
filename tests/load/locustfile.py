@@ -5,6 +5,7 @@
 #
 
 import httplib
+import os
 import random
 import uuid
 
@@ -66,6 +67,13 @@ class ECSTaskSet(TaskSet):
     min_wait = 0
     max_wait = 0
 
+    def log_on_response(self, behavior, response, expected_status_code):
+        print '%s\t%s\t%d\t%.2f' % (
+            behavior,
+            self.locust.locust_id,
+            1 if response.status_code == expected_status_code else 0,
+            1000 * response.elapsed.total_seconds())
+
 
 class ECSHttpLocust(HttpLocust):
     """An abstract base class for all HTTP locusts."""
@@ -86,10 +94,7 @@ class NoOpBehavior(ECSTaskSet):
     @task
     def check_noop(self):
         response = self.client.get('/v1.1/_noop')
-        print 'NoOp\t%s\t%d\t%.2f' % (
-            self.locust.locust_id,
-            1 if response.status_code == httplib.OK else 0,
-            1000 * response.elapsed.total_seconds())
+        self.log_on_response('NoOp', response, httplib.OK)
 
 
 class NoOpLocust(ECSHttpLocust):
@@ -110,10 +115,7 @@ class VersionBehavior(ECSTaskSet):
     @task
     def version(self):
         response = self.client.get('/v1.1/_version')
-        print 'Version\t%s\t%d\t%.2f' % (
-            self.locust.locust_id,
-            1 if response.status_code == httplib.OK else 0,
-            1000 * response.elapsed.total_seconds())
+        self.log_on_response('Version', response, httplib.OK)
 
 
 class VersionLocust(ECSHttpLocust):
@@ -134,10 +136,7 @@ class QuickHealthBehavior(ECSTaskSet):
     @task
     def quick_health_check(self):
         response = self.client.get('/v1.1/_health?quick=true')
-        print 'Health-Check-Quick\t%s\t%d\t%.2f' % (
-            self.locust.locust_id,
-            1 if response.status_code == httplib.OK else 0,
-            1000 * response.elapsed.total_seconds())
+        self.log_on_response('Health-Check-Quick', response, httplib.OK)
 
 
 class QuickHealthLocust(ECSHttpLocust):
@@ -158,10 +157,7 @@ class SlowHealthBehavior(ECSTaskSet):
     @task
     def comprehensive_health_check(self):
         response = self.client.get('/v1.1/_health?quick=false')
-        print 'Health-Check-Slow\t%s\t%d\t%.2f' % (
-            self.locust.locust_id,
-            1 if response.status_code == httplib.OK else 0,
-            1000 * response.elapsed.total_seconds())
+        self.log_on_response('Health-Check-Slow', response, httplib.OK)
 
 
 class SlowHealthLocust(ECSHttpLocust):
@@ -224,11 +220,10 @@ class TasksBehavior(ECSTaskSet):
         url = '/v1.1/tasks?comment=%s' % template['name'].lower()
         body = template['body']
         with self.client.post(url, json=body, catch_response=True) as response:
-            print 'Tasks-%s\t%s\t%d\t%.2f' % (
-                template['name'],
-                self.locust.locust_id,
-                1 if response.status_code == template['expected_status_code'] else 0,
-                1000 * response.elapsed.total_seconds())
+            self.log_on_response(
+                'Tasks-%s' % template['name'],
+                response,
+                template['expected_status_code'])
 
             if response.status_code == template['expected_status_code']:
                 response.success()
