@@ -35,31 +35,35 @@ if [ $# == 0 ]; then
     ECS_PID=$!
 
     if [ $VERBOSE == 1 ]; then
-        echo "Started ECS - PID = $ECS_PID; config file  '$ECS_CONFIG_FILE'"
+        echo "$(tput bold)Started ECS - PID = $ECS_PID; config file  '$ECS_CONFIG_FILE'$(tput sgr0)"
     fi
 else
     ECS_ENDPOINT=$1
 fi
 
-LOCUST_LOG_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
-LOCUST_OUTPUT_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
+for ECS_CONCURRENCY in 10 15 20 25
+do
+    
+    LOCUST_LOG_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
+    LOCUST_OUTPUT_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
 
-if [ $VERBOSE == 1 ]; then
-    echo "Find locust log file @ '$LOCUST_LOG_FILE'"
-    echo "Find locust output @ '$LOCUST_OUTPUT_FILE'"
-fi
+    if [ $VERBOSE == 1 ]; then
+        echo "$(tput bold)Find locust log file @ '$LOCUST_LOG_FILE' for $ECS_CONCURRENCY concurrency$(tput sgr0)"
+        echo "$(tput bold)Find locust output @ '$LOCUST_OUTPUT_FILE' for $ECS_CONCURRENCY concurrency$(tput sgr0)"
+    fi
 
-locust \
-    --locustfile="$SCRIPT_DIR_NAME/locustfile.py" \
-    --no-web \
-    --num-request=1000 \
-    --clients=25 \
-    --hatch-rate=5 \
-    --host=$ECS_ENDPOINT \
-    --logfile="$LOCUST_LOG_FILE" \
-    >& "$LOCUST_OUTPUT_FILE"
+    locust \
+        --locustfile="$SCRIPT_DIR_NAME/locustfile.py" \
+        --no-web \
+        --num-request=1000 \
+        --clients=$ECS_CONCURRENCY \
+        --hatch-rate=5 \
+        --host=$ECS_ENDPOINT \
+        --logfile="$LOCUST_LOG_FILE" \
+        >> "$LOCUST_OUTPUT_FILE" 2>&1
 
-"$SCRIPT_DIR_NAME/analyze_load_test_tsv.py" < "$LOCUST_LOG_FILE"
+    "$SCRIPT_DIR_NAME/analyze_load_test_tsv.py" < "$LOCUST_LOG_FILE"
+done
 
 if [ "${ECS_PID:-}" != "" ]; then
     kill $ECS_PID
