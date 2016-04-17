@@ -5,7 +5,6 @@
 #
 
 import httplib
-import os
 import random
 import uuid
 
