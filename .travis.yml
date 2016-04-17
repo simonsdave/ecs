@@ -17,6 +17,7 @@ script:
   - flake8
   - tor_async_util_nosetests.py --with-coverage --cover-branches --cover-erase --cover-package ecs
   - coveralls || true
+  - tests/load/run_load_test.sh -v
   - python setup.py sdist --formats=gztar
   - ./api_docs/build-api-docs.sh -t
   - ./dockerfiles/build-docker-images.sh ./dist/ecs-*.*.*.tar.gz ./api_docs/api_docs.tar $DOCKER_USERNAME $DOCKER_EMAIL $DOCKER_PASSWORD
