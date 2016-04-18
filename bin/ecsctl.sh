@@ -292,10 +292,6 @@ deployment_create_cloud_config() {
     fi
 
     local SF_API_TOKEN=$(cat "$1" | jq -r .sf_api_token | sed -e 's/null//g')
-    if [ "$SF_API_TOKEN" == "" ]; then
-        echo_to_stderr "deployment_create_cloud_config() - couldn't find sf_api_token property in $1"
-        exit 1
-    fi
 
     local NUMBER_OF_NODES=$(cat "$1" | jq -r .number_of_nodes | sed -e 's/null//g')
     if [ "$NUMBER_OF_NODES" == "" ]; then
@@ -304,7 +300,7 @@ deployment_create_cloud_config() {
     fi
 
     local CLOUD_CONFIG=$(platform_safe_mktemp)
-    local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/ecs-cloud-config-template.yaml
+    local CLOUD_CONFIG_TEMPLATE=$SCRIPT_DIR_NAME/cloud-config-template.yaml
 
     local DISCOVERY_TOKEN=$(curl -s "https://discovery.etcd.io/new?size=$NUMBER_OF_NODES")
 
@@ -314,10 +310,19 @@ deployment_create_cloud_config() {
     echo "s|%DISCOVERY_TOKEN%|$DISCOVERY_TOKEN|g" >> "$SED_SCRIPT_1"
     echo "s|%DOCS_DOMAIN%|$DOCS_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%API_DOMAIN%|$API_DOMAIN|g" >> "$SED_SCRIPT_1"
-    echo "s|%SF_API_TOKEN%|$SF_API_TOKEN|g" >> "$SED_SCRIPT_1"
     local SED_SCRIPT_2=$(platform_safe_mktemp)
     cat "$SED_SCRIPT_1" | sed -e 's/&/\\\&/g' > "$SED_SCRIPT_2"
     cat "$CLOUD_CONFIG_TEMPLATE" | sed -f "$SED_SCRIPT_2" > "$CLOUD_CONFIG"
+
+    if [ "$SF_API_TOKEN" != "" ]; then
+        deployment_indent_and_insert_file_into_cloud_config \
+            "$CLOUD_CONFIG" \
+            %SIGNALFX_UNIT% \
+            "$SCRIPT_DIR_NAME/cloud-config-options/signalfx.yaml"
+        sed -i -e "s/%SF_API_TOKEN%/$SF_API_TOKEN/g" "$CLOUD_CONFIG"
+    else
+        sed -i -e "/%SIGNALFX_UNIT%/d" "$CLOUD_CONFIG"
+    fi
 
     deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_CERT% "$API_CERT"
     deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_KEY% "$API_KEY"
@@ -334,21 +339,21 @@ deployment_create_cloud_config() {
 deployment_indent_and_insert_file_into_cloud_config() { 
     local CLOUD_CONFIG=${1:-}
     local VARIABLE=${2:-}
-    local CERT_OR_KEY=${3:-}
+    local FILE=${3:-}
 
-    local TEMP_CERT_CONFIG_DIR=$(platform_safe_mktemp_directory)
-    pushd $TEMP_CERT_CONFIG_DIR > /dev/null
+    local TEMP_DIR=$(platform_safe_mktemp_directory)
+    pushd $TEMP_DIR > /dev/null
 
     local INDENT=$(grep ^\\s*$VARIABLE\\s*$ "$CLOUD_CONFIG" | sed -e "s|$VARIABLE\s*$||g")
-    local INDENTED_CERT=$(platform_safe_mktemp)
-    sed "s/^/$INDENT/" < "$CERT_OR_KEY" > "$INDENTED_CERT"
+    local INDENTED_FILE=$(platform_safe_mktemp)
+    sed "s/^/$INDENT/" < "$FILE" > "$INDENTED_FILE"
     csplit --quiet - /^\\s*$VARIABLE\\s*$/ < "$CLOUD_CONFIG"
     tail -n +2 xx01 > xx02
-    cat xx00 "$INDENTED_CERT" xx02 > "$CLOUD_CONFIG"
+    cat xx00 "$INDENTED_FILE" xx02 > "$CLOUD_CONFIG"
 
     popd > /dev/null
 
-    rm -rf "$TEMP_CERT_CONFIG_DIR"
+    rm -rf "$TEMP_DIR"
 }
 
 deployment_create_node() {

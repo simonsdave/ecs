@@ -63,36 +63,7 @@ coreos:
           ListenStream=49153
     - name: fleet.service
       command: start
-      #
-      # the signalfx unit is configured as per the documentation
-      # at https://github.com/signalfx/docker-collectd - it's worth
-      # noting the comment @ the end of the "How to use this image"
-      # section in the main README.md
-      #
-    - name: signalfx.service
-      command: start
-      content: |
-        [Unit]
-        Description=Metrics Collection by SignalFX
-        After=docker.service
-
-        [Service]
-        EnvironmentFile=/etc/environment
-        TimeoutStartSec=0
-        ExecStartPre=-/usr/bin/docker kill signalfx
-        ExecStartPre=-/usr/bin/docker rm signalfx
-        ExecStartPre=/usr/bin/docker pull quay.io/signalfuse/collectd
-        ExecStart=/usr/bin/docker run \
-          --name=signalfx \
-          --privileged \
-          -e "SF_API_TOKEN=%SF_API_TOKEN%" \
-          -v /proc:/mnt/proc:ro \
-          -v /usr/share/coreos:/mnt/etc:ro \
-          quay.io/signalfuse/collectd
-        ExecStop=/usr/bin/docker stop signalfx
-
-        [X-Fleet]
-        Global=true
+    %SIGNALFX_UNIT%
     - name: apidocs.service
       command: start
       content: |
