@@ -150,6 +150,12 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 * ```AsyncContainerLogs``` makes 2 requests to the Docker Remote API - to
   retrieve stdout and stderr - really should only need to do that once but
   can't seem to figure out this 8-byte header
+* once NewRelic really supports Tornado
+    * optionally run agent when running load test
+    * optionally make agent part of deployment
+    * optionally [use server metrics in deployment](https://hub.docker.com/r/newrelic/nrsysmond/)
+        * [http://newrelic.com/docker](http://newrelic.com/docker)
+        * [https://docs.newrelic.com/docs/servers/new-relic-servers-linux/installation-configuration/enabling-new-relic-servers-docker](https://docs.newrelic.com/docs/servers/new-relic-servers-linux/installation-configuration/enabling-new-relic-servers-docker)
 
 ## Stability
 
