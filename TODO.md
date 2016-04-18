@@ -32,15 +32,17 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * add log aggregation
   * [Docker - configure logging drivers](https://docs.docker.com/engine/admin/logging/overview/)
-  * [16 Apr '15 - SumoLogic - New Docker Logging Drivers](https://www.sumologic.com/2015/04/16/new-docker-logging-drivers/)
-  * [10 Feb '16 - There is a “LOG”! Introducing Splunk Logging Driver in Docker 1.10.0](http://blogs.splunk.com/tag/splunk-logging-driver/)
-  * [16 Dec '16 - Splunk Logging Driver for Docker](http://blogs.splunk.com/2015/12/16/splunk-logging-driver-for-docker/)
-  * for Splunk Logging Driver need @ least version 1.10 of docker
-  * [CoreOS release channels](https://coreos.com/releases/) which indicate Alpha channel is required
-  * [How to get HTTP Event Collectors enabled in Splunk Cloud?](https://answers.splunk.com/answers/323085/how-to-get-http-event-collectors-enabled-in-splunk.html)
-  * [HTTP Event Collector walkthrough](http://dev.splunk.com/view/event-collector/SP-CAAAE7F)
-  * [30 Apr '15 - Integrating Splunk with Docker, CoreOS, and JournalD](http://blogs.splunk.com/2015/04/30/integrating-splunk-with-docker-coreos-and-journald/)
-  * [14 Apr '16 - Sending Error Logs using Docker, Vagrant and SumoLogic](http://www.macadamian.com/2016/04/14/sending-error-logs-using-docker-vagrant-and-sumologic)
+  * SumoLogic
+      * [16 Apr '15 - SumoLogic - New Docker Logging Drivers](https://www.sumologic.com/2015/04/16/new-docker-logging-drivers/)
+      * [14 Apr '16 - Sending Error Logs using Docker, Vagrant and SumoLogic](http://www.macadamian.com/2016/04/14/sending-error-logs-using-docker-vagrant-and-sumologic)
+  * Splunk
+      * [10 Feb '16 - There is a “LOG”! Introducing Splunk Logging Driver in Docker 1.10.0](http://blogs.splunk.com/tag/splunk-logging-driver/)
+      * [16 Dec '16 - Splunk Logging Driver for Docker](http://blogs.splunk.com/2015/12/16/splunk-logging-driver-for-docker/)
+      * for Splunk Logging Driver need @ least version 1.10 of docker
+      * [CoreOS release channels](https://coreos.com/releases/) which indicate Alpha channel is required
+      * [How to get HTTP Event Collectors enabled in Splunk Cloud?](https://answers.splunk.com/answers/323085/how-to-get-http-event-collectors-enabled-in-splunk.html)
+      * [HTTP Event Collector walkthrough](http://dev.splunk.com/view/event-collector/SP-CAAAE7F)
+      * [30 Apr '15 - Integrating Splunk with Docker, CoreOS, and JournalD](http://blogs.splunk.com/2015/04/30/integrating-splunk-with-docker-coreos-and-journald/)
 * add status page using [StatusPage.io](https://www.statuspage.io)
 * how are we going to do SLA monitoring? can extract check results from [Pingdom](https://www.pingdom.com/) using the [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
 
