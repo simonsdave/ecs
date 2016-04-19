@@ -145,6 +145,13 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 
 ### Required
 
+* specify # requests & concurrency levels as ```run_load_test.sh``` in json
+  load test configuration file pass to ```run_load_test.sh```
+  on the command line args - configuration file should include ecs config too
+* document how to run load tests
+* need to plot results of [load tests](tests/load) -
+  consider using [Plotly](https://plot.ly) -
+  [this](https://plot.ly/~ckaiwu/105/prices/) is probably a good example
 * need to be able to run [load tests](tests/load) against a real deployment - if running
   load test from a single client driver need to avoid tripping rate limiting rules - select
   from random set of credentials - might need to run load test from a number of client
@@ -168,8 +175,6 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 
 ## Stability
 
-* need to plot results of [load tests](tests/load) - consider using [Plotly](https://plot.ly) -
-  [this](https://plot.ly/~ckaiwu/105/prices/) is probably a good example
 * setup and execute long running stress tests against an ECS deployment
 
 ## Documentation
