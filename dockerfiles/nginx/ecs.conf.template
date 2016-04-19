@@ -52,8 +52,8 @@
 #
 
 limit_req_zone $binary_remote_addr zone=docs_per_ip_rate_limit:1m rate=10r/s;
-limit_req_zone $binary_remote_addr zone=api_per_ip_rate_limit:100k rate=10r/s;
-limit_req_zone $remote_user zone=api_per_key_rate_limit:1m rate=5r/s;
+limit_req_zone $binary_remote_addr zone=api_per_ip_rate_limit:100k rate=%API_PER_IP_RATE_LIMIT%;
+limit_req_zone $remote_user zone=api_per_key_rate_limit:1m rate=%API_PER_KEY_RATE_LIMIT%;
 
 limit_conn_zone $binary_remote_addr zone=docs_per_ip_conn_limit:1m;
 limit_conn_zone $binary_remote_addr zone=api_per_ip_conn_limit:100k;
@@ -112,8 +112,8 @@ server {
 server {
     limit_req zone=api_per_ip_rate_limit;
     limit_req zone=api_per_key_rate_limit;
-    limit_conn api_per_ip_conn_limit 5;
-    limit_conn api_per_key_conn_limit 25;
+    limit_conn api_per_ip_conn_limit %API_PER_IP_CONN_LIMIT%;
+    limit_conn api_per_key_conn_limit %API_PER_KEY_CONN_LIMIT%;
     client_max_body_size 5k;
 
     listen 443 ssl http2;

@@ -84,6 +84,7 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
 ## Spin up a deployment
 
 * the command below spins up a 3-node ECS cluster
+  with some custom rate limiting rules
 
 ```bash
 >cat deployment.json
@@ -96,6 +97,16 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
     "api_key": "/vagrant/api.ecs.cloudfeaster.com.key",
     "api_credentials": "/vagrant/.htpasswd",
     "dh_parameter": "/vagrant/dhparam.pem",
+    "api_rate_limiting": {
+        "per_ip": {
+            "rate_limit": "5000r/s",
+            "conn_limit": "5000"
+        },
+        "per_key": {
+            "rate_limit": "500r/s",
+            "conn_limit": "500"
+        }
+    },
     "sf_api_token": "something",
     "number_of_nodes": 3
 }

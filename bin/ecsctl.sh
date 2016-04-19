@@ -295,6 +295,12 @@ deployment_create_cloud_config() {
 
     local NEW_RELIC_LICENSE_KEY=$(cat "$1" | jq -r .new_relic_license_key | sed -e 's/null//g')
 
+    local API_PER_IP_CONN_LIMIT=$(cat "$1" | jq -r .api_rate_limiting.per_ip.conn_limit | sed -e 's|null|5|g')
+    local API_PER_IP_RATE_LIMIT=$(cat "$1" | jq -r .api_rate_limiting.per_ip.rate_limit | sed -e 's|null|10r/s|g')
+
+    local API_PER_KEY_CONN_LIMIT=$(cat "$1" | jq -r .api_rate_limiting.per_key.conn_limit | sed -e 's|null|25|g')
+    local API_PER_KEY_RATE_LIMIT=$(cat "$1" | jq -r .api_rate_limiting.per_key.rate_limit | sed -e 's|null|5r/s|g')
+
     local NUMBER_OF_NODES=$(cat "$1" | jq -r .number_of_nodes | sed -e 's/null//g')
     if [ "$NUMBER_OF_NODES" == "" ]; then
         echo_to_stderr "deployment_create_cloud_config() - couldn't find number_of_nodes property in $1"
@@ -312,6 +318,10 @@ deployment_create_cloud_config() {
     echo "s|%DISCOVERY_TOKEN%|$DISCOVERY_TOKEN|g" >> "$SED_SCRIPT_1"
     echo "s|%DOCS_DOMAIN%|$DOCS_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%API_DOMAIN%|$API_DOMAIN|g" >> "$SED_SCRIPT_1"
+    echo "s|%API_PER_IP_CONN_LIMIT%|$API_PER_IP_CONN_LIMIT|g" >> "$SED_SCRIPT_1"
+    echo "s|%API_PER_IP_RATE_LIMIT%|$API_PER_IP_RATE_LIMIT|g" >> "$SED_SCRIPT_1"
+    echo "s|%API_PER_KEY_CONN_LIMIT%|$API_PER_KEY_CONN_LIMIT|g" >> "$SED_SCRIPT_1"
+    echo "s|%API_PER_KEY_RATE_LIMIT%|$API_PER_KEY_RATE_LIMIT|g" >> "$SED_SCRIPT_1"
     local SED_SCRIPT_2=$(platform_safe_mktemp)
     cat "$SED_SCRIPT_1" | sed -e 's/&/\\\&/g' > "$SED_SCRIPT_2"
     cat "$CLOUD_CONFIG_TEMPLATE" | sed -f "$SED_SCRIPT_2" > "$CLOUD_CONFIG"
