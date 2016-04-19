@@ -28,6 +28,9 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
+* when ecsctl.sh starts a node, it should verify that the node has
+  successfully started - perhaps the simplest thing to do is a curl
+  to the /_health?quick=flase endpoint
 * ecsctl.sh (& other supporting files) aren't packaged in any distribution
   which means to use ecsctl.sh you need to git clone the ecs repo which isn't ideal.
   sort out how ecsctl.sh will be packaged.
