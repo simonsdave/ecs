@@ -64,6 +64,7 @@ coreos:
     - name: fleet.service
       command: start
     %SIGNALFX_UNIT%
+    %NEW_RELIC_UNIT%
     - name: apidocs.service
       command: start
       content: |

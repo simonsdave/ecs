@@ -170,9 +170,6 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 * once NewRelic really supports Tornado
     * optionally run agent when running load test
     * optionally make agent part of deployment
-    * optionally [use server metrics in deployment](https://hub.docker.com/r/newrelic/nrsysmond/)
-        * [http://newrelic.com/docker](http://newrelic.com/docker)
-        * [https://docs.newrelic.com/docs/servers/new-relic-servers-linux/installation-configuration/enabling-new-relic-servers-docker](https://docs.newrelic.com/docs/servers/new-relic-servers-linux/installation-configuration/enabling-new-relic-servers-docker)
 
 ## Stability
 
@@ -193,6 +190,8 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
   * health checks - 1/ forwarding rule to node 2/ pingdom
   * SignalFX - system metrics, custom metrics & "top" using [docker-collectd](https://github.com/signalfx/docker-collectd) and
     [docker-collectd-plugin](https://github.com/signalfx/docker-collectd-plugin)
+  * [New Relic Server](http://newrelic.com/server-monitoring) for monitoring
+    docker host system metrics and [Docker Monitoring with New Relic](http://newrelic.com/docker) for docker container metrics
   * StatusPage.io for quick visual check
   * incident management
 

@@ -293,6 +293,8 @@ deployment_create_cloud_config() {
 
     local SF_API_TOKEN=$(cat "$1" | jq -r .sf_api_token | sed -e 's/null//g')
 
+    local NEW_RELIC_LICENSE_KEY=$(cat "$1" | jq -r .new_relic_license_key | sed -e 's/null//g')
+
     local NUMBER_OF_NODES=$(cat "$1" | jq -r .number_of_nodes | sed -e 's/null//g')
     if [ "$NUMBER_OF_NODES" == "" ]; then
         echo_to_stderr "deployment_create_cloud_config() - couldn't find number_of_nodes property in $1"
@@ -314,15 +316,19 @@ deployment_create_cloud_config() {
     cat "$SED_SCRIPT_1" | sed -e 's/&/\\\&/g' > "$SED_SCRIPT_2"
     cat "$CLOUD_CONFIG_TEMPLATE" | sed -f "$SED_SCRIPT_2" > "$CLOUD_CONFIG"
 
-    if [ "$SF_API_TOKEN" != "" ]; then
-        deployment_indent_and_insert_file_into_cloud_config \
-            "$CLOUD_CONFIG" \
-            %SIGNALFX_UNIT% \
-            "$SCRIPT_DIR_NAME/cloud-config-options/signalfx.yaml"
-        sed -i -e "s/%SF_API_TOKEN%/$SF_API_TOKEN/g" "$CLOUD_CONFIG"
-    else
-        sed -i -e "/%SIGNALFX_UNIT%/d" "$CLOUD_CONFIG"
-    fi
+    deployment_config_option_in_cloud_config \
+        "$CLOUD_CONFIG" \
+        "signalfx.yaml" \
+        "%SIGNALFX_UNIT%" \
+        "%SF_API_TOKEN%" \
+        "$SF_API_TOKEN"
+
+    deployment_config_option_in_cloud_config \
+        "$CLOUD_CONFIG" \
+        "new_relic.yaml" \
+        "%NEW_RELIC_UNIT%" \
+        "%NEW_RELIC_LICENSE_KEY%" \
+        "$NEW_RELIC_LICENSE_KEY"
 
     deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_CERT% "$API_CERT"
     deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %API_KEY% "$API_KEY"
@@ -334,6 +340,25 @@ deployment_create_cloud_config() {
     deployment_indent_and_insert_file_into_cloud_config "$CLOUD_CONFIG" %DHPARAM_PEM% "$DHPARAM_PEM"
 
     echo $CLOUD_CONFIG
+}
+
+deployment_config_option_in_cloud_config() {
+    local CLOUD_CONFIG=${1:-}
+    local CLOUD_CONFIG_OPTION_TEMPLATE=${2:-}
+    local UNIT_VARIABLE_NAME=${3:-}
+    local VARIABLE_NAME=${4:-}
+    local VARIABLE_VALUE=${5:-}
+
+    if [ "$VARIABLE_VALUE" != "" ]; then
+        deployment_indent_and_insert_file_into_cloud_config \
+            "$CLOUD_CONFIG" \
+            "$UNIT_VARIABLE_NAME" \
+            "$SCRIPT_DIR_NAME/cloud-config-options/$CLOUD_CONFIG_OPTION_TEMPLATE"
+
+        sed -i -e "s/$VARIABLE_NAME/$VARIABLE_VALUE/g" "$CLOUD_CONFIG"
+    else
+        sed -i -e "/$UNIT_VARIABLE_NAME/d" "$CLOUD_CONFIG"
+    fi
 }
 
 deployment_indent_and_insert_file_into_cloud_config() { 

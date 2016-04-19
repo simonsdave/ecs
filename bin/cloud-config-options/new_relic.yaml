@@ -1,0 +1,35 @@
+#
+# the new relic unit is configured as per the documentation
+# at https://hub.docker.com/r/newrelic/nrsysmond/ to enable
+# collection of server & docker metrics via New Relic's
+# Server Monitoring (http://newrelic.com/server-monitoring) 
+#
+- name: newrelic.service
+  command: start
+  content: |
+    [Unit]
+    Description=New Relic Server Monitoring
+    After=docker.service
+
+    [Service]
+    EnvironmentFile=/etc/environment
+    TimeoutStartSec=0
+    ExecStartPre=-/usr/bin/docker kill newrelic
+    ExecStartPre=-/usr/bin/docker rm newrelic
+    ExecStartPre=/usr/bin/docker pull newrelic/nrsysmond:2.3.0.129
+    ExecStart=/usr/bin/docker run \
+      --name=newrelic \
+      --privileged \
+      --pid=host \
+      --net=host \
+      -v /sys:/sys \
+      -v /dev:/dev \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v /var/log:/var/log:rw \
+      -e "NRSYSMOND_license_key=%NEW_RELIC_LICENSE_KEY%" \
+      -e "NRSYSMOND_logfile=/var/log/nrsysmond.log" \
+      newrelic/nrsysmond:2.3.0.129
+    ExecStop=/usr/bin/docker stop newrelic
+
+    [X-Fleet]
+    Global=true
