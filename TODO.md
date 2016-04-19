@@ -36,6 +36,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 * add log aggregation
   * [Docker - configure logging drivers](https://docs.docker.com/engine/admin/logging/overview/)
   * SumoLogic
+      * [3 Apr '15 - Collecting and Analyzing CoreOS (journald) Logs w/ Sumo Logic](https://www.sumologic.com/2015/04/03/collecting-journald-logs-with-sumo-logic/)
       * [16 Apr '15 - SumoLogic - New Docker Logging Drivers](https://www.sumologic.com/2015/04/16/new-docker-logging-drivers/)
       * [14 Apr '16 - Sending Error Logs using Docker, Vagrant and SumoLogic](http://www.macadamian.com/2016/04/14/sending-error-logs-using-docker-vagrant-and-sumologic)
   * Splunk
