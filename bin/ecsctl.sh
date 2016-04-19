@@ -353,7 +353,7 @@ deployment_config_option_in_cloud_config() {
         deployment_indent_and_insert_file_into_cloud_config \
             "$CLOUD_CONFIG" \
             "$UNIT_VARIABLE_NAME" \
-            "$SCRIPT_DIR_NAME/cloud-config-options/$CLOUD_CONFIG_OPTION_TEMPLATE"
+            "$SCRIPT_DIR_NAME/cloud-config-option-templates/$CLOUD_CONFIG_OPTION_TEMPLATE"
 
         sed -i -e "s/$VARIABLE_NAME/$VARIABLE_VALUE/g" "$CLOUD_CONFIG"
     else
