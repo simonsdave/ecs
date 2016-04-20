@@ -10,6 +10,42 @@ Fine grained list of to do's in order to make ```ecs``` production ready
   docker pulls @ the same time - load tests are currently failing because
   we're ignoring ```Repository .+ already being pulled by another client. Waiting.```
   ```_on_chunk()``` messages
+
+```bash
+> curl -s -v 'http://172.17.42.1:2375/images/json?filter=ubuntu' | jq
+* Hostname was NOT found in DNS cache
+*   Trying 172.17.42.1...
+* Connected to 172.17.42.1 (172.17.42.1) port 2375 (#0)
+> GET /images/json?filter=ubuntu HTTP/1.1
+> User-Agent: curl/7.35.0
+> Host: 172.17.42.1:2375
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Content-Type: application/json
+< Date: Tue, 12 Apr 2016 12:49:56 GMT
+< Content-Length: 265
+<
+{ [data not shown]
+* Connection #0 to host 172.17.42.1 left intact
+[
+  {
+    "Created": 1459964479,
+    "Id": "41cc538fb83a158ab1f8f799142d3a37bed1ed6ea36ebf48c9b74aea7e97a741",
+    "Labels": {},
+    "ParentId": "2f2796dbe78d687c0d857e9344815f809cc72f46ed4f069835473c3844a14a54",
+    "RepoDigests": [],
+    "RepoTags": [
+      "ubuntu:14.04"
+    ],
+    "Size": 0,
+    "VirtualSize": 187934273
+  }
+]
+> curl -X POST http://172.17.42.1:2375/images/create?fromImage=ubuntu:14.04
+2016-04-12T12:20:27.645+00:00 INFO async_docker_remote_api _on_chunk() >>>{"status":"Repository ubuntu already being pulled by another client. Waiting."}<<<
+```
+
 * load tests need to run against real ECS deployment (handle HTTPS, authentication, etc)
 * write some integration tests for private repos
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
