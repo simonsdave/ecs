@@ -9,12 +9,12 @@ fi
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ $# != 0 ] && [ $# != 1 ]; then
-    echo "usage: `basename $0` [-v] [ecs endpoint]" >&2
+if [ $# != 0 ]; then
+    echo "usage: `basename $0` [-v]" >&2
     exit 1
 fi
 
-if [ $# == 0 ]; then
+if [ "$ECS_ENDPOINT" == "" ]; then
     ECS_ADDRESS=127.0.0.1
     ECS_PORT=9448
 
@@ -35,10 +35,8 @@ if [ $# == 0 ]; then
     ECS_PID=$!
 
     if [ $VERBOSE == 1 ]; then
-        echo "$(tput bold)Started ECS - PID = $ECS_PID; config file  '$ECS_CONFIG_FILE'$(tput sgr0)"
+        echo "$(tput bold)Started ECS - PID = $ECS_PID; config file '$ECS_CONFIG_FILE'$(tput sgr0)"
     fi
-else
-    ECS_ENDPOINT=$1
 fi
 
 for ECS_CONCURRENCY in 10 15 20 25
@@ -52,7 +50,7 @@ do
         echo "$(tput bold)Find locust output @ '$LOCUST_OUTPUT_FILE' for $ECS_CONCURRENCY concurrency$(tput sgr0)"
     fi
 
-    locust \
+    ECS_CREDENTIALS=$ECS_CREDENTIALS locust \
         --locustfile="$SCRIPT_DIR_NAME/locustfile.py" \
         --no-web \
         --num-request=1000 \

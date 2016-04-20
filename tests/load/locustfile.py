@@ -5,10 +5,13 @@
 #
 
 import httplib
+import os
 import random
+import re
 import uuid
 
 from locust import HttpLocust
+import requests
 from locust import task
 from locust import TaskSet
 
@@ -26,6 +29,41 @@ from locust import TaskSet
 if not _verify_ids_cert:
     requests.packages.urllib3.disable_warnings()
 """
+
+
+#
+# credentials for basic authentication are required when running
+# a load test against a real ECS deployment. the environment variable
+# ECS_CREDENTIALS is expected to point to a file which contains
+# a single set of credentials on each line - specifically, a key
+# and secret seperated by a colon (the stdout created when using the
+# "ecsctl.sh creds" command).
+#
+def _create_credentials():
+    credentials_filename = os.environ.get('ECS_CREDENTIALS', None)
+    if not credentials_filename:
+        return None
+
+    reg_ex_pattern = r'^\s*(?P<key>[^\:\s]+)\:(?P<secret>[^\s]+)\s*$'
+    reg_ex = re.compile(reg_ex_pattern)
+
+    rv = []
+    with open(credentials_filename, 'r') as fd:
+        for line in fd:
+            match = reg_ex.match(line)
+            if match:
+                key = match.group('key')
+                secret = match.group('secret')
+                auth = requests.auth.HTTPBasicAuth(key, secret)
+                rv.append(auth)
+    return rv
+
+
+_credentials = _create_credentials()
+
+
+def _get_random_credentials():
+    return random.choice(_credentials) if _credentials else None
 
 #
 # with more than one locust executing, the weight attributes
@@ -87,12 +125,12 @@ class ECSHttpLocust(HttpLocust):
 
 class NoOpBehavior(ECSTaskSet):
 
-    min_wait = 2
-    max_wait = 3
+    min_wait = 500
+    max_wait = 1000
 
     @task
     def check_noop(self):
-        response = self.client.get('/v1.1/_noop')
+        response = self.client.get('/v1.1/_noop', auth=_get_random_credentials())
         self.log_on_response('NoOp', response, httplib.OK)
 
 
@@ -108,12 +146,12 @@ class NoOpLocust(ECSHttpLocust):
 
 class VersionBehavior(ECSTaskSet):
 
-    min_wait = 2
-    max_wait = 3
+    min_wait = 500
+    max_wait = 1000
 
     @task
     def version(self):
-        response = self.client.get('/v1.1/_version')
+        response = self.client.get('/v1.1/_version', auth=_get_random_credentials())
         self.log_on_response('Version', response, httplib.OK)
 
 
@@ -129,12 +167,12 @@ class VersionLocust(ECSHttpLocust):
 
 class QuickHealthBehavior(ECSTaskSet):
 
-    min_wait = 2
-    max_wait = 3
+    min_wait = 500
+    max_wait = 1000
 
     @task
     def quick_health_check(self):
-        response = self.client.get('/v1.1/_health?quick=true')
+        response = self.client.get('/v1.1/_health?quick=true', auth=_get_random_credentials())
         self.log_on_response('Health-Check-Quick', response, httplib.OK)
 
 
@@ -150,12 +188,12 @@ class QuickHealthLocust(ECSHttpLocust):
 
 class SlowHealthBehavior(ECSTaskSet):
 
-    min_wait = 2
-    max_wait = 3
+    min_wait = 500
+    max_wait = 1000
 
     @task
     def comprehensive_health_check(self):
-        response = self.client.get('/v1.1/_health?quick=false')
+        response = self.client.get('/v1.1/_health?quick=false', auth=_get_random_credentials())
         self.log_on_response('Health-Check-Slow', response, httplib.OK)
 
 
@@ -218,7 +256,7 @@ class TasksBehavior(ECSTaskSet):
 
         url = '/v1.1/tasks?comment=%s' % template['name'].lower()
         body = template['body']
-        with self.client.post(url, json=body, catch_response=True) as response:
+        with self.client.post(url, auth=_get_random_credentials(), json=body, catch_response=True) as response:
             self.log_on_response(
                 'Tasks-%s' % template['name'],
                 response,
