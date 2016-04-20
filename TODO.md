@@ -156,11 +156,6 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 * need to plot results of [load tests](tests/load) -
   consider using [Plotly](https://plot.ly) -
   [this](https://plot.ly/~ckaiwu/105/prices/) is probably a good example
-* need to be able to run [load tests](tests/load) against a real deployment - if running
-  load test from a single client driver need to avoid tripping rate limiting rules - select
-  from random set of credentials - might need to run load test from a number of client
-  machines (which locust can do), slow down requests, parameterize nginx config or
-  make the load test smarter and use some backoff algo when a 503 is detected
 
 ### Nice to Have
 
