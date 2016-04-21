@@ -267,6 +267,13 @@ class AsyncImagePullTestCase(unittest.TestCase):
         image_status_response_body = [
             {
                 'RepoTags': [
+                    uuid.uuid4().hex,
+                    uuid.uuid4().hex,
+                    uuid.uuid4().hex,
+                ],
+            },
+            {
+                'RepoTags': [
                     docker_image,
                 ],
             },
