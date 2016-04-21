@@ -193,7 +193,7 @@ class AsyncHealthChecker(tor_async_util.AsyncAction):
             self._call_callback()
             return
 
-        ahc = async_docker_remote_api.AsyncHealthChecker(self.is_quick)
+        ahc = async_docker_remote_api.AsyncHealthChecker()
         ahc.check(self._on_docker_remote_api_ahc_fetch_done)
 
     def _on_docker_remote_api_ahc_fetch_done(self, details, ahc):

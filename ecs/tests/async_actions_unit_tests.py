@@ -65,6 +65,25 @@ class AsyncImagePullPatcher(Patcher):
         Patcher.__init__(self, patcher)
 
 
+class AsyncDockerRemoteAPIHealthCheckerPatcher(Patcher):
+    """This context manager provides an easy way to install a
+    patch allowing the caller to determine the behavior of
+    async_docker_remote_api.AsyncHealthChecker.check().
+    """
+
+    def __init__(self, details):
+
+        def check_patch(ahc, callback):
+            assert None == ahc.async_state
+            callback(details, ahc)
+
+        patcher = mock.patch(
+            __name__ + '.async_docker_remote_api.AsyncHealthChecker.check',
+            check_patch)
+
+        Patcher.__init__(self, patcher)
+
+
 class AsyncContainerCreatePatcher(Patcher):
     """This context manager provides an easy way to install a
     patch allowing the caller to determine the behavior of
@@ -421,20 +440,16 @@ class AsyncHealthCheckerTestCase(unittest.TestCase):
 
         callback.assert_called_once_with(None, ahc)
 
-    def test_failure_on_get_docker_remote_api_version(self):
-        response = mock.Mock(
-            code=httplib.INTERNAL_SERVER_ERROR,
-            body=json.dumps({}),
-            request_time=0.001,
-            time_info={})
+    def test_happy_path_on_is_quick_false(self):
+        details = {
+            uuid.uuid4().hex: uuid.uuid4().hex,
+        }
 
-        with AsyncHTTPClientPatcher(response):
+        with AsyncDockerRemoteAPIHealthCheckerPatcher(details):
             callback = mock.Mock()
-            ahc = AsyncHealthChecker(is_quick=False)
+            ahc = AsyncHealthChecker(False)
             ahc.check(callback)
             expected_response = {
-                'docker remote api': {
-                    'connectivity': False,
-                }
+                'docker remote api': details,
             }
             callback.assert_called_once_with(expected_response, ahc)
