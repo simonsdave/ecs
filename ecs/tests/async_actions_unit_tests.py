@@ -2,8 +2,6 @@
 validate the ..async_actions module.
 """
 
-import httplib
-import json
 import unittest
 import uuid
 
@@ -74,7 +72,7 @@ class AsyncDockerRemoteAPIHealthCheckerPatcher(Patcher):
     def __init__(self, details):
 
         def check_patch(ahc, callback):
-            assert None == ahc.async_state
+            assert ahc.async_state is None
             callback(details, ahc)
 
         patcher = mock.patch(
