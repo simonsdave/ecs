@@ -40,13 +40,14 @@ class AsyncHttpClientFetchPatcher(Patcher):
     """
 
     def __init__(self, *args, **kwargs):
-        chunks = kwargs.get('chunks', [])
+        chunks = kwargs.get('chunks', None)
 
         def fetch_patch(*args, **kwargs):
             request = args[1]
             streaming_callback = request.streaming_callback
-            for chunk in chunks:
-                streaming_callback(chunk)
+            if chunks and streaming_callback:
+                for chunk in chunks:
+                    streaming_callback(chunk)
 
             response = self._responses.pop(0)
             response.effective_url = request.url
@@ -257,6 +258,12 @@ class AsyncImagePullTestCase(unittest.TestCase):
     def test_happy_path_with_creds(self):
         docker_image = uuid.uuid4().hex
 
+        chunks = [
+            'dave',
+            'was',
+            'here',
+        ]
+
         image_status_response_body = [
             {
                 'RepoTags': [
@@ -282,7 +289,7 @@ class AsyncImagePullTestCase(unittest.TestCase):
                 request=mock.Mock(method='GET')),
         ]
 
-        with AsyncHttpClientFetchPatcher(responses=responses):
+        with AsyncHttpClientFetchPatcher(responses=responses, chunks=chunks):
             callback = mock.Mock()
             aip = AsyncImagePull(
                 docker_image=docker_image,
