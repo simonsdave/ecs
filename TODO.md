@@ -46,7 +46,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 2016-04-12T12:20:27.645+00:00 INFO async_docker_remote_api _on_chunk() >>>{"status":"Repository ubuntu already being pulled by another client. Waiting."}<<<
 ```
 
-* load tests need to run against real ECS deployment (handle HTTPS, authentication, etc)
 * write some integration tests for private repos
 * ```AsyncEndToEndContainerRunner``` needs to deal with failure scenarios
   more effectively - specifically it needs to delete containers on failure
