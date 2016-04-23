@@ -2,4 +2,4 @@ locustio==0.7.3
 # newrelic==2.62.0.47
 numpy==1.11.0
 python-dateutil==2.5.3
-pyzmq==15.2.0
+# pyzmq==15.2.0
