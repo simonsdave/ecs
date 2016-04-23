@@ -117,31 +117,16 @@ Version                     151     0  14%         3         5         6        
 >
 ```
 
-## Load Test A Real ECS Deployment
-
+By default ```run_load_test.sh``` spins up a local ECS deployment.
 ```run_load_test.sh``` can also be used to run a load tests against
-a real ECS deployment. There are a couple of things about this kind
-of deployment that need to be considered.
-
-* need to get ```run_load_test.sh``` to load test the existing
-deployment instead of spinning up a node
-
-```bash
->ECS_ENDPOINT=https://api.ecs.cloudfeaster.com ./run_load_test.sh -v
-Find locust log file @ '/tmp/tmp.aacQxEvsv1' for 10 concurrency
-Find locust output @ '/tmp/tmp.fPFYvZEcCZ' for 10 concurrency
-.
-.
-.
->
-```
-
-* a real ECS deployment requires authentication - the ```ecsctl.sh creds```
-command generates a set of key/secret pairs
+an existing ECS deployment with the inclusion of the ```endpoint``` property
+in the load test configuration document.
+If the ECS deployment requires authentication the load test configuration
+document should include the ```credentials``` property which points to a file
+containing the output of ```ecsctl.sh creds```.
 
 ```bash
->ecsctl.sh creds
-Putting hashed credentials in new file '/home/vagrant/ecs/bin/.htpasswd'
+>cat ecsctl-sh-creds-output.txt
 b35ec3fd96564323898920d282c18bb6:21023ce203851e7ec3eb1d25daf0fbcc
 8d90c8aa5256454b974582c7f0c7fa76:5668c4e0d53901b26b2e4af6a7229f7d
 731f1781575d430c9be46231fc7ad4c5:8e1a9ced90bd606bb5a1b3844b8f2299
@@ -150,12 +135,19 @@ cdf539dd1ba649e893950fa9f3de9f49:633ad1feaa40f2ecf1776b301e894340
 >
 ```
 
-Next we need to tell ```run_load_test.sh``` to use these credentials.
-Assuming the output of ```ecsctl.sh creds``` is saved in ```~/.ecs/.htpasswd```,
-the following will do the trick
+```bash
+>cat deployment.json
+{
+    "number_of_requests": 100,
+    "hatch_rate": 5,
+    "concurrency": [5],
+    "endpoint": "https://api.ecs.cloudfeaster.com",
+    "credentials": "ecsctl-sh-creds-output.txt"
+}
+```
 
 ```bash
->ECS_ENDPOINT=https://api.ecs.cloudfeaster.com ECS_CREDENTIALS=~/.ecs/.htpasswd ./run_load_test.sh -v
+>./run_load_test.sh -v deployment.json
 Find locust log file @ '/tmp/tmp.aacQxEvsv1' for 10 concurrency
 Find locust output @ '/tmp/tmp.fPFYvZEcCZ' for 10 concurrency
 .
@@ -164,7 +156,7 @@ Find locust output @ '/tmp/tmp.fPFYvZEcCZ' for 10 concurrency
 >
 ```
 
-* final thing ... load tests are intented to stress an ECS deployment
+Final thing ... load tests are intented to stress an ECS deployment
 and generate traffic that looks a lot like a DoS attack.
 the typical ECS deployment has per node rate limiting rules in place
 ie. nodes have defenses in place to protect themselves again DoS
@@ -199,8 +191,6 @@ these rates. take a look @ the ECS API docs for the default rates.
 }
 >
 ```
-
-## NewRelic
 
 [NewRelic](http://newrelic.com/) is a great
 [APM](https://en.wikipedia.org/wiki/Application_performance_management)

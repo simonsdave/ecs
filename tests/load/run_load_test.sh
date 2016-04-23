@@ -28,6 +28,7 @@ if [ ! -r "$LOAD_TEST_CONFIG" ]; then
     exit 2
 fi
 
+ECS_ENDPOINT=$(cat "$LOAD_TEST_CONFIG" | jq -r .endpoint | sed -e 's/null//g')
 if [ "$ECS_ENDPOINT" == "" ]; then
     ECS_ADDRESS=127.0.0.1
     ECS_PORT=9448
@@ -71,6 +72,8 @@ do
         echo "$(tput bold)Find locust log file @ '$LOCUST_LOG_FILE' for $ECS_CONCURRENCY concurrency$(tput sgr0)"
         echo "$(tput bold)Find locust output @ '$LOCUST_OUTPUT_FILE' for $ECS_CONCURRENCY concurrency$(tput sgr0)"
     fi
+
+    ECS_CREDENTIALS=$(cat "$LOAD_TEST_CONFIG" | jq -r .credentials | sed -e 's/null//g')
 
     ECS_CREDENTIALS=$ECS_CREDENTIALS locust \
         --locustfile="$SCRIPT_DIR_NAME/locustfile.py" \
