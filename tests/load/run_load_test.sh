@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+#
+# exit codes
+#
+#   0   ok
+#   1   usage error
+#   2   config file not readable
+#
+
 if [ "-v" == "${1:-}" ]; then
     VERBOSE=1
     shift
@@ -9,9 +17,15 @@ fi
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ $# != 0 ]; then
-    echo "usage: `basename $0` [-v]" >&2
+if [ $# != 1 ]; then
+    echo "usage: `basename $0` [-v] <load test config>" >&2
     exit 1
+fi
+
+LOAD_TEST_CONFIG=${1:-}
+if [ ! -r "$LOAD_TEST_CONFIG" ]; then
+    echo "Can't read from config file '$LOAD_TEST_CONFIG'" >&2
+    exit 2
 fi
 
 if [ "$ECS_ENDPOINT" == "" ]; then
@@ -39,8 +53,16 @@ if [ "$ECS_ENDPOINT" == "" ]; then
     fi
 fi
 
-for ECS_CONCURRENCY in 10 15 20 25
+for i in $(seq 0 50)
 do
+    ECS_CONCURRENCY=$(cat "$LOAD_TEST_CONFIG" | jq -r .concurrency[$i] | sed -e 's/null//g')
+    if [ "$ECS_CONCURRENCY" == "" ]; then
+        break
+    fi
+
+    ECS_NUMBER_OF_REQUESTS=$(cat "$LOAD_TEST_CONFIG" | jq -r .number_of_requests | sed -e "s/null/1000/g")
+
+    ECS_HATCH_RATE=$(cat "$LOAD_TEST_CONFIG" | jq -r .hatch_rate | sed -e "s/null/5/g")
     
     LOCUST_LOG_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
     LOCUST_OUTPUT_FILE=$(mktemp 2> /dev/null || mktemp -t DAS)
@@ -53,9 +75,9 @@ do
     ECS_CREDENTIALS=$ECS_CREDENTIALS locust \
         --locustfile="$SCRIPT_DIR_NAME/locustfile.py" \
         --no-web \
-        --num-request=1000 \
+        --num-request=$ECS_NUMBER_OF_REQUESTS \
         --clients=$ECS_CONCURRENCY \
-        --hatch-rate=5 \
+        --hatch-rate=$ECS_HATCH_RATE \
         --host=$ECS_ENDPOINT \
         --logfile="$LOCUST_LOG_FILE" \
         >> "$LOCUST_OUTPUT_FILE" 2>&1
