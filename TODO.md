@@ -63,6 +63,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
+* add support for [CloudFlare](https://www.cloudflare.com)
 * when ecsctl.sh starts a node, it should verify that the node has
   successfully started - perhaps the simplest thing to do is a curl
   to the /_health?quick=flase endpoint
