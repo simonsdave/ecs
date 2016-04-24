@@ -77,10 +77,10 @@ class Response(object):
 
 class Main(object):
 
-    def __init__(self, generate_graphs):
+    def __init__(self, graphs):
         object.__init__(self)
 
-        self._generate_graphs = generate_graphs
+        self._graphs = graphs
 
     def analyze(self):
 
@@ -158,8 +158,8 @@ class Main(object):
         print ''
         print '=' * len(overall_title)
 
-        if self._generate_graphs:
-            with PdfPages('/vagrant/something.pdf') as pdf:
+        if self._graphs:
+            with PdfPages(self._graphs) as pdf:
                 for request_type in request_types:
                     responses = Response.responses_for_request_type(request_type)
                     y = [response.response_time for response in responses]
@@ -184,11 +184,12 @@ class CommandLineParser(optparse.OptionParser):
             description='This utility analyzes load test results')
 
         self.add_option(
-            '-g',
-            '--generate-graphs',
-            action='store_true',
-            default=False,
-            dest='generate_graphs')
+            '--graphs',
+            action='store',
+            dest='graphs',
+            default=None,
+            type='string',
+            help='pdf file name for graphs')
 
     def parse_args(self, *args, **kwargs):
         (clo, cla) = optparse.OptionParser.parse_args(self, *args, **kwargs)
@@ -201,5 +202,5 @@ if __name__ == '__main__':
     clp = CommandLineParser()
     (clo, cla) = clp.parse_args()
 
-    main = Main(clo.generate_graphs)
+    main = Main(clo.graphs)
     main.analyze()
