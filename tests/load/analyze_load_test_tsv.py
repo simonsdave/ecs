@@ -74,6 +74,10 @@ class Response(object):
         type(self).first_timestamp = min(self.timestamp, type(self).first_timestamp)
         type(self).last_timestamp = max(self.timestamp, type(self).last_timestamp)
 
+    @property
+    def seconds_since_start(self):
+        return (self.timestamp - type(self).first_timestamp).total_seconds()
+
 
 class Main(object):
 
@@ -163,7 +167,7 @@ class Main(object):
                 for request_type in request_types:
                     responses = Response.responses_for_request_type(request_type)
                     y = [response.response_time for response in responses]
-                    x = [(response.timestamp - Response.first_timestamp).total_seconds() for response in responses]
+                    x = [response.seconds_since_start for response in responses]
 
                     plt.figure(figsize=(17, 11))
                     plt.plot(x, y)
