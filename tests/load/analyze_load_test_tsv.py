@@ -167,6 +167,7 @@ class Main(object):
                 line, = plt.plot(x, y, label=request_type)
                 handles.append(line)
             plt.legend(handles=handles, loc='center right')
+            plt.grid(True)
             plt.xlabel('Seconds')
             plt.ylabel('Response Time\n(milliseconds)')
             plt.title(request_type)
