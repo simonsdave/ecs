@@ -166,7 +166,7 @@ class Main(object):
                 x = [(response.timestamp - Response.first_timestamp).total_seconds() for response in responses]
                 line, = plt.plot(x, y, label=request_type)
                 handles.append(line)
-            plt.legend(handles=handles, loc='center right')
+#            plt.legend(handles=handles, loc='center right')
             plt.grid(True)
             plt.xlabel('Seconds')
             plt.ylabel('Response Time\n(milliseconds)')
