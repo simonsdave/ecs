@@ -7,6 +7,7 @@ import sys
 
 import dateutil.parser
 import numpy
+from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 
 
@@ -158,20 +159,20 @@ class Main(object):
         print '=' * len(overall_title)
 
         if self._generate_graphs:
-            plt.figure(figsize=(17, 11))
-            handles = []
-            for request_type in request_types:
-                responses = Response.responses_for_request_type(request_type)
-                y = [response.response_time for response in responses]
-                x = [(response.timestamp - Response.first_timestamp).total_seconds() for response in responses]
-                line, = plt.plot(x, y, label=request_type)
-                handles.append(line)
-#            plt.legend(handles=handles, loc='center right')
-            plt.grid(True)
-            plt.xlabel('Seconds')
-            plt.ylabel('Response Time\n(milliseconds)')
-            plt.title(request_type)
-            plt.savefig('/vagrant/foo.png')
+            with PdfPages('/vagrant/something.pdf') as pdf:
+                for request_type in request_types:
+                    responses = Response.responses_for_request_type(request_type)
+                    y = [response.response_time for response in responses]
+                    x = [(response.timestamp - Response.first_timestamp).total_seconds() for response in responses]
+
+                    plt.figure(figsize=(17, 11))
+                    plt.plot(x, y)
+                    plt.grid(True)
+                    plt.xlabel('Seconds')
+                    plt.ylabel('Response Time\n(milliseconds)')
+                    plt.title(request_type)
+                    pdf.savefig()
+                    plt.close()
 
 
 class CommandLineParser(optparse.OptionParser):
