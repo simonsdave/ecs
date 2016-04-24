@@ -7,9 +7,13 @@ import sys
 
 import dateutil.parser
 import numpy
+import matplotlib.pyplot as plt
 
 
 class Response(object):
+
+    first_timestamp = datetime.datetime(2990, 1, 1)
+    last_timestamp = datetime.datetime(1990, 1, 1)
 
     responses = []
 
@@ -20,6 +24,10 @@ class Response(object):
     @classmethod
     def request_types(cls):
         return cls.responses_by_request_type.keys()
+
+    @classmethod
+    def responses_for_request_type(cls, request_type):
+        return cls.responses_by_request_type[request_type]
 
     @classmethod
     def response_times_for_request_type(cls, request_type):
@@ -62,8 +70,16 @@ class Response(object):
             type(self).responses_by_locust_id[locust_id][self.request_type] = []
         type(self).responses_by_locust_id[locust_id][self.request_type].append(self)
 
+        type(self).first_timestamp = min(self.timestamp, type(self).first_timestamp)
+        type(self).last_timestamp = max(self.timestamp, type(self).last_timestamp)
+
 
 class Main(object):
+
+    def __init__(self, generate_graphs):
+        object.__init__(self)
+
+        self._generate_graphs = generate_graphs
 
     def analyze(self):
 
@@ -76,9 +92,6 @@ class Main(object):
         )
         reg_ex = re.compile(reg_ex_pattern)
 
-        first_timestamp = datetime.datetime(2990, 1, 1)
-        last_timestamp = datetime.datetime(1990, 1, 1)
-
         for line in sys.stdin:
             match = reg_ex.match(line)
             if match:
@@ -90,14 +103,11 @@ class Main(object):
 
                 Response(locust_id, request_type, timestamp, success, response_time)
 
-                first_timestamp = min(timestamp, first_timestamp)
-                last_timestamp = max(timestamp, last_timestamp)
-
         overall_title = '%d @ %d from %s to %s' % (
             Response.total_number_responses(),
             Response.number_of_locusts(),
-            first_timestamp,
-            last_timestamp,
+            Response.first_timestamp,
+            Response.last_timestamp,
         )
         print '=' * len(overall_title)
         print overall_title
@@ -147,6 +157,17 @@ class Main(object):
         print ''
         print '=' * len(overall_title)
 
+        if self._generate_graphs:
+            request_type = 'Tasks-Happy-Path'
+            responses = Response.responses_for_request_type(request_type)
+            y = [response.response_time for response in responses]
+            x = [(response.timestamp - Response.first_timestamp).total_seconds() for response in responses]
+            plt.plot(x, y)
+            plt.xlabel('Seconds')
+            plt.ylabel('Response Time\n(milliseconds)')
+            plt.title(request_type)
+            plt.savefig('/vagrant/foo.png')
+
 
 class CommandLineParser(optparse.OptionParser):
 
@@ -155,6 +176,13 @@ class CommandLineParser(optparse.OptionParser):
             self,
             'usage: %prog [options] <concurrency>',
             description='This utility analyzes load test results')
+
+        self.add_option(
+            '-g',
+            '--generate-graphs',
+            action='store_true',
+            default=False,
+            dest='generate_graphs')
 
     def parse_args(self, *args, **kwargs):
         (clo, cla) = optparse.OptionParser.parse_args(self, *args, **kwargs)
@@ -167,5 +195,6 @@ if __name__ == '__main__':
     clp = CommandLineParser()
     (clo, cla) = clp.parse_args()
 
-    main = Main()
+    print clo.generate_graphs
+    main = Main(clo.generate_graphs)
     main.analyze()
