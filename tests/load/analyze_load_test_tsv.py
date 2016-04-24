@@ -158,11 +158,15 @@ class Main(object):
         print '=' * len(overall_title)
 
         if self._generate_graphs:
-            request_type = 'Tasks-Happy-Path'
-            responses = Response.responses_for_request_type(request_type)
-            y = [response.response_time for response in responses]
-            x = [(response.timestamp - Response.first_timestamp).total_seconds() for response in responses]
-            plt.plot(x, y)
+            plt.figure(figsize=(17, 11))
+            handles = []
+            for request_type in request_types:
+                responses = Response.responses_for_request_type(request_type)
+                y = [response.response_time for response in responses]
+                x = [(response.timestamp - Response.first_timestamp).total_seconds() for response in responses]
+                line, = plt.plot(x, y, label=request_type)
+                handles.append(line)
+            plt.legend(handles=handles, loc='center right')
             plt.xlabel('Seconds')
             plt.ylabel('Response Time\n(milliseconds)')
             plt.title(request_type)
