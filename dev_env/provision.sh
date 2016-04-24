@@ -26,6 +26,10 @@ apt-get install -y apache2-utils
 
 # as per http://blog.pangyanhan.com/posts/2015-07-25-how-to-install-matplotlib-using-virtualenv-on-ubuntu.html
 apt-get -y build-dep matplotlib
+# as per http://stackoverflow.com/questions/29073802/matplotlib-cannot-find-configuration-file-matplotlibrc
+mkdir -p ~vagrant/.config/matplotlib
+cp /vagrant/matplotlibrc ~vagrant/.config/matplotlib
+chown --recursive vagrant:vagrant ~vagrant/.config
 
 timedatectl set-timezone EST
 
