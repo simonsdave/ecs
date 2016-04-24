@@ -195,6 +195,5 @@ if __name__ == '__main__':
     clp = CommandLineParser()
     (clo, cla) = clp.parse_args()
 
-    print clo.generate_graphs
     main = Main(clo.generate_graphs)
     main.analyze()
