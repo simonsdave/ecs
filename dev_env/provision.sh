@@ -24,6 +24,9 @@ apt-get install -y unzip
 # apache2-utils installed to get access to htpasswd
 apt-get install -y apache2-utils
 
+# as per http://blog.pangyanhan.com/posts/2015-07-25-how-to-install-matplotlib-using-virtualenv-on-ubuntu.html
+apt-get -y build-dep matplotlib
+
 timedatectl set-timezone EST
 
 #
