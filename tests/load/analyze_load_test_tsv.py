@@ -184,23 +184,47 @@ class Main(object):
                     xs = response_times_in_buckets.keys()
                     xs.sort()
 
-                    plt.figure(figsize=(17, 11))
+                    tabloid_width = 17
+                    tabloid_height = 11
+                    fig = plt.figure(figsize=(tabloid_width, tabloid_height))
+
+                    handles = []
 
                     ys = [min(response_times_in_buckets.get(x, [0])) for x in xs]
-                    plt.plot(xs, ys, label='min')
+                    handle, = plt.plot(xs, ys, label='min')
+                    handles.append(handle)
 
                     percentiles = [90, 95, 99]
                     for percentile in percentiles:
                         ys = [numpy.percentile(response_times_in_buckets.get(x, [0]), percentile) for x in xs]
-                        plt.plot(xs, ys, label=str(percentile))
+                        handle, = plt.plot(xs, ys, label='%dth percentile' % percentile)
+                        handles.append(handle)
 
                     ys = [max(response_times_in_buckets.get(x, [0])) for x in xs]
-                    plt.plot(xs, ys, label='max')
+                    handle, = plt.plot(xs, ys, label='max')
+                    handles.append(handle)
 
+                    plt.legend(
+                        handles=handles, 
+                        loc='upper center', 
+                        bbox_to_anchor=(0.5, -0.05),
+                        ncol=len(handles),
+                        fancybox=True,
+                        shadow=True,
+                        fontsize='large')
                     plt.grid(True)
-                    plt.xlabel('Seconds')
-                    plt.ylabel('Response Time\n(milliseconds)')
-                    plt.title(request_type)
+                    plt.xlabel(
+                        'Seconds Since Test Start',
+                        fontsize='large',
+                        fontweight='bold')
+                    plt.ylabel(
+                        'Response Time\n(milliseconds)',
+                        fontsize='large',
+                        fontweight='bold')
+                    plt.title(
+                        '%s\n' % request_type,
+                        fontsize='xx-large',
+                        fontweight='bold')
                     pdf.savefig()
                     plt.close()
 
