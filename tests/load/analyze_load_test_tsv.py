@@ -186,7 +186,7 @@ class Main(object):
 
                     tabloid_width = 17
                     tabloid_height = 11
-                    fig = plt.figure(figsize=(tabloid_width, tabloid_height))
+                    plt.figure(figsize=(tabloid_width, tabloid_height))
 
                     handles = []
 
@@ -205,8 +205,8 @@ class Main(object):
                     handles.append(handle)
 
                     plt.legend(
-                        handles=handles, 
-                        loc='upper center', 
+                        handles=handles,
+                        loc='upper center',
                         bbox_to_anchor=(0.5, -0.05),
                         ncol=len(handles),
                         fancybox=True,
