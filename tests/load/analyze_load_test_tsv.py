@@ -88,13 +88,7 @@ class Response(object):
 
 class Main(object):
 
-    def __init__(self, graphs):
-        object.__init__(self)
-
-        self._graphs = graphs
-
-    def analyze(self):
-
+    def numerical_analysis(self):
         reg_ex_pattern = (
             r'^\s*\[(?P<timestamp>.*)\].*:\s+'
             r'(?P<request_type>.+)\t'
@@ -169,64 +163,67 @@ class Main(object):
         print ''
         print '=' * len(overall_title)
 
-        if self._graphs:
-            with PdfPages(self._graphs) as pdf:
-                for request_type in request_types:
-                    responses = Response.responses_for_request_type(request_type)
+    def generate_graphs(self, graphs):
+        with PdfPages(graphs) as pdf:
+            request_types = Response.request_types()
+            request_types.sort()
 
-                    response_times_in_buckets = {}
-                    for response in responses:
-                        seconds_since_start_bucket = response.seconds_since_start_bucket
-                        if seconds_since_start_bucket not in response_times_in_buckets:
-                            response_times_in_buckets[seconds_since_start_bucket] = []
-                        response_times_in_buckets[seconds_since_start_bucket].append(response.response_time)
+            for request_type in request_types:
+                responses = Response.responses_for_request_type(request_type)
 
-                    xs = response_times_in_buckets.keys()
-                    xs.sort()
+                response_times_in_buckets = {}
+                for response in responses:
+                    seconds_since_start_bucket = response.seconds_since_start_bucket
+                    if seconds_since_start_bucket not in response_times_in_buckets:
+                        response_times_in_buckets[seconds_since_start_bucket] = []
+                    response_times_in_buckets[seconds_since_start_bucket].append(response.response_time)
 
-                    tabloid_width = 17
-                    tabloid_height = 11
-                    plt.figure(figsize=(tabloid_width, tabloid_height))
+                xs = response_times_in_buckets.keys()
+                xs.sort()
 
-                    handles = []
+                tabloid_width = 17
+                tabloid_height = 11
+                plt.figure(figsize=(tabloid_width, tabloid_height))
 
-                    ys = [min(response_times_in_buckets.get(x, [0])) for x in xs]
-                    handle, = plt.plot(xs, ys, label='min')
+                handles = []
+
+                ys = [min(response_times_in_buckets.get(x, [0])) for x in xs]
+                handle, = plt.plot(xs, ys, label='min')
+                handles.append(handle)
+
+                percentiles = [90, 95, 99]
+                for percentile in percentiles:
+                    ys = [numpy.percentile(response_times_in_buckets.get(x, [0]), percentile) for x in xs]
+                    handle, = plt.plot(xs, ys, label='%dth percentile' % percentile)
                     handles.append(handle)
 
-                    percentiles = [90, 95, 99]
-                    for percentile in percentiles:
-                        ys = [numpy.percentile(response_times_in_buckets.get(x, [0]), percentile) for x in xs]
-                        handle, = plt.plot(xs, ys, label='%dth percentile' % percentile)
-                        handles.append(handle)
+                ys = [max(response_times_in_buckets.get(x, [0])) for x in xs]
+                handle, = plt.plot(xs, ys, label='max')
+                handles.append(handle)
 
-                    ys = [max(response_times_in_buckets.get(x, [0])) for x in xs]
-                    handle, = plt.plot(xs, ys, label='max')
-                    handles.append(handle)
-
-                    plt.legend(
-                        handles=handles,
-                        loc='upper center',
-                        bbox_to_anchor=(0.5, -0.05),
-                        ncol=len(handles),
-                        fancybox=True,
-                        shadow=True,
-                        fontsize='large')
-                    plt.grid(True)
-                    plt.xlabel(
-                        'Seconds Since Test Start',
-                        fontsize='large',
-                        fontweight='bold')
-                    plt.ylabel(
-                        'Response Time\n(milliseconds)',
-                        fontsize='large',
-                        fontweight='bold')
-                    plt.title(
-                        '%s\n' % request_type,
-                        fontsize='xx-large',
-                        fontweight='bold')
-                    pdf.savefig()
-                    plt.close()
+                plt.legend(
+                    handles=handles,
+                    loc='upper center',
+                    bbox_to_anchor=(0.5, -0.05),
+                    ncol=len(handles),
+                    fancybox=True,
+                    shadow=True,
+                    fontsize='large')
+                plt.grid(True)
+                plt.xlabel(
+                    'Seconds Since Test Start',
+                    fontsize='large',
+                    fontweight='bold')
+                plt.ylabel(
+                    'Response Time\n(milliseconds)',
+                    fontsize='large',
+                    fontweight='bold')
+                plt.title(
+                    '%s\n' % request_type,
+                    fontsize='xx-large',
+                    fontweight='bold')
+                pdf.savefig()
+                plt.close()
 
 
 class CommandLineParser(optparse.OptionParser):
@@ -256,5 +253,7 @@ if __name__ == '__main__':
     clp = CommandLineParser()
     (clo, cla) = clp.parse_args()
 
-    main = Main(clo.graphs)
-    main.analyze()
+    main = Main()
+    main.numerical_analysis()
+    if clo.graphs:
+        main.generate_graphs(clo.graphs)
