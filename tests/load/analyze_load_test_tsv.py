@@ -239,8 +239,18 @@ class Main(object):
                     'Response Time\n(milliseconds)',
                     fontsize='large',
                     fontweight='bold')
+
+                hours, remainder = divmod((Response.last_timestamp - Response.first_timestamp).total_seconds(), 3600)
+                minutes, _ = divmod(remainder, 60)
+                title = '%s\n(%.0f%% of %d requests @ %d concurrency for %d hours %d minutes)\n' % (
+                    request_type.replace('-', ' '),
+                    (len(responses) * 100.0) / Response.total_number_responses(),
+                    Response.total_number_responses(),
+                    Response.number_of_locusts(),
+                    hours,
+                    minutes)
                 plt.title(
-                    '%s\n' % request_type.replace('-', ' '),
+                    title,
                     fontsize='xx-large',
                     fontweight='bold')
                 pdf.savefig()
