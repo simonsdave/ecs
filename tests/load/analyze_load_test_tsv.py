@@ -31,10 +31,6 @@ class Response(object):
         return cls.responses_by_request_type[request_type]
 
     @classmethod
-    def response_times_for_request_type(cls, request_type):
-        return [response.response_time for response in cls.responses_by_request_type[request_type]]
-
-    @classmethod
     def successes_for_request_type(cls, request_type):
         return [response for response in cls.responses_by_request_type[request_type] if response.success]
 
@@ -80,7 +76,7 @@ class Response(object):
 
     @property
     def _bucket_size_in_seconds(self):
-        total_number_seconds_in_test = (type(self).last_timestamp - type(self).first_timestamp).total_seconds()        
+        total_number_seconds_in_test = (type(self).last_timestamp - type(self).first_timestamp).total_seconds()
         total_number_of_buckets_so_things_look_ok = 100
         return total_number_seconds_in_test / total_number_of_buckets_so_things_look_ok
 
@@ -92,7 +88,7 @@ class Response(object):
 
 class Main(object):
 
-    def numerical_analysis(self):
+    def load_data(self):
         reg_ex_pattern = (
             r'^\s*\[(?P<timestamp>.*)\].*:\s+'
             r'(?P<request_type>.+)\t'
@@ -113,6 +109,7 @@ class Main(object):
 
                 Response(locust_id, request_type, timestamp, success, response_time)
 
+    def numerical_analysis(self):
         overall_title = '%d @ %d from %s to %s' % (
             Response.total_number_responses(),
             Response.number_of_locusts(),
@@ -124,25 +121,18 @@ class Main(object):
         print '=' * len(overall_title)
         print ''
 
-        """
-        for (locust_id, responses_by_request_type) in Response.responses_by_locust_id.iteritems():
-            print '%s' % locust_id
-            for (request_type, responses) in responses_by_request_type.iteritems():
-                print '-- %s %d' % (request_type, len(responses))
-            print ''
-        """
-
         percentiles = [50, 60, 70, 80, 90, 95, 99]
-        fmt = '%-25s %5d %5d %3.0f%%' + ' %9.0f' * (1 + len(percentiles) + 1)
+        fmt = '%-25s %5d %5d %9.4f' + '%9.0f' * (2 + len(percentiles) + 1)
         request_types = Response.request_types()
         request_types.sort()
 
-        title_fmt = '%-25s %5s %5s %4s' + '%10s' * (1 + len(percentiles) + 1)
+        title_fmt = '%-25s %5s %5s ' + '%9s' * (3 + len(percentiles) + 1)
         args = [
             'Request Type',
             'Ok',
             'Error',
-            '',
+            'm',
+            'b',
             'Min',
         ]
         args.extend(percentiles)
@@ -152,16 +142,20 @@ class Main(object):
         print '-' * len(title)
 
         for request_type in request_types:
-            responses = Response.response_times_for_request_type(request_type)
+            responses = Response.responses_for_request_type(request_type)
+            seconds_since_start = [response.seconds_since_start for response in responses]
+            response_times = [response.response_time for response in responses]
+            m, b = numpy.polyfit(seconds_since_start, response_times, 1)
             args = [
                 request_type,
                 len(Response.successes_for_request_type(request_type)),
                 len(Response.failures_for_request_type(request_type)),
-                round(100.0 * (len(responses) * 1.0) / Response.total_number_responses()),
-                min(responses),
+                m,
+                b,
+                min(response_times),
             ]
-            args.extend(numpy.percentile(numpy.array(responses), percentiles))
-            args.append(max(responses))
+            args.extend(numpy.percentile(numpy.array(response_times), percentiles))
+            args.append(max(response_times))
             print fmt % tuple(args)
 
         print ''
@@ -191,20 +185,43 @@ class Main(object):
 
                 handles = []
 
+                column_labels = ['m', 'b']
+                row_labels = []
+                cells = []
+
+                m_fmt = '%.4f'
+                b_fmt = '%.0f'
+
                 ys = [min(response_times_in_buckets.get(x, [0])) for x in xs]
+                m, b = numpy.polyfit(xs, ys, 1)
+                cells.append([m_fmt % m, b_fmt % b])
+                row_labels.append('min')
                 handle, = plt.plot(xs, ys, label='min')
                 handles.append(handle)
 
                 percentiles = [90, 99]
                 for percentile in percentiles:
                     ys = [numpy.percentile(response_times_in_buckets.get(x, [0]), percentile) for x in xs]
+                    m, b = numpy.polyfit(xs, ys, 1)
+                    cells.append([m_fmt % m, b_fmt % b])
+                    row_labels.append(str(percentile))
                     handle, = plt.plot(xs, ys, label='%dth percentile' % percentile)
                     handles.append(handle)
 
                 ys = [max(response_times_in_buckets.get(x, [0])) for x in xs]
+                m, b = numpy.polyfit(xs, ys, 1)
+                cells.append([m_fmt % m, b_fmt % b])
+                row_labels.append('max')
                 handle, = plt.plot(xs, ys, label='max')
                 handles.append(handle)
 
+                plt.table(
+                    colWidths=[0.1] * 3,
+                    cellText=cells,
+                    rowLabels=row_labels,
+                    rowLoc='right',
+                    colLabels=column_labels,
+                    loc='center right')
                 plt.legend(
                     handles=handles,
                     loc='upper center',
@@ -258,6 +275,7 @@ if __name__ == '__main__':
     (clo, cla) = clp.parse_args()
 
     main = Main()
+    main.load_data()
     main.numerical_analysis()
     if clo.graphs:
         main.generate_graphs(clo.graphs)
