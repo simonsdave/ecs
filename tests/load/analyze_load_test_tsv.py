@@ -240,7 +240,7 @@ class Main(object):
                     fontsize='large',
                     fontweight='bold')
                 plt.title(
-                    '%s\n' % request_type,
+                    '%s\n' % request_type.replace('-', ' '),
                     fontsize='xx-large',
                     fontweight='bold')
                 pdf.savefig()
