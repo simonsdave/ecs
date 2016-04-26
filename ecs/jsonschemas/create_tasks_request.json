@@ -6,7 +6,7 @@
     "properties": {
         "docker_image": {
             "type": "string",
-            "minLength": 1
+            "pattern": "(.+/)?.+:.+"
         },
         "cmd": {
             "type": "array",

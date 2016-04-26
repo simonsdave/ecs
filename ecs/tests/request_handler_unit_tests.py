@@ -191,7 +191,7 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
                 'Content-Type': 'application/json; charset=utf-8',
             }
             body = {
-                'docker_image': uuid.uuid4().hex,
+                'docker_image': 'ubuntu:latest',
                 'cmd': [
                     'echo',
                     'hello world!!!',
@@ -217,7 +217,7 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
                 'Content-Type': 'application/json; charset=utf-8',
             }
             body = {
-                'docker_image': uuid.uuid4().hex,
+                'docker_image': 'ubuntu:latest',
                 'cmd': [
                     'echo',
                     'hello world!!!',
@@ -251,7 +251,7 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
                     'Content-Type': 'application/json; charset=utf-8',
                 }
                 body = {
-                    'docker_image': uuid.uuid4().hex,
+                    'docker_image': 'ubuntu:latest',
                     'cmd': [
                         'echo',
                         'hello world!!!',
@@ -280,7 +280,7 @@ class TasksRequestHandlerTestCase(AsyncRequestHandlerTestCase):
                 'Content-Type': 'application/json; charset=utf-8',
             }
             body = {
-                'docker_image': uuid.uuid4().hex,
+                'docker_image': 'ubuntu:latest',
                 'cmd': [
                     'echo',
                     'hello world!!!',

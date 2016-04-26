@@ -304,7 +304,7 @@ class TasksTestCase(IntegrationTestCase):
         def the_test(endpoint, auth):
             url = '%s/%s/tasks' % (endpoint, _api_version)
             body = {
-                'docker_image': 'bindle/berry',
+                'docker_image': 'ubuntu:dave_was_here',
                 'cmd': [
                     'echo',
                     'dave was here',
@@ -326,7 +326,7 @@ class TasksTestCase(IntegrationTestCase):
                 ]
             }
             response = requests.post(url, auth=auth, json=body)
-            self.assertEqual(response.status_code, httplib.NOT_FOUND)
+            self.assertEqual(response.status_code, httplib.BAD_REQUEST)
 
         self.setup_env_and_run_func(the_test)
 
