@@ -13,8 +13,6 @@ import matplotlib.pyplot as plt
 
 class Response(object):
 
-    bucket_size_in_seconds = 30
-
     first_timestamp = datetime.datetime(2990, 1, 1)
     last_timestamp = datetime.datetime(1990, 1, 1)
 
@@ -81,9 +79,15 @@ class Response(object):
         return (self.timestamp - type(self).first_timestamp).total_seconds()
 
     @property
+    def _bucket_size_in_seconds(self):
+        total_number_seconds_in_test = (type(self).last_timestamp - type(self).first_timestamp).total_seconds()        
+        total_number_of_buckets_so_things_look_ok = 100
+        return total_number_seconds_in_test / total_number_of_buckets_so_things_look_ok
+
+    @property
     def seconds_since_start_bucket(self):
         seconds_since_start = int(round(self.seconds_since_start, 0))
-        return seconds_since_start - (seconds_since_start % type(self).bucket_size_in_seconds)
+        return seconds_since_start - (seconds_since_start % self._bucket_size_in_seconds)
 
 
 class Main(object):
@@ -191,7 +195,7 @@ class Main(object):
                 handle, = plt.plot(xs, ys, label='min')
                 handles.append(handle)
 
-                percentiles = [90, 95, 99]
+                percentiles = [90, 99]
                 for percentile in percentiles:
                     ys = [numpy.percentile(response_times_in_buckets.get(x, [0]), percentile) for x in xs]
                     handle, = plt.plot(xs, ys, label='%dth percentile' % percentile)
