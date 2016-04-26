@@ -1,5 +1,5 @@
 {
-    "number_of_requests": 200000,
+    "number_of_requests": 2000,
     "hatch_rate": 5,
-    "concurrency": [25]
+    "concurrency": [15]
 }
