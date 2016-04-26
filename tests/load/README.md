@@ -1,7 +1,8 @@
-# Load
+# Load Testing
 
-This directory contains tests and documentation to think through, determine
-and validate service performance and stability under various load/stress scenarios.
+This directory contains tests and documentation to 
+validate service performance and stability under various
+load/stress scenarios.
 
 [Locust](http://locust.io) is the core load testing tool used to drive
 requests thru an ECS deployment. [run_load_test.sh](run_load_test.sh) is
@@ -44,78 +45,30 @@ Here's an example of running a basic load test
 using [load-test-config-for-travis.json](load-test-config-for-travis.json).
 
 ```bash
->./run_load_test.sh -v load-test-config-for-travis.json
-Started ECS - PID = 25792; config file '/tmp/tmp.Uydf4idUBC'
-Find locust log file @ '/tmp/tmp.MvwVWYRJWi' for 10 concurrency
-Find locust output @ '/tmp/tmp.XvNoa22lSK' for 10 concurrency
+>tests/load/run_load_test.sh -v tests/load/load-test-config-for-travis.json
+Started ECS - PID = 25608; config file '/tmp/tmp.H5e7xZFCoN'
+Find locust log file @ '/tmp/tmp.nyG4LGQOtB' for 15 concurrency
+Find locust output @ '/tmp/tmp.fS1xDEwLc5' for 15 concurrency
 =======================================================================
-1020 @ 12 from 2016-04-23 15:22:40.382000 to 2016-04-23 15:25:25.313000
+2034 @ 16 from 2016-04-26 19:16:41.449000 to 2016-04-26 19:20:00.863000
 =======================================================================
-
-Request Type                 Ok Error            Min        50        60        70        80        90        95        99       Max
-------------------------------------------------------------------------------------------------------------------------------------
-Health-Check-Quick          212     0  21%         3         6         7         8        11        17        23        39        59
-Health-Check-Slow           205     0  20%         6        16        19        24        30        47        64       134       269
-NoOp                        207     0  20%         3         5         5         6         9        12        20        35        54
-Tasks-Bad-Request-Body       19     0   2%         3        10        11        14        15        18        20        30        32
-Tasks-Happy-Path            156     0  15%      3609      6598      6947      7683      8194      9507     11508     13133     16208
-Tasks-Image-Not-Found        16     0   2%       171      1037      1255      1287      1624      2329      3139      4669      5052
-Version                     205     0  20%         3         5         5         7        10        15        21        38        62
-
-=======================================================================
-Find locust log file @ '/tmp/tmp.oz8jtT8DbO' for 15 concurrency
-Find locust output @ '/tmp/tmp.9AmoGUSVsq' for 15 concurrency
-=======================================================================
-1029 @ 16 from 2016-04-23 15:25:25.832000 to 2016-04-23 15:27:47.742000
-=======================================================================
-
-Request Type                 Ok Error            Min        50        60        70        80        90        95        99       Max
-------------------------------------------------------------------------------------------------------------------------------------
-Health-Check-Quick          342     0  33%         3         5         7         9        13        18        24        34        52
-Health-Check-Slow           172     0  17%         6        17        20        22        29        71       129       383       477
-NoOp                        177     0  17%         3         5         5         6         9        14        19        27        35
-Tasks-Bad-Request-Body       16     0   2%         3         8        10        13        15        21        24        28        29
-Tasks-Happy-Path            137     0  13%      1873      9488     10027     10604     11466     12571     14690     16663     18271
-Tasks-Image-Not-Found        11     0   1%       400      1788      2255      3387      6228      9205     10546     11619     11888
-Version                     174     0  17%         3         5         5         7        10        15        22        29        43
-
-=======================================================================
-Find locust log file @ '/tmp/tmp.OxasvQ1MLH' for 20 concurrency
-Find locust output @ '/tmp/tmp.jncpZ5wF4F' for 20 concurrency
-=======================================================================
-1037 @ 20 from 2016-04-23 15:27:48.436000 to 2016-04-23 15:30:12.828000
-=======================================================================
-
-Request Type                 Ok Error            Min        50        60        70        80        90        95        99       Max
-------------------------------------------------------------------------------------------------------------------------------------
-Health-Check-Quick          347     0  33%         3         6         8        11        14        18        25        44        71
-Health-Check-Slow           169     0  16%         6        16        19        22        31        52        79       187       369
-NoOp                        171     0  16%         3         5         5         7        10        14        20        55       125
-Tasks-Bad-Request-Body       12     0   1%         3         5         5         6         6         7        10        14        15
-Tasks-Happy-Path            140     0  14%      4671     12972     13854     14365     16099     17641     18715     23087     26537
-Tasks-Image-Not-Found        24     0   2%        73      1361      1555      1720      2143      2616      2742      3007      3083
-Version                     174     0  17%         3         5         7         9        13        21        25        72        93
-
-=======================================================================
-Find locust log file @ '/tmp/tmp.jHvrWzDDnj' for 25 concurrency
-Find locust output @ '/tmp/tmp.RX7wU6ninx' for 25 concurrency
-=======================================================================
-1048 @ 25 from 2016-04-23 15:30:13.320000 to 2016-04-23 15:32:22.134000
-=======================================================================
-
-Request Type                 Ok Error            Min        50        60        70        80        90        95        99       Max
-------------------------------------------------------------------------------------------------------------------------------------
-Health-Check-Quick          445     0  42%         3         5         6         8        12        18        25        39       112
-Health-Check-Slow           144     0  14%         6        18        21        31        51        96       198       350       474
-NoOp                        145     0  14%         3         5         7         9        12        18        23        47        79
-Tasks-Bad-Request-Body       13     0   1%         3         5         5         5         6        16        26        36        38
-Tasks-Happy-Path            133     0  13%      3155     15610     16779     17663     18891     20481     22416     26121     29900
-Tasks-Image-Not-Found        17     0   2%       173      2048      2102      2422      2671      3710      4806      7564      8254
-Version                     151     0  14%         3         5         6         8        10        15        17        33        71
-
+Request Type                 Ok Error         m        b      Min       50       60       70       80       90       95       99      Max
+-----------------------------------------------------------------------------------------------------------------------------------------
+Health-Check-Quick          515     0   -0.0027        6        4        5        5        6        7        9       10       14       24
+Health-Check-Slow           234     0   -0.0585       82        6       21       36       71      119      264      325      468      693
+NoOp                        257     0    0.0010        5        3        4        4        5        5        7       10       14       27
+Tasks-Bad-Request-Body       72     0    0.0072        5        4        5        5        6        6        8        9       17       21
+Tasks-Happy-Path            612     0   -0.2141     2197      647     2150     2297     2436     2595     2913     3149     4316     5171
+Tasks-Image-Not-Found        86     0   -0.6782      969       30      764      857     1029     1330     1467     1612     1993     2015
+Version                     258     0   -0.0012        5        3        5        5        5        6        7        9       14       25
 =======================================================================
 >
 ```
+## Graphing Test Results
+
+...
+
+## Local & Cloud Deployments
 
 By default ```run_load_test.sh``` spins up a local ECS deployment.
 ```run_load_test.sh``` can also be used to run a load tests against
@@ -148,15 +101,17 @@ cdf539dd1ba649e893950fa9f3de9f49:633ad1feaa40f2ecf1776b301e894340
 
 ```bash
 >./run_load_test.sh -v deployment.json
-Find locust log file @ '/tmp/tmp.aacQxEvsv1' for 10 concurrency
-Find locust output @ '/tmp/tmp.fPFYvZEcCZ' for 10 concurrency
+Find locust log file @ '/tmp/tmp.aacQxEvsv1' for 5 concurrency
+Find locust output @ '/tmp/tmp.fPFYvZEcCZ' for 5 concurrency
 .
 .
 .
 >
 ```
 
-Final thing ... load tests are intented to stress an ECS deployment
+## Rate Limiting
+
+Load tests are intented to stress an ECS deployment
 and generate traffic that looks a lot like a DoS attack.
 the typical ECS deployment has per node rate limiting rules in place
 ie. nodes have defenses in place to protect themselves again DoS
@@ -191,6 +146,8 @@ these rates. take a look @ the ECS API docs for the default rates.
 }
 >
 ```
+
+## New Relic
 
 [New Relic](http://newrelic.com/) is a great
 [APM](https://en.wikipedia.org/wiki/Application_performance_management)
