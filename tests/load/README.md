@@ -1,6 +1,6 @@
 # Load Testing
 
-This directory contains tests and documentation to 
+This directory contains tests and documentation to
 validate service performance and stability under various
 load/stress scenarios.
 
@@ -66,7 +66,17 @@ Version                     258     0   -0.0012        5        3        5      
 ```
 ## Graphing Test Results
 
-...
+As described above, [run_load_test.sh](run_load_test.sh) runs a load
+test and then [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
+analyzes the results of the load test.
+By default [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
+generates the numeric results as illustrated above.
+In addition to numeric results [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
+can also generate a PDF document describing the response times by
+request types. Below is a sample of one of these pages and
+[here](docs/25-sample-graph.pdf) is a sample of a complete report.
+
+![25-sample-graph.png](docs/25-sample-graph.png)]
 
 ## Local & Cloud Deployments
 

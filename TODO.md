@@ -185,9 +185,7 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 
 ### Required
 
-* need to plot results of [load tests](tests/load) -
-  consider using [Plotly](https://plot.ly) -
-  [this](https://plot.ly/~ckaiwu/105/prices/) is probably a good example
+* ...
 
 ### Nice to Have
 
