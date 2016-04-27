@@ -74,9 +74,9 @@ generates the numeric results as illustrated above.
 In addition to numeric results [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
 can also generate a PDF document describing the response times by
 request types. Below is a sample of one of these pages and
-[here](docs/25-sample-graph.pdf) is a sample of a complete report.
+[here](docs/25-sample-graphs.pdf) is a sample of a complete report.
 
-![25-sample-graph.png](docs/25-sample-graph.png)]
+![25-sample-graph.png](docs/25-sample-graph.png)
 
 ## Local & Cloud Deployments
 
