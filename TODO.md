@@ -90,21 +90,21 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 * the SLA for an ECS deployment is expressed as:
 
-```
-NN% of the time the ECS deployment will be available to process tasks
-(ie. POSTs to the /tasks endpoint will work) and the ECS infrastructure
-will add no more than X ms of overhead to a task
-```
+> NN% of the time the ECS deployment will be available to process tasks
+> (ie. POSTs to the /tasks endpoint will work) and the ECS infrastructure
+> will add no more than X ms of overhead to a task
 
-Every minute Pingdom issues two requests into the ECS deployment. 
+Every minute [Pingdom](https://www.pingdom.com/) issues two requests into the ECS deployment.
 
-1/ a POST to the /tasks endpoint that runs a bash shell which immediately exits (:TODO: something in here about the time and availability of the docker registry on which the deployment depends - might need to seed each node with a docker image) - the POST is considered successful with a 201 Created response
-2/ a GET to the /_noop endpoint - the GET is considered succesful with a 200 OK response
+1. a POST to the /tasks endpoint that runs a bash shell which immediately exits (:TODO: something in here about the time and availability of the docker registry on which the deployment depends - might need to seed each node with a docker image) - the POST is considered successful with a 201 Created response
+1. a GET to the /_noop endpoint - the GET is considered successful with a 200 OK response
 
 The overhead added by the ECS deployment is calculated by subtracting the response
-time for (2) from the reponse time for (1).
+time for (2) from the response time for (1).
 
-At any point in time, the ECS deployment is considered 
+At any point in time, the ECS deployment is considered available if both
+(1) and (2) are successful **and** the overhead added by the ECS deployment
+is less than some predefined threshold.
 
 * how are we going to do SLA monitoring? can extract check results from [Pingdom](https://www.pingdom.com/) using the [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
 
@@ -112,10 +112,12 @@ At any point in time, the ECS deployment is considered
 >PINGDOM_USERNAME=...
 >PINGDOM_PASSWORD=...
 >PINGDOM_APPKEY=...
->account settings @ ```curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/settings"```
->reference data (which may not be needed actually) @ ```curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/reference" | jq . > ooo```
+>#get account settings to get the current timezone
+>curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/settings"
+>#get reference data to get timezone UTC offset - this may not be needed
+>curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/reference" | jq
 >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/checks" | jq
-
+{
   "checks": [
     {
       "id": 2112869,
