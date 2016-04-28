@@ -87,14 +87,57 @@ Fine grained list of to do's in order to make ```ecs``` production ready
       * [HTTP Event Collector walkthrough](http://dev.splunk.com/view/event-collector/SP-CAAAE7F)
       * [30 Apr '15 - Integrating Splunk with Docker, CoreOS, and JournalD](http://blogs.splunk.com/2015/04/30/integrating-splunk-with-docker-coreos-and-journald/)
 * add status page using [StatusPage.io](https://www.statuspage.io)
+
+* the SLA for an ECS deployment is expressed as:
+
+```
+NN% of the time the ECS deployment will be available to process tasks
+(ie. POSTs to the /tasks endpoint will work) and the ECS infrastructure
+will add no more than X ms of overhead to a task
+```
+
+Every minute Pingdom issues two requests into the ECS deployment. 
+
+1/ a POST to the /tasks endpoint that runs a bash shell which immediately exits (:TODO: something in here about the time and availability of the docker registry on which the deployment depends - might need to seed each node with a docker image) - the POST is considered successful with a 201 Created response
+2/ a GET to the /_noop endpoint - the GET is considered succesful with a 200 OK response
+
+The overhead added by the ECS deployment is calculated by subtracting the response
+time for (2) from the reponse time for (1).
+
+At any point in time, the ECS deployment is considered 
+
 * how are we going to do SLA monitoring? can extract check results from [Pingdom](https://www.pingdom.com/) using the [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
 
 ```bash
 >PINGDOM_USERNAME=...
 >PINGDOM_PASSWORD=...
 >PINGDOM_APPKEY=...
+>account settings @ ```curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/settings"```
+>reference data (which may not be needed actually) @ ```curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/reference" | jq . > ooo```
 >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/checks" | jq
->PINGDOM_CHECK_ID=...
+
+  "checks": [
+    {
+      "id": 2112869,
+      "created": 1461485401,
+      "name": "Cloudfeaster Website",
+      "hostname": "www.cloudfeaster.com",
+      "use_legacy_notifications": true,
+      "resolution": 1,
+      "type": "http",
+      "ipv6": false,
+      "lasttesttime": 1461762844,
+      "lastresponsetime": 370,
+      "status": "up"
+    }
+  ],
+  "counts": {
+    "total": 1,
+    "limited": 1,
+    "filtered": 1
+  }
+}
+>PINGDOM_CHECK_ID=2112869
 >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/results/$PINGDOM_CHECK_ID?limit=1440" | jq . > formatted_last_day_of_check_results.json
 >head -20 formatted_last_day_of_check_results.json
 {
@@ -138,6 +181,24 @@ Fine grained list of to do's in order to make ```ecs``` production ready
     }
   ]
 }
+```
+
+* useful for "Unix Timestap" conversion to dates
+
+```python
+>>> import datetime
+>>> import dateutil.tz
+>>> dt = datetime.datetime.fromtimestamp(1461763264)
+>>> dt
+datetime.datetime(2016, 4, 27, 8, 21, 4)
+>>> dt = dt.replace(tzinfo=dateutil.tz.tzutc())
+>>> dt
+datetime.datetime(2016, 4, 27, 8, 21, 4, tzinfo=tzutc())
+>>> dt = dt.replace(tzinfo=dateutil.tz.gettz('America/New_York'))
+>>> dt
+datetime.datetime(2016, 4, 27, 8, 21, 4, tzinfo=tzfile('/usr/share/zoneinfo/America/New_York'))
+*************** what is EST *********************
+>>> datetime.datetime(2016, 4, 27, 8, 21, 4, tzinfo=tzoffset('dave', 5))
 ```
 
 * in ```cloud-config.yaml``` how should we describe the resources required by ecs service and apidocs service
