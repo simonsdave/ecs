@@ -101,12 +101,12 @@ Every minute [Pingdom](https://www.pingdom.com/) issues two requests into the EC
 
 The overhead added by the ECS deployment is calculated by subtracting the response
 time for (2) from the response time for (1).
-
 At any point in time, the ECS deployment is considered available if both
 (1) and (2) are successful **and** the overhead added by the ECS deployment
 is less than some predefined threshold.
 
-* how are we going to do SLA monitoring? can extract check results from [Pingdom](https://www.pingdom.com/) using the [Pingdom API for check results](https://www.pingdom.com/resources/api#MethodGet+Raw+Check+Results)
+Some initial thoughts on how to use
+the [Pingdom API](https://www.pingdom.com/resources/api)
 
 ```bash
 >PINGDOM_USERNAME=...
