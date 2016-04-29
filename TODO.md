@@ -112,8 +112,6 @@ At any point in time, the ECS deployment is considered
 >PINGDOM_USERNAME=...
 >PINGDOM_PASSWORD=...
 >PINGDOM_APPKEY=...
->account settings @ ```curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/settings"```
->reference data (which may not be needed actually) @ ```curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/reference" | jq . > ooo```
 >curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/checks" | jq
 
   "checks": [
@@ -183,24 +181,6 @@ At any point in time, the ECS deployment is considered
 }
 ```
 
-* useful for "Unix Timestap" conversion to dates
-
-```python
->>> import datetime
->>> import dateutil.tz
->>> dt = datetime.datetime.fromtimestamp(1461763264)
->>> dt
-datetime.datetime(2016, 4, 27, 8, 21, 4)
->>> dt = dt.replace(tzinfo=dateutil.tz.tzutc())
->>> dt
-datetime.datetime(2016, 4, 27, 8, 21, 4, tzinfo=tzutc())
->>> dt = dt.replace(tzinfo=dateutil.tz.gettz('America/New_York'))
->>> dt
-datetime.datetime(2016, 4, 27, 8, 21, 4, tzinfo=tzfile('/usr/share/zoneinfo/America/New_York'))
-*************** what is EST *********************
->>> datetime.datetime(2016, 4, 27, 8, 21, 4, tzinfo=tzoffset('dave', 5))
-```
-
 * in ```cloud-config.yaml``` how should we describe the resources required by ecs service and apidocs service
 * add support to ```ecsctl.sh``` for increasing and decreasing size of ECS cluster
 * how to upgrade existing ECS cluster with new service code
@@ -239,7 +219,8 @@ ubuntu                        14.04               ab035c88d533        2 weeks ag
 * 401 from api domain should return json content type
 * remove nginx version # from all responses
 * remove SSH access to nodes in ECS cluster
-* automate GoDaddy DNS provisioning as per [this API spec](https://developer.godaddy.com/doc)
+* automate DNS provisioning
+  * [GoDaddy](https://developer.godaddy.com/doc)
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
 
 ## Performance
