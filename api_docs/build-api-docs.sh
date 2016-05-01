@@ -12,24 +12,36 @@
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ "-d" == "${1:-}" ]; then
-    DEPLOY_API_DOCS=1
-    shift
-else
-    DEPLOY_API_DOCS=0
-fi
+VERBOSE=0
+CREATE_TAR_FILE=0
+DEPLOY_API_DOCS=0
 
-if [ "-t" == "${1:-}" ]; then
-    CREATE_TAR_FILE=1
-    shift
-else
-    CREATE_TAR_FILE=0
-fi
+while true
+do
+    OPTION=`echo ${1:-} | awk '{print tolower($0)}'`
+    case "$OPTION" in
+        -d)
+            shift
+            DEPLOY_API_DOCS=1
+            ;;
+        -t)
+            shift
+            CREATE_TAR_FILE=1
+            ;;
+        -v)
+            shift
+            VERBOSE=1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 DEPLOYMENT_DIR=/usr/share/nginx/ecs/html
 
 if [ $# != 0 ]; then
-    echo "usage: `basename $0` [-d] [-t]" >&2
+    echo "usage: `basename $0` [-v] [-d] [-t]" >&2
     exit 1
 fi
 
