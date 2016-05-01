@@ -5,15 +5,30 @@
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ "-v" == "${1:-}" ]; then
-    VERBOSE=1
-    shift
-else
-    VERBOSE=0
-fi
+VERBOSE=0
+TAG=""
+
+while true
+do
+    OPTION=`echo ${1:-} | awk '{print tolower($0)}'`
+    case "$OPTION" in
+        -v)
+            shift
+            VERBOSE=1
+            ;;
+        -t)
+            shift
+            TAG=${1:-}
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 if [ $# != 3 ] && [ $# != 5 ]; then
-    echo "usage: `basename $0` [-v] <services-tar-gz> <api-docs-tar> <username> [<email> <password>]" >&2
+    echo "usage: `basename $0` [-v] [-t <tag>] <services-tar-gz> <api-docs-tar> <username> [<email> <password>]" >&2
     exit 1
 fi
 
@@ -34,17 +49,20 @@ if [ ! -r "$API_DOCS_TAR" ]; then
 fi
 
 "$SCRIPT_DIR_NAME/nginx/build-docker-image.sh" \
+    -t "$TAG" \
     "$USERNAME" \
     "$EMAIL" \
     "$PASSWORD"
 
 "$SCRIPT_DIR_NAME/apidocs/build-docker-image.sh" \
+    -t "$TAG" \
     "$API_DOCS_TAR" \
     "$USERNAME" \
     "$EMAIL" \
     "$PASSWORD"
 
 "$SCRIPT_DIR_NAME/services/build-docker-image.sh" \
+    -t "$TAG" \
     "$SERVICES_TAR_GZ" \
     "$USERNAME" \
     "$EMAIL" \
