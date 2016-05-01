@@ -94,7 +94,8 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 > (ie. POSTs to the /tasks endpoint will work) and the ECS infrastructure
 > will add no more than X ms of overhead to a task
 
-Every minute [Pingdom](https://www.pingdom.com/) issues two requests into the ECS deployment.
+Every (1|5) minute(s) [Pingdom](https://www.pingdom.com/) issues two requests
+into the ECS deployment.
 
 1. a POST to the /tasks endpoint that runs a bash shell which immediately exits (:TODO: something in here about the time and availability of the docker registry on which the deployment depends - might need to seed each node with a docker image) - the POST is considered successful with a 201 Created response
 1. a GET to the /_noop endpoint - the GET is considered successful with a 200 OK response
@@ -105,81 +106,7 @@ At any point in time, the ECS deployment is considered available if both
 (1) and (2) are successful **and** the overhead added by the ECS deployment
 is less than some predefined threshold.
 
-Some initial thoughts on how to use
-the [Pingdom API](https://www.pingdom.com/resources/api)
-
-```bash
->PINGDOM_USERNAME=...
->PINGDOM_PASSWORD=...
->PINGDOM_APPKEY=...
->curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/checks" | jq
-{
-  "checks": [
-    {
-      "id": 2112869,
-      "created": 1461485401,
-      "name": "Cloudfeaster Website",
-      "hostname": "www.cloudfeaster.com",
-      "use_legacy_notifications": true,
-      "resolution": 1,
-      "type": "http",
-      "ipv6": false,
-      "lasttesttime": 1461762844,
-      "lastresponsetime": 370,
-      "status": "up"
-    }
-  ],
-  "counts": {
-    "total": 1,
-    "limited": 1,
-    "filtered": 1
-  }
-}
->PINGDOM_CHECK_ID=2112869
->curl -s -u "$PINGDOM_USERNAME:$PINGDOM_PASSWORD" -H "App-Key:$PINGDOM_APPKEY" "https://api.pingdom.com/api/2.0/results/$PINGDOM_CHECK_ID?limit=1440" | jq . > formatted_last_day_of_check_results.json
->head -20 formatted_last_day_of_check_results.json
-{
-  "activeprobes": [
-    65,
-    34,
-    68,
-    72,
-    43,
-    82,
-    60
-  ],
-  "results": [
-    {
-      "probeid": 68,
-      "time": 1458570747,
-      "status": "down",
-      "statusdesc": "Timeout (> 30s)",
-      "statusdesclong": "Socket timeout, unable to connect to server"
-    },
-    {
-      "probeid": 72,
->tail -20 formatted_last_day_of_check_results.json
-      "statusdesclong": "OK"
-    },
-    {
-      "probeid": 82,
-      "time": 1458510867,
-      "status": "up",
-      "responsetime": 508,
-      "statusdesc": "OK",
-      "statusdesclong": "OK"
-    },
-    {
-      "probeid": 34,
-      "time": 1458510807,
-      "status": "up",
-      "responsetime": 132,
-      "statusdesc": "OK",
-      "statusdesclong": "OK"
-    }
-  ]
-}
-```
+For some initial thoughts on implementation see [sla.py](bin/sla.py).
 
 * in ```cloud-config.yaml``` how should we describe the resources required by ecs service and apidocs service
 * add support to ```ecsctl.sh``` for increasing and decreasing size of ECS cluster
