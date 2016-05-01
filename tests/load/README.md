@@ -71,9 +71,24 @@ test and then [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
 analyzes the results of the load test.
 By default [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
 generates the numeric results as illustrated above.
-In addition to numeric results [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
-can also generate a PDF document describing the response times by
-request types. Below is a sample of one of these pages and
+In addition to numeric results, [analyze_load_test_tsv.py](analyze_load_test_tsv.py)
+can also generate a PDF document of graphs describing response times by
+request type. To generate the graphs use the ```--graphs``` command
+command line option with [analyze_load_test_tsv.py](analyze_load_test_tsv.py).
+
+```bash
+>analyze_load_test_tsv.py --help
+Usage: analyze_load_test_tsv.py [options] <concurrency>
+
+This utility analyzes load test results
+
+Options:
+  -h, --help       show this help message and exit
+  --graphs=GRAPHS  pdf file name for graphs
+>
+```
+
+Below is a sample of one of these pages and
 [here](docs/25-sample-graphs.pdf) is a sample of a complete report.
 
 ![25-sample-graph.png](docs/25-sample-graph.png)
