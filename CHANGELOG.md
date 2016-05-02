@@ -1,7 +1,22 @@
 # Change Log
+
 All notable changes to this project will be documented in this file.
 Format of this file follows [these](http://keepachangelog.com/) guidelines.
 This project adheres to [Semantic Versioning](http://semver.org/).
+
+## [0.9.1] - [2016-05-xx]
+
+### Added
+
+- ...
+
+### Changed
+
+- ...
+
+### Removed
+
+- ...
 
 ## [0.9.0] - [2016-05-01]
 
@@ -12,10 +27,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   image name format 'owner/image:tag' format to specify a specific, tagged
   version of an image; image names not in this format will result in a
   400 (Bad Request) response
-
-### Removed
-
-- ...
 
 ## [0.8.0] - [2015-05-10]
 
