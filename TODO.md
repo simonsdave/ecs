@@ -148,6 +148,11 @@ For some initial thoughts on implementation see [sla.py](bin/sla.py).
 
 ### Nice to Have
 
+* [load tests](tests/load) might benefit from incorporating the following
+techniques into graphs so trends can be more easily identified vs the
+bucketing approach currently being used
+    * [exponential smoothing](https://en.wikipedia.org/wiki/Exponential_smoothing)
+    * [autocorrelation (from 'pearson spectrum correlation')](https://en.wikipedia.org/wiki/Autocorrelation)
 * ```AsyncEndToEndContainerRunner``` should delete container using ```AsyncContainerDelete```
   after responding to the invoker of ```AsyncEndToEndContainerRunner``` - this should eliminate
   ~1 second overhead introduced by ```ecs```
