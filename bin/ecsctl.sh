@@ -281,6 +281,8 @@ deployment_create_cloud_config() {
 
     local TLS_VERSIONS=$(cat "$1" | jq -r .tls_versions | sed -e 's/null/TLSv1.2/g')
 
+    local TLS_CIPHERS=$(cat "$1" | jq -r .tls_ciphers | sed -e 's/null/ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256/g')
+
     local API_CREDENTIALS=$(cat "$1" | jq -r .api_credentials | sed -e 's/null//g')
     if [ "$API_CREDENTIALS" == "" ]; then
         echo_to_stderr "deployment_create_cloud_config() - couldn't find api_credentials property in $1"
@@ -320,6 +322,7 @@ deployment_create_cloud_config() {
     echo "s|%DISCOVERY_TOKEN%|$DISCOVERY_TOKEN|g" >> "$SED_SCRIPT_1"
     echo "s|%DOCS_DOMAIN%|$DOCS_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%TLS_VERSIONS%|$TLS_VERSIONS|g" >> "$SED_SCRIPT_1"
+    echo "s|%TLS_CIPHERS%|$TLS_CIPHERS|g" >> "$SED_SCRIPT_1"
     echo "s|%API_DOMAIN%|$API_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%API_PER_IP_CONN_LIMIT%|$API_PER_IP_CONN_LIMIT|g" >> "$SED_SCRIPT_1"
     echo "s|%API_PER_IP_RATE_LIMIT%|$API_PER_IP_RATE_LIMIT|g" >> "$SED_SCRIPT_1"

@@ -10,7 +10,7 @@ else
     VERBOSE=0
 fi
 
-if [ $# != 6 ]; then
+if [ $# != 8 ]; then
     echo "usage: `basename $0` [-v] <api-docs-domain-name> <api-domain-name> <api per ip conn limit> <api per ip rate limit> <api per key conn limit> <api per key rate limit> <tls-versions>" >&2
     exit 1
 fi
@@ -22,15 +22,17 @@ API_PER_IP_RATE_LIMIT=${4:-}
 API_PER_KEY_CONN_LIMIT=${5:-}
 API_PER_KEY_RATE_LIMIT=${6:-}
 TLS_VERSIONS=${7:-}
+TLS_CIPHERS=${7:-}
 
 cat /etc/nginx/conf.d/ecs.conf.template | \
     sed -e "s|%API_DOCS_DOMAIN_NAME%|$API_DOCS_DOMAIN_NAME|g" | \
-    sed -e "s|%API_DOMAIN_NAME%|$API_DOMAIN_NAME|g" > \
-    sed -e "s|%API_PER_IP_CONN_LIMIT%|$API_PER_IP_CONN_LIMIT|g" > \
-    sed -e "s|%API_PER_IP_RATE_LIMIT%|$API_PER_IP_RATE_LIMIT|g" > \
-    sed -e "s|%API_PER_KEY_CONN_LIMIT%|$API_PER_KEY_CONN_LIMIT|g" > \
-    sed -e "s|%API_PER_KEY_RATE_LIMIT%|$API_PER_KEY_RATE_LIMIT|g" > \
-    sed -e "s|%TLS_VERSIONS%|$TLS_VERSIONS|g" > \
+    sed -e "s|%API_DOMAIN_NAME%|$API_DOMAIN_NAME|g" | \
+    sed -e "s|%API_PER_IP_CONN_LIMIT%|$API_PER_IP_CONN_LIMIT|g" | \
+    sed -e "s|%API_PER_IP_RATE_LIMIT%|$API_PER_IP_RATE_LIMIT|g" | \
+    sed -e "s|%API_PER_KEY_CONN_LIMIT%|$API_PER_KEY_CONN_LIMIT|g" | \
+    sed -e "s|%API_PER_KEY_RATE_LIMIT%|$API_PER_KEY_RATE_LIMIT|g" | \
+    sed -e "s|%TLS_VERSIONS%|$TLS_VERSIONS|g" | \
+    sed -e "s|%TLS_CIPHERS%|$TLS_CIPHERS|g" > \
     /etc/nginx/conf.d/ecs.conf
 
 #
