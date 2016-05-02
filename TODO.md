@@ -63,15 +63,22 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* add support for [CloudFlare](https://www.cloudflare.com)
-* when ecsctl.sh starts a node, it should verify that the node has
+* ```ecsctl.sh dep create``` should optionally permit specification of TLS versions
+* ```ecsctl.sh dep create``` should optionally permit specification of cipher suite
+* ```ecsctl.sh dep create``` should optionally permit specification of an ECS version number
+  that will be used to identify docker images
+* when ```ecsctl.sh``` starts a node, it should verify that the node has
   successfully started - perhaps the simplest thing to do is a curl
-  to the /_health?quick=flase endpoint
-* ecsctl.sh (& other supporting files) aren't packaged in any distribution
-  which means to use ecsctl.sh you need to git clone the ecs repo which isn't ideal.
-  sort out how ecsctl.sh will be packaged.
-* ecsctl.sh should support use of static IP for forwarding rule
-* ecsctl.sh should spin up ECS nodes across multiple GCE zones
+  to the /_health?quick=false endpoint
+* add support to ```ecsctl.sh``` for increasing and decreasing size of ECS cluster
+    * ```ecsctl.sh -v dep [rc|rmcap|remove_capacity]```
+    * ```ecsctl.sh -v dep [ac|addcap|add_capacity]```
+* how to upgrade / downgrade service code in an existing ECS cluster
+    * don't change IPs, DNS, forwarding rule, etc.
+        * in ```ecsctl.sh``` support use of static IP for forwarding rule
+    * just want to replace nodes behind forward rule
+    * use docker tags as an approach for identifying targets for upgrade
+    * use can
 * add log aggregation
   * [Docker - configure logging drivers](https://docs.docker.com/engine/admin/logging/overview/)
   * SumoLogic
@@ -86,7 +93,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
       * [How to get HTTP Event Collectors enabled in Splunk Cloud?](https://answers.splunk.com/answers/323085/how-to-get-http-event-collectors-enabled-in-splunk.html)
       * [HTTP Event Collector walkthrough](http://dev.splunk.com/view/event-collector/SP-CAAAE7F)
       * [30 Apr '15 - Integrating Splunk with Docker, CoreOS, and JournalD](http://blogs.splunk.com/2015/04/30/integrating-splunk-with-docker-coreos-and-journald/)
-* add status page using [StatusPage.io](https://www.statuspage.io)
+* after implementing log aggregation, remove SSH access to nodes in an ECS cluster
 
 * the SLA for an ECS deployment is expressed as:
 
@@ -108,13 +115,6 @@ is less than some predefined threshold.
 
 For some initial thoughts on implementation see [sla.py](bin/sla.py).
 
-* in ```cloud-config.yaml``` how should we describe the resources required by ecs service and apidocs service
-* add support to ```ecsctl.sh``` for increasing and decreasing size of ECS cluster
-* how to upgrade existing ECS cluster with new service code
-    * don't change IPs, DNS, forwarding rule, etc.
-    * just want to replace nodes behind forward rule
-    * think about using [docker tags](https://medium.com/@mccode/the-misunderstood-docker-tag-latest-af3babfd6375#.x4xg3qhgn)
-      as an approach for identifying targets for upgrade
 
 * [Core OS updates](https://coreos.com/using-coreos/updates/)
   * [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
@@ -125,11 +125,17 @@ For some initial thoughts on implementation see [sla.py](bin/sla.py).
 
 ### Nice to Have
 
+* describe the resources required by ecs and apidocs service in ```cloud-config.yaml``` 
+* add support for [CloudFlare](https://www.cloudflare.com)
+* add status page using [StatusPage.io](https://www.statuspage.io)
 * consider using [CoreOS Ignition](https://coreos.com/blog/introducing-ignition.html)
   when it gets to the beta channel
 * 401 from api domain should return json content type
+* ecsctl.sh should spin up ECS nodes across multiple GCE zones
 * remove nginx version # from all responses
-* remove SSH access to nodes in ECS cluster
+* ecsctl.sh (& other supporting files) aren't packaged in any distribution
+  which means to use ecsctl.sh you need to git clone the ecs repo which isn't ideal.
+  sort out how ecsctl.sh will be packaged.
 * automate DNS provisioning
   * [GoDaddy](https://developer.godaddy.com/doc)
 * where does Network Intrustion Detection and Host Intrustion Detection fit?
