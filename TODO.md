@@ -116,22 +116,6 @@ For some initial thoughts on implementation see [sla.py](bin/sla.py).
     * think about using [docker tags](https://medium.com/@mccode/the-misunderstood-docker-tag-latest-af3babfd6375#.x4xg3qhgn)
       as an approach for identifying targets for upgrade
 
-```bash
->sudo docker pull simonsdave/cloudfeaster:latest
->sudo docker images
-REPOSITORY                    TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-simonsdave/cloudfeaster       latest              d3884baf3343        23 hours ago        769 MB
-ubuntu                        14.04               ab035c88d533        2 weeks ago         187.9 MB
->sudo docker tag d3884baf3343 simonsdave/cloudfeaster:0.6.0
->sudo docker images
-REPOSITORY                    TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-simonsdave/cloudfeaster       0.6.0               d3884baf3343        23 hours ago        769 MB
-simonsdave/cloudfeaster       latest              d3884baf3343        23 hours ago        769 MB
-ubuntu                        14.04               ab035c88d533        2 weeks ago         187.9 MB
->sudo docker login
->sudo docker push simonsdave/cloudfeaster
-```
-
 * [Core OS updates](https://coreos.com/using-coreos/updates/)
   * [CoreOS Update Strategy](https://coreos.com/os/docs/latest/update-strategies.html)
   * does nginx's # of active connections
