@@ -8,7 +8,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- ...
+- deployment configuration used with ```ecsctl.sh dep create``` how permits
+  specification of the TLS versions
 
 ### Changed
 
