@@ -178,4 +178,6 @@ For some initial thoughts on implementation see [sla.py](bin/sla.py).
 
 ## CI / CD
 
-* ...
+* ```docker push``` in ```build-docker-image.sh``` occasionally fails; put
+a retry loop on the ```docker push``` (& probably the ```docker login```)
+to increase the probability of success
