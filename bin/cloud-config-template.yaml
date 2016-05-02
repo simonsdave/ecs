@@ -135,7 +135,7 @@ coreos:
           -v /etc/ssl/certs/%API_DOMAIN%.key:/etc/nginx/ssl/api.key \
           -v /.ecs/api_credentials:/etc/nginx/.htpasswd \
           simonsdave/ecs-nginx \
-          nginx.sh %DOCS_DOMAIN% %API_DOMAIN% %API_PER_IP_CONN_LIMIT% %API_PER_IP_RATE_LIMIT% %API_PER_KEY_CONN_LIMIT% %API_PER_KEY_RATE_LIMIT%
+          nginx.sh %DOCS_DOMAIN% %API_DOMAIN% %API_PER_IP_CONN_LIMIT% %API_PER_IP_RATE_LIMIT% %API_PER_KEY_CONN_LIMIT% %API_PER_KEY_RATE_LIMIT% "%TLS_VERSIONS%"
         ExecStop=/usr/bin/docker stop nginx
 
         [X-Fleet]

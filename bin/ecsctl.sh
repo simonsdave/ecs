@@ -279,6 +279,8 @@ deployment_create_cloud_config() {
         exit 1
     fi
 
+    local TLS_VERSIONS=$(cat "$1" | jq -r .tls_versions | sed -e 's/null/TLSv1.2/g')
+
     local API_CREDENTIALS=$(cat "$1" | jq -r .api_credentials | sed -e 's/null//g')
     if [ "$API_CREDENTIALS" == "" ]; then
         echo_to_stderr "deployment_create_cloud_config() - couldn't find api_credentials property in $1"
@@ -317,6 +319,7 @@ deployment_create_cloud_config() {
     local SED_SCRIPT_1=$(platform_safe_mktemp)
     echo "s|%DISCOVERY_TOKEN%|$DISCOVERY_TOKEN|g" >> "$SED_SCRIPT_1"
     echo "s|%DOCS_DOMAIN%|$DOCS_DOMAIN|g" >> "$SED_SCRIPT_1"
+    echo "s|%TLS_VERSIONS%|$TLS_VERSIONS|g" >> "$SED_SCRIPT_1"
     echo "s|%API_DOMAIN%|$API_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%API_PER_IP_CONN_LIMIT%|$API_PER_IP_CONN_LIMIT|g" >> "$SED_SCRIPT_1"
     echo "s|%API_PER_IP_RATE_LIMIT%|$API_PER_IP_RATE_LIMIT|g" >> "$SED_SCRIPT_1"
