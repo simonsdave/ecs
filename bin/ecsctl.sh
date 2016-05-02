@@ -322,7 +322,10 @@ deployment_create_cloud_config() {
     echo "s|%DISCOVERY_TOKEN%|$DISCOVERY_TOKEN|g" >> "$SED_SCRIPT_1"
     echo "s|%DOCS_DOMAIN%|$DOCS_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%TLS_VERSIONS%|$TLS_VERSIONS|g" >> "$SED_SCRIPT_1"
+<<<<<<< HEAD
     echo "s|%TLS_CIPHERS%|$TLS_CIPHERS|g" >> "$SED_SCRIPT_1"
+=======
+>>>>>>> 2e01433c1372362e6e1b90fc685ba68d58db8589
     echo "s|%API_DOMAIN%|$API_DOMAIN|g" >> "$SED_SCRIPT_1"
     echo "s|%API_PER_IP_CONN_LIMIT%|$API_PER_IP_CONN_LIMIT|g" >> "$SED_SCRIPT_1"
     echo "s|%API_PER_IP_RATE_LIMIT%|$API_PER_IP_RATE_LIMIT|g" >> "$SED_SCRIPT_1"

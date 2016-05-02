@@ -22,7 +22,7 @@ API_PER_IP_RATE_LIMIT=${4:-}
 API_PER_KEY_CONN_LIMIT=${5:-}
 API_PER_KEY_RATE_LIMIT=${6:-}
 TLS_VERSIONS=${7:-}
-TLS_CIPHERS=${7:-}
+TLS_CIPHERS=${8:-}
 
 cat /etc/nginx/conf.d/ecs.conf.template | \
     sed -e "s|%API_DOCS_DOMAIN_NAME%|$API_DOCS_DOMAIN_NAME|g" | \
