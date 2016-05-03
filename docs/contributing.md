@@ -1,42 +1,40 @@
 # Contributing
 
-```bash
->for x in $(sudo docker ps -a | awk '{print $1}'); do sudo docker kill $x >& /dev/null; sudo docker rm $x >& /dev/null; done
-```
+## Dev process
 
-```bash
->docker run \
-    --name=apidocs \
-    simonsdave/ecs-apidocs \
-    nginx
->cat ~/.ecs/config
-[ecs]
-address=0.0.0.0
-port=80
-log_level=info
-max_concurrent_executing_http_requests=250
-docker_remote_api=http://172.17.42.1:4243
->sudo docker run \
-    --name=tasks \
-    -v ~/.ecs/config:/root/.ecs/config \
-    simonsdave/ecs-services \
-    ecservice.py
->sudo docker run \
-    --name=nginx \
-    -p 9000:80 \
-    -p 9443:443 \
-    --link apidocs:apidocs \
-    --link tasks:tasks \
-    -v /vagrant/dhparam.pem:/etc/nginx/ssl/dhparam.pem \
-    -v /vagrant/docs.ecs.cloudfeaster.com.ssl.bundle.crt:/etc/nginx/ssl/docs.crt \
-    -v /vagrant/docs.ecs.cloudfeaster.com.key:/etc/nginx/ssl/docs.key \
-    -v /vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt:/etc/nginx/ssl/api.crt \
-    -v /vagrant/api.ecs.cloudfeaster.com.key:/etc/nginx/ssl/api.key \
-    -v /vagrant/.htpasswd:/etc/nginx/.htpasswd \
-    simonsdave/ecs-nginx \
-    nginx.sh docs.ecs.cloudfeaster.com api.ecs.cloudfeaster.com
-```
+* ...
 
-```bash
->curl -H 'Host: api.ecs.cloudfeaster.com' https://127.0.0.1:9443
-```
+## Testing
+
+* ...
+
+## CI
+
+* [Travis](https://travis-ci.org/) is used to implement ECS' CI process
+* see [.travis.yml](../.travis.yml) for details - summary of what's
+done for each build:
+  * dev environment configured from base Ubuntu 14.04 image
+  * code checked out
+  * static code analysis (pep8 & flake8)
+  * unit, integration and load tests executed
+* [Travis](https://travis-ci.org/) does not run a build as a result of a PR
+
+## Docker Images
+
+* docker images are built by the [Travis](https://travis-ci.org/) CI process
+* leveraging [Travis' Default Environment Variables](https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables)
+the CI process ensures that
+docker images are only built from the ```master``` and release (```v#.#.#```) branches
+* ```Dockerfiles``` for building all ECS docker images are found [here](../dockerfiles)
+* docker images are hosted on [DockerHub](https://hub.docker.com/search/?q=simonsdave%2Fecs)
+* if docker images are built they are always pushed to [DockerHub](https://hub.docker.com/u/simonsdave/) automagically
+* images tagged with ```latest``` represent the ```HEAD``` of the ```master``` branches
+
+## Releasing a New Version of ECS
+
+* releasing a new version of ECS starts and ends with creating a
+new release in [github](https://github.com/simonsdave/ecs/releases)
+* creating the new release starts a build in [Travis](https://travis-ci.org/)
+and this build will create docker images tagged with the same tag
+as the tag used to create the github release - done:-)
+* released docker images are considered immutable once they are created
