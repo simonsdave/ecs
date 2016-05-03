@@ -63,8 +63,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* ```ecsctl.sh dep create``` should optionally permit specification of an ECS version number
-  that will be used to identify docker images
 * when ```ecsctl.sh``` starts a node, it should verify that the node has
   successfully started - perhaps the simplest thing to do is a curl
   to the /_health?quick=false endpoint
@@ -124,7 +122,9 @@ For some initial thoughts on implementation see [sla.py](bin/sla.py).
 ### Nice to Have
 
 * describe the resources required by ecs and apidocs service in ```cloud-config.yaml``` 
-* add support for [CloudFlare](https://www.cloudflare.com)
+* add support for DDoS mitigation
+    * [CloudFlare](https://www.cloudflare.com)
+    * [Fastly](https://www.fastly.com/)
 * add status page using [StatusPage.io](https://www.statuspage.io)
 * consider using [CoreOS Ignition](https://coreos.com/blog/introducing-ignition.html)
   when it gets to the beta channel
