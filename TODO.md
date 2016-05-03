@@ -63,8 +63,6 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Required
 
-* ```ecsctl.sh dep create``` should optionally permit specification of TLS versions
-* ```ecsctl.sh dep create``` should optionally permit specification of cipher suite
 * ```ecsctl.sh dep create``` should optionally permit specification of an ECS version number
   that will be used to identify docker images
 * when ```ecsctl.sh``` starts a node, it should verify that the node has

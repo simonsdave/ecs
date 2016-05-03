@@ -17,25 +17,29 @@ documentation:
   - title: Security
     content: |
       ##### In-transit
-      All communication with an ECS deployment is done over SSL/TLS.
+      All communication with an ECS deployment is done over TLS.
       The ECS runs on a cluster of [CoreOS](https://coreos.com/) machines
       with a layer 5 (TCP) load balancer running in front of the cluster.
-      Layer 5 load balancing is required because [nginx](http://nginx.org)
-      is used to terminate SSL/TLS on each node in the cluster.
+      Layer 5 load balancing is required because TLS termination is
+      done each node in the cluster rather than on the load balancer.
 
-      Note - ECS nodes host both the api and docs domains on a single IP
-      with 2 distinct SSL/TLS certificates. Clients making requests into an ECS
+      Note - each ECS node hosts both the api and docs domains on a single IP
+      using 2 distinct TLS certificates. Clients making requests into an ECS
       deployment should support
       [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) to ensure
-      the correct SSL/TLS certificate is used.
+      the correct TLS certificate is used.
 
-      Note - SSL/TLS configuration derived from
+      Note - TLS configuration is derived from
       [Mozilla's Security/Server Side TLS](https://wiki.mozilla.org/Security/Server_Side_TLS)
       using ```nginx``` and ```modern``` settings.
       This may have client implications.
-      For example, only ```TLSv1.2``` is supported so older clients
-      may struggle to establish an SSL/TLS connection.
-      To verify/evaluate the SSL/TLS configuration for an ECS
+      For example, by default only ```TLSv1.2``` is supported so older clients
+      may struggle to establish a TLS connection.
+      It is possible to customize available TLS versions and ciphers 
+      with entries in the deployment configuration file used
+      by ```ecsctl.sh dep create```.
+
+      To verify/evaluate the TLS configuration for an ECS
       deployment try using [Qualys' SSL Server Test](https://www.ssllabs.com/ssltest/).
       Below is a sample Qualys report for ```api.ecs.cloudfeaster.com```.
 
@@ -44,7 +48,7 @@ documentation:
       </a>
 
       FYI - [here's](https://www.ssllabs.com/downloads/SSL_Server_Rating_Guide.pdf)
-      a paper which describes how Qualys calculates its rating of your SSL/TLS configuration.
+      a paper which describes how Qualys calculates its rating of your TLS configuration.
 
       ##### At-rest
       The ECS does not persist any data.
@@ -74,7 +78,7 @@ documentation:
       All nodes in an ECS cluster sit on a single network.
       [Firewall rules](https://cloud.google.com/compute/docs/networking#firewalls)
       define what traffic is permitted into this network.
-      Requests into an deployment are load balanced across ECS cluster nodes using
+      Requests into a deployment are load balanced across ECS cluster nodes using
       [Google Compute Engine's (layer 5) Network Load Balancing](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling#network_load_balancing).
 
       <a href="https://nmap.org">nmap</a> can also be used to validate the
@@ -108,7 +112,7 @@ documentation:
       <a href="https://wiki.ubuntu.com/UncomplicatedFirewall">iptables & netfilter</a>
       are correctly configured.
       Below is the output from running <a href="https://nmap.org">nmap</a>
-      against an ECS node with an external IP of ```104.154.102.140```.
+      against an ECS node with an external IP of ```23.251.145.126```.
 
       ```bash
       >nmap 23.251.145.126

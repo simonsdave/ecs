@@ -8,9 +8,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- deployment configuration used with ```ecsctl.sh dep create``` how permits
+- deployment configuration used with ```ecsctl.sh dep create``` now permits
   configuration of the TLS versions and ciphers - see ```tls_versions```
-  and ```tls_ciphers``` properties of the deployment configuration file
+  and ```tls_ciphers``` properties of the deployment configuration file - by
+  default these 
 
 ### Changed
 
