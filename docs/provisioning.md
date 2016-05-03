@@ -95,6 +95,7 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
     "docs_key": "/vagrant/docs.ecs.cloudfeaster.com.key",
     "api_cert": "/vagrant/api.ecs.cloudfeaster.com.ssl.bundle.crt",
     "api_key": "/vagrant/api.ecs.cloudfeaster.com.key",
+    "ecs_docker_image_version": "latest",
     "tls_versions": "TLSv1.1 TLSv1.2",
     "tls_ciphers": "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256",
     "api_credentials": "/vagrant/.htpasswd",

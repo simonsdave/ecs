@@ -9,9 +9,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - deployment configuration used with ```ecsctl.sh dep create``` now permits
-  configuration of the TLS versions and ciphers - see ```tls_versions```
-  and ```tls_ciphers``` properties of the deployment configuration file - by
-  default these 
+  optional configuration of:
+    - TLS versions and ciphers - see ```tls_versions``` and ```tls_ciphers```
+      properties of the deployment configuration file - by default these 
+      are set using [Mozilla's Security/Server Side TLS](https://wiki.mozilla.org/Security/Server_Side_TLS)
+      ```nginx``` and ```modern``` settings which presents a good security
+      posture but might prove problematic for some clients
+    - version of the ECS docker images to be deployed - see
+      ```ecs_docker_image_version``` property in the deployment configuration
+      file - by default the images tagged with ```latest``` are deployed
 
 ### Changed
 
