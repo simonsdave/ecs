@@ -41,11 +41,11 @@ if [ "$TAG" != "" ]; then
     IMAGENAME=$IMAGENAME:$TAG
 fi
 
-sudo docker build -t $IMAGENAME "$SCRIPT_DIR_NAME"
+docker build -t $IMAGENAME "$SCRIPT_DIR_NAME"
 
 if [ "$EMAIL" != "" ]; then
-    sudo docker login --email="$EMAIL" --username="$USERNAME" --password="$PASSWORD"
-    sudo docker push $IMAGENAME
+    docker login --email="$EMAIL" --username="$USERNAME" --password="$PASSWORD"
+    docker push $IMAGENAME
 fi
 
 exit 0

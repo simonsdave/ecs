@@ -43,12 +43,12 @@ if [ "$TAG" != "" ]; then
 fi
 
 cp "$API_DOCS_TAR" "$SCRIPT_DIR_NAME/api_docs.tar"
-sudo docker build -t $IMAGENAME "$SCRIPT_DIR_NAME"
+docker build -t $IMAGENAME "$SCRIPT_DIR_NAME"
 rm "$SCRIPT_DIR_NAME/api_docs.tar"
 
 if [ "$EMAIL" != "" ]; then
-    sudo docker login --email="$EMAIL" --username="$USERNAME" --password="$PASSWORD"
-    sudo docker push $IMAGENAME
+    docker login --email="$EMAIL" --username="$USERNAME" --password="$PASSWORD"
+    docker push $IMAGENAME
 fi
 
 exit 0
