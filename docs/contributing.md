@@ -2,7 +2,15 @@
 
 ## Dev process
 
-* ...
+* To increase predicability, it is recommended
+that ECS development be done on a [Vagrant](http://www.vagrantup.com/) provisioned
+[VirtualBox](https://www.virtualbox.org/)
+VM running [Ubuntu 14.04](http://releases.ubuntu.com/14.04/).
+Instructions for spinning up such a VM can be found [here](../dev_env).
+These instructions will also demonstrate how to ```git clone``` the
+repo and run all the unit tests
+* [Fork & Pull](https://help.github.com/articles/types-of-collaborative-development-models/#fork--pull)
+is the preferred development model
 
 ## Testing
 
