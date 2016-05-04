@@ -83,7 +83,7 @@ server {
     ssl_session_cache shared:SSL:50m;
     ssl_session_tickets off;
     ssl_dhparam /etc/nginx/ssl/dhparam.pem;
-    ssl_protocols "%TLS_VERSIONS%";
+    ssl_protocols %TLS_VERSIONS%;
     ssl_ciphers "%TLS_CIPHERS%";
     ssl_prefer_server_ciphers on;
 
@@ -129,7 +129,7 @@ server {
     ssl_session_cache shared:SSL:50m;
     ssl_session_tickets off;
     ssl_dhparam /etc/nginx/ssl/dhparam.pem;
-    ssl_protocols "%TLS_VERSIONS%";
+    ssl_protocols %TLS_VERSIONS%;
     ssl_ciphers "%TLS_CIPHERS%";
     ssl_prefer_server_ciphers on;
 
