@@ -1,8 +1,10 @@
 # [Clair](https://github.com/coreos/clair)
 
-# Get Postgres Running
+# Get Postgres Running & Create Database
 
-* from [here](https://hub.docker.com/_/postgres/) get Postgres docker image downloaded and  ...
+* from [here](https://hub.docker.com/_/postgres/) get the Postgres Docker image
+downloaded, spin up Postgres in the the background and create
+a database called ```clair```
 
 ```
 >sudo docker pull postgres:9.5.2
@@ -10,10 +12,10 @@
 >sudo docker run --rm --link postgres:postgres postgres:9.5.2 sh -c 'echo "create database clair" | psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
 ```
 
+# Get Clair Running
+
 * from [here](https://github.com/coreos/clair#docker)
 * [this](http://www.postgresql.org/docs/9.5/static/libpq-connect.html#LIBPQ-CONNSTRING) is a good reference on Postgres connection strings
-
-# Get Clair Running
 
 ```bash
 >mkdir $HOME/clair_config
