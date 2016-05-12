@@ -121,7 +121,7 @@ class Main(object):
         print '=' * len(overall_title)
         print ''
 
-        percentiles = [50, 60, 70, 80, 90, 95, 99]
+        percentiles = [50, 95, 99]
         fmt = '%-25s %5d %5d %9.4f' + '%9.0f' * (2 + len(percentiles) + 1)
         request_types = Response.request_types()
         request_types.sort()
