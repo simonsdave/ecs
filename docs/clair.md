@@ -60,21 +60,3 @@ OK    20151222113213_Initial.sql
 ```bash
 >sudo $GOPATH/bin/analyze-local-images simonsdave/ecs-services:latest
 ```
-
-# Other Stuff
-
-* [Clair Setup](https://tectonic.com/quay-enterprise/docs/1.16.0/clair.html)
-
-* from [here](https://github.com/wemanity-belgium/hyperclair) on hyperclair
-
-```bash
->sudo curl -L -o /usr/local/bin/hyperclair  https://github.com/wemanity-belgium/hyperclair/releases/download/0.5.0/hyperclair-linux-amd64
->sudo chmod a+x /usr/local/bin/hyperclair
->cat ~/.hyperclair.yml
-```
-
-* spin up a local docker registry per [these](https://docs.docker.com/registry/deploying/) instructions
-
-```bash
->sudo docker pull registry:2
->sudo docker run -d -p 5000:5000 --restart=always --name registry registry:2
