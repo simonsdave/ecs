@@ -45,7 +45,9 @@ OK    20151222113213_Initial.sql
 ^C>
 ```
 
-* install [analyze-local-images](https://github.com/coreos/clair/tree/master/contrib/analyze-local-images)
+* install [analyze-local-images](https://github.com/coreos/clair/tree/master/contrib/analyze-local-images) - a
+quick warning = ```go get``` often creates a "Segmentation fault" - if this happens try running 
+the ```go get``` again and it should complete as expected
 
 ```bash
 >sudo apt-get install -y gccgo-go
