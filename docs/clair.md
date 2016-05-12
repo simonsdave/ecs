@@ -60,6 +60,7 @@ the ```go get``` again and it should complete as expected
 * run ```analyze-local-images```
 
 ```bash
+>sudo docker pull simonsdave/ecs-services:latest
 >sudo $GOPATH/bin/analyze-local-images simonsdave/ecs-services:latest
 ```
 
