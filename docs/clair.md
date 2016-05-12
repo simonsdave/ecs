@@ -25,8 +25,8 @@ a database called ```clair```
 
 ```bash
 >sudo docker pull quay.io/coreos/clair:latest
->sudo docker run -d --name clair -p 6060-6061:6060-6061 --link postgres:postgres -v $HOME/clair_config:/config quay.io/coreos/clair:latest -config=/config/config.yaml
->sudo docker logs -f 90955a3f7e462eb5ded0a5a4d9e65b117153ef50a72da8fce8f1ef08847e23b8
+>sudo docker run -d --name clair -p 6060-6061:6060-6061 --link postgres:postgres -v /tmp:/tmp -v $HOME/clair_config:/config quay.io/coreos/clair:latest -config=/config/config.yaml
+>sudo docker logs -f clair
 2016-05-10 20:26:18.474932 I | pgsql: running database migrations
 goose: migrating db environment '', current version: 0, target: 20151222113213
 OK    20151222113213_Initial.sql
@@ -45,7 +45,25 @@ OK    20151222113213_Initial.sql
 ^C>
 ```
 
+* install [analyze-local-images](https://github.com/coreos/clair/tree/master/contrib/analyze-local-images)
+
+```bash
+>sudo apt-get install -y gccgo-go
+>mkdir $HOME/gopath
+>export GOPATH=$HOME/gopath
+>export PATH="$GOPATH/bin:$PATH"
+>go get -u github.com/coreos/clair/contrib/analyze-local-images
+```
+
+* run ```analyze-local-images```
+
+```bash
+>sudo $GOPATH/bin/analyze-local-images simonsdave/ecs-services:latest
+```
+
 # Other Stuff
+
+* [Clair Setup](https://tectonic.com/quay-enterprise/docs/1.16.0/clair.html)
 
 * from [here](https://github.com/wemanity-belgium/hyperclair) on hyperclair
 
