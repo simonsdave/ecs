@@ -262,7 +262,7 @@ class CommandLineParser(optparse.OptionParser):
     def __init__(self):
         optparse.OptionParser.__init__(
             self,
-            'usage: %prog [options] <concurrency>',
+            'usage: %prog [options]',
             description='This utility analyzes load test results')
 
         self.add_option(
