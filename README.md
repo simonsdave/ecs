@@ -18,7 +18,7 @@ these building blocks to package [spiders](https://en.wikipedia.org/wiki/Web_cra
 in docker images and run those spiders in docker containers on a cluster of docker hosts.
 ECS is a generalization of these basic building blocks.
 
-# Next Steps
+# What Next?
 
 * [spin up a development environment](dev_env)
 * [provision a cluster](docs/provisioning.md)
