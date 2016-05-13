@@ -8,8 +8,8 @@ a database called ```clair```
 
 ```
 >sudo docker pull postgres:9.5.2
->sudo docker run --name postgres -p 5432:5432 -d postgres:9.5.2
->sudo docker run --rm --link postgres:postgres postgres:9.5.2 sh -c 'echo "create database clair" | psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
+>sudo docker run --name clair-database -e 'PGDATA=/var/lib/postgresql/data-non-volume' -p 5432:5432 -d postgres:9.5.2
+>sudo docker run --rm --link clair-database:postgres postgres:9.5.2 sh -c 'echo "create database clair" | psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
 ```
 
 # Get Clair Running
@@ -25,7 +25,7 @@ a database called ```clair```
 
 ```bash
 >sudo docker pull quay.io/coreos/clair:latest
->sudo docker run -d --name clair -p 6060-6061:6060-6061 --link postgres:postgres -v /tmp:/tmp -v $HOME/clair_config:/config quay.io/coreos/clair:latest -config=/config/config.yaml
+>sudo docker run -d --name clair -p 6060-6061:6060-6061 --link clair-database:postgres -v /tmp:/tmp -v $HOME/clair_config:/config quay.io/coreos/clair:latest -config=/config/config.yaml
 >sudo docker logs -f clair
 2016-05-10 20:26:18.474932 I | pgsql: running database migrations
 goose: migrating db environment '', current version: 0, target: 20151222113213
@@ -43,6 +43,12 @@ OK    20151222113213_Initial.sql
 2016-05-10 20:35:03.196968 I | updater: adding metadata to vulnerabilities
 2016-05-10 20:58:01.376653 I | updater: update finished
 ^C>
+```
+
+```
+>sudo docker commit --change "ENV PGDATA /var/lib/postgresql/data-non-volume" --change='CMD ["postgres"]' --change='EXPOSE 5432' --change='ENTRYPOINT ["/docker-entrypoint.sh"]' clair-database  simonsdave/clair-database:latest
+>sudo docker run --name clair-database -e 'PGDATA=/var/lib/postgresql/data-non-volume' -p 5432:5432 -d simonsdave/clair-database:latest
+>sudo docker run --rm --link clair-database:postgres postgres:9.5.2 sh -c 'echo "\list" | psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
 ```
 
 * install [analyze-local-images](https://github.com/coreos/clair/tree/master/contrib/analyze-local-images) - a
@@ -63,3 +69,20 @@ the ```go get``` again and it should complete as expected
 >sudo docker pull simonsdave/ecs-services:latest
 >sudo $GOPATH/bin/analyze-local-images simonsdave/ecs-services:latest
 ```
+
+* from [here](https://github.com/docker-library/postgres/blob/8e867c8ba0fc8fd347e43ae53ddeba8e67242a53/9.5/Dockerfile)
+
+```
+ENTRYPOINT ["/docker-entrypoint.sh"]
+EXPOSE 5432
+CMD ["postgres"]
+sudo docker commit --change='CMD ["postgres"]' --change='EXPOSE 5432' --change='ENTRYPOINT ["/docker-entrypoint.sh"]' clair-database  simonsdave/clair-database:latest
+/var/lib/postgresql/data/postgresql.conf
+```
+
+# References
+
+* [Travis Cron Jobs](https://docs.travis-ci.com/user/cron-jobs/)
+* [simonsdave/clair-database](https://hub.docker.com/r/simonsdave/clair-database/)
+* [How to create populated MySQL Docker Image on build time](http://stackoverflow.com/questions/32482780/how-to-create-populated-mysql-docker-image-on-build-time)
+* ```docker exec -it "id of running container" bash ```
