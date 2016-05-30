@@ -54,9 +54,9 @@ mkdir -p /usr/share/nginx/ecs/html
 chown root:root /usr/share/nginx/ecs/html
 service nginx restart
 
-curl -s -L --output /etc/jq 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64'
-chown root.root /etc/jq
-chmod a+x /etc/jq
+curl -s -L --output /usr/local/bin/jq 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64'
+chown root.root /usr/local/bin/jq
+chmod a+x /usr/local/bin/jq
 
 # instructions from https://cloud.google.com/sdk/#debubu
 export CLOUD_SDK_REPO=cloud-sdk-`lsb_release -c -s`

@@ -18,25 +18,6 @@ configure_dev_env()
         pip install pip==1.5.6
 
         pip install --process-dependency-links --requirement "$PWD/requirements.txt"
-
-        OSNAME=$(uname -s)
-        case "$OSNAME" in
-            Linux)
-                JQ_URL="https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"
-                ;;
-            Darwin)
-                JQ_URL="https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64"
-                ;;
-            *)
-                echo "Unsupported operating system '$OSNAME'" >&2
-                return 1
-                ;;
-        esac
-
-        curl -s -L --output jq "$JQ_URL"
-        chmod u+x jq
-        mv jq "$PWD/env/bin/."
-
     fi
 
     export PATH=$PATH:"$PWD/bin"
