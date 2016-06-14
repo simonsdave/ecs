@@ -3,6 +3,8 @@
 # This script builds ECS' ecs-services docker image
 #
 
+set -x
+
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
 VERBOSE=0

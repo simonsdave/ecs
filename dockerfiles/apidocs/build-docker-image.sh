@@ -3,6 +3,8 @@
 # This script builds ECS' ecs-apidocs docker image
 #
 
+set -e
+
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
 VERBOSE=0
