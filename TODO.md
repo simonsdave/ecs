@@ -161,6 +161,13 @@ bucketing approach currently being used
     * optionally run agent when running load test
     * optionally make agent part of deployment
 
+## Security
+
+* see
+[this](https://medium.com/the-coinbase-blog/how-coinbase-builds-secure-infrastructure-to-store-bitcoin-in-the-cloud-30a6504e40ba)
+and
+[this](https://www.sumologic.com/blog-devops/securing-docker-containers)
+
 ## Stability
 
 * setup and execute long running stress tests against an ECS deployment
@@ -190,3 +197,4 @@ bucketing approach currently being used
 * ```docker push``` in ```build-docker-image.sh``` occasionally fails; put
 a retry loop on the ```docker push``` (& probably the ```docker login```)
 to increase the probability of success
+* see "Consensus Based Deploys" in [this](https://medium.com/the-coinbase-blog/how-coinbase-builds-secure-infrastructure-to-store-bitcoin-in-the-cloud-30a6504e40ba)
