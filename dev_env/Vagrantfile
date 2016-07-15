@@ -6,6 +6,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 8080, host: 8080
   config.vm.provision "shell", path: "provision.sh", args: [ENV.fetch("VAGRANT_GITHUB_USERNAME", ""), ENV.fetch("VAGRANT_GITHUB_EMAIL", "")]
   config.vm.provider :virtualbox do |vb|
-    vb.customize ["modifyvm", :id, "--memory", "4096"]
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
   end
 end
