@@ -17,7 +17,7 @@ mock==2.0.0
 #
 #   http://docs.python-requests.org/en/master/community/faq/
 #
-ndg-httpsclient==0.4.1
+ndg-httpsclient==0.4.2
 nose==1.3.7
 nose-cov==1.6
 pep8==1.7.0
