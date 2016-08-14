@@ -14,7 +14,7 @@ import tornado.ioloop
 _logger = logging.getLogger(__name__)
 
 
-docker_remote_api_endpoint = 'http://172.17.42.1:2375'
+docker_remote_api_endpoint = 'http://172.17.0.1:2375'
 
 # max time to wait (in milliseconds) to connect to docker remote api
 connect_timeout = 3000
@@ -75,7 +75,7 @@ class AsyncHealthChecker(AsyncAction):
 
         api_version = semantic_version.Version(response_body['ApiVersion'], partial=True)
         min_api_version = semantic_version.Version('1.18', partial=True)
-        max_api_version = semantic_version.Version('1.21', partial=True)
+        max_api_version = semantic_version.Version('1.24', partial=True)
         api_version_ok = (min_api_version <= api_version) and (api_version <= max_api_version)
         details = {
             'connectivity': True,

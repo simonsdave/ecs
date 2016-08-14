@@ -51,7 +51,7 @@ class ServiceConfig(object):
         cp.set(section, 'port', self._port)
         cp.set(section, 'log_level', 'info')
         cp.set(section, 'max_concurrent_executing_http_requests', '250')
-        cp.set(section, 'docker_remote_api', 'http://172.17.42.1:2375')
+        cp.set(section, 'docker_remote_api', 'http://172.17.0.1:2375')
         cp.set(section, 'docker_remote_api_connect_timeout', 3 * 1000)
         cp.set(section, 'docker_remote_api_request_timeout', 5 * 60 * 1000)
 

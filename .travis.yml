@@ -10,9 +10,6 @@ install:
   - nvm install 4.1.0
   - npm i -g raml2md
   - npm i -g raml2html
-  - sudo apt-get install -y docker.io
-  - sudo sed -i -e 's|DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock"|DOCKER_OPTS="-H tcp://172.17.42.1:2375 -H unix:///var/run/docker.sock"|g' /etc/default/docker
-  - sudo service docker restart
 script:
   - pep8
   - flake8
@@ -21,4 +18,4 @@ script:
   - tests/load/run_load_test.sh -v tests/load/load-test-config-for-travis.json
   - python setup.py sdist --formats=gztar
   - ./api_docs/build-api-docs.sh -t
-  - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_TAG" != "" ]; then ./dockerfiles/build-docker-images.sh -v -t "$TRAVIS_TAG" ./dist/ecs-*.*.*.tar.gz ./api_docs/api_docs.tar $DOCKER_USERNAME $DOCKER_EMAIL $DOCKER_PASSWORD; fi
+  - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_TAG" != "" ]; then ./dockerfiles/build-docker-images.sh -v -t "$TRAVIS_TAG" ./dist/ecs-*.*.*.tar.gz ./api_docs/api_docs.tar $DOCKER_USERNAME $DOCKER_PASSWORD; fi
