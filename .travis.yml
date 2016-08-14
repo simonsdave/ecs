@@ -4,6 +4,8 @@ python:
 sudo: required
 dist: trusty
 install:
+  - cat /etc/default/docker
+  - ifconfig
   - source cfg4dev
   - pip install --requirement tests/load/requirements.txt
   - pip install coveralls
