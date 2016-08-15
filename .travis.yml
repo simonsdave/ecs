@@ -19,7 +19,7 @@ script:
   - pep8
   - flake8
   - tor_async_util_nosetests.py --with-coverage --cover-branches --cover-erase --cover-package ecs
-  - coveralls || true
+  - coveralls >& /dev/null || true
   - tests/load/run_load_test.sh -v tests/load/load-test-config-for-travis.json
   - python setup.py sdist --formats=gztar
   - ./api_docs/build-api-docs.sh -t
