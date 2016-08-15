@@ -4,15 +4,11 @@ python:
 sudo: required
 dist: trusty
 install:
-  - sudo cat /etc/default/docker
-  - sudo ifconfig
   # travis configures /etc/default/docker to listen on 127.0.0.1 but
   # we want it to listen on the docker0 network where 172.17.0.1
   # is the IP assigned to the host
   - sudo sed -i -e 's|DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock"|DOCKER_OPTS="-H tcp://172.17.0.1:2375 -H unix:///var/run/docker.sock"|g' /etc/default/docker
-  - sudo cat /etc/default/docker
   - sudo service docker restart
-  - sudo ifconfig
   - source cfg4dev
   - pip install --requirement tests/load/requirements.txt
   - pip install coveralls
