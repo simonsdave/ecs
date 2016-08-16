@@ -8,7 +8,7 @@ set -e
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
 VERBOSE=0
-TAG=""
+TAG="latest"
 
 while true
 do
@@ -20,7 +20,7 @@ do
             ;;
         -t)
             shift
-            TAG=${1:-}
+            TAG=$1
             shift
             ;;
         *)
@@ -29,24 +29,20 @@ do
     esac
 done
 
-if [ $# != 1 ] && [ $# != 3 ]; then
-    echo "usage: `basename $0` [-v] [-t <tag>] <username> [<email> <password>]" >&2
+if [ $# != 1 ] && [ $# != 2 ]; then
+    echo "usage: `basename $0` [-v] [-t <tag>] <username> [<password>]" >&2
     exit 1
 fi
 
 USERNAME=${1:-}
-EMAIL=${2:-}
-PASSWORD=${3:-}
+PASSWORD=${2:-}
 
-IMAGENAME=$USERNAME/ecs-nginx
-if [ "$TAG" != "" ]; then
-    IMAGENAME=$IMAGENAME:$TAG
-fi
+IMAGENAME=$USERNAME/ecs-nginx:$TAG
 
 docker build -t $IMAGENAME "$SCRIPT_DIR_NAME"
 
-if [ "$EMAIL" != "" ]; then
-    docker login --email="$EMAIL" --username="$USERNAME" --password="$PASSWORD"
+if [ "$PASSWORD" != "" ]; then
+    docker login --username="$USERNAME" --password="$PASSWORD"
     docker push $IMAGENAME
 fi
 

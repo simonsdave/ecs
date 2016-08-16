@@ -7,8 +7,8 @@ set -e
 
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
-VERBOSE=0
-TAG=""
+VERBOSE_FLAG=""
+TAG_FLAG=""
 
 while true
 do
@@ -16,11 +16,18 @@ do
     case "$OPTION" in
         -v)
             shift
-            VERBOSE=1
+            VERBOSE_FLAG=-v
             ;;
         -t)
             shift
-            TAG=${1:-}
+            # this script can be called by travis which may pass
+            # a zero length tag argument and hence the need for
+            # the if statement below
+            if [ "${1:-}" != "" ]; then
+                TAG_FLAG="-t ${1:-}"
+            fi
+            # the shift assumes the arg after the -t is always a
+            # tag name it just might be a zero length tag name
             shift
             ;;
         *)
@@ -29,16 +36,15 @@ do
     esac
 done
 
-if [ $# != 3 ] && [ $# != 5 ]; then
-    echo "usage: `basename $0` [-v] [-t <tag>] <services-tar-gz> <api-docs-tar> <username> [<email> <password>]" >&2
+if [ $# != 3 ] && [ $# != 4 ]; then
+    echo "usage: `basename $0` [-v] [-t <tag>] <services-tar-gz> <api-docs-tar> <username> [<password>]" >&2
     exit 1
 fi
 
 SERVICES_TAR_GZ=${1:-}
 API_DOCS_TAR=${2:-}
 USERNAME=${3:-}
-EMAIL=${4:-}
-PASSWORD=${5:-}
+PASSWORD=${4:-}
 
 if [ ! -r "$SERVICES_TAR_GZ" ]; then
     echo "can't find source dist '$SERVICES_TAR_GZ'" >&2
@@ -51,23 +57,23 @@ if [ ! -r "$API_DOCS_TAR" ]; then
 fi
 
 "$SCRIPT_DIR_NAME/nginx/build-docker-image.sh" \
-    -t "$TAG" \
+    $VERBOSE_FLAG \
+    $TAG_FLAG \
     "$USERNAME" \
-    "$EMAIL" \
     "$PASSWORD"
 
 "$SCRIPT_DIR_NAME/apidocs/build-docker-image.sh" \
-    -t "$TAG" \
+    $VERBOSE_FLAG \
+    $TAG_FLAG \
     "$API_DOCS_TAR" \
     "$USERNAME" \
-    "$EMAIL" \
     "$PASSWORD"
 
 "$SCRIPT_DIR_NAME/services/build-docker-image.sh" \
-    -t "$TAG" \
+    $VERBOSE_FLAG \
+    $TAG_FLAG \
     "$SERVICES_TAR_GZ" \
     "$USERNAME" \
-    "$EMAIL" \
     "$PASSWORD"
 
 exit 0

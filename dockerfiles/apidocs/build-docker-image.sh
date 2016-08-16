@@ -8,7 +8,7 @@ set -e
 SCRIPT_DIR_NAME="$( cd "$( dirname "$0" )" && pwd )"
 
 VERBOSE=0
-TAG=""
+TAG="latest"
 
 while true
 do
@@ -20,7 +20,7 @@ do
             ;;
         -t)
             shift
-            TAG=${1:-}
+            TAG=$1
             shift
             ;;
         *)
@@ -29,27 +29,23 @@ do
     esac
 done
 
-if [ $# != 2 ] && [ $# != 4 ]; then
-    echo "usage: `basename $0` [-v] [-t <tag>] <api-docs-tar> <username> [<email> <password>]" >&2
+if [ $# != 2 ] && [ $# != 3 ]; then
+    echo "usage: `basename $0` [-v] [-t <tag>] <api-docs-tar> <username> [<password>]" >&2
     exit 1
 fi
 
 API_DOCS_TAR=${1:-}
 USERNAME=${2:-}
-EMAIL=${3:-}
-PASSWORD=${4:-}
+PASSWORD=${3:-}
 
-IMAGENAME=$USERNAME/ecs-apidocs
-if [ "$TAG" != "" ]; then
-    IMAGENAME=$IMAGENAME:$TAG
-fi
+IMAGENAME=$USERNAME/ecs-apidocs:$TAG
 
 cp "$API_DOCS_TAR" "$SCRIPT_DIR_NAME/api_docs.tar"
 docker build -t $IMAGENAME "$SCRIPT_DIR_NAME"
 rm "$SCRIPT_DIR_NAME/api_docs.tar"
 
-if [ "$EMAIL" != "" ]; then
-    docker login --email="$EMAIL" --username="$USERNAME" --password="$PASSWORD"
+if [ "$PASSWORD" != "" ]; then
+    docker login --username="$USERNAME" --password="$PASSWORD"
     docker push $IMAGENAME
 fi
 
