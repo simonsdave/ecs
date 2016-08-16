@@ -211,7 +211,7 @@ Nmap done: 1 IP address (1 host up) scanned in 4.95 seconds
 ## Exploring Endpoints
 
 ```bash
->curl -u $ECS_KEY:$ECS_SECRET -s 'https://api.ecs.cloudfeaster.com/v1.0/_health?quick=false' | jq
+>curl -u $ECS_KEY:$ECS_SECRET -s 'https://api.ecs.cloudfeaster.com/v1.1/_health?quick=false' | jq
 {
   "status": "green",
   "details": {
@@ -225,7 +225,7 @@ Nmap done: 1 IP address (1 host up) scanned in 4.95 seconds
   },
   "links": {
     "self": {
-      "href": "https://api.ecs.cloudfeaster.com/v1.0/_health"
+      "href": "https://api.ecs.cloudfeaster.com/v1.1/_health"
     }
   }
 }
@@ -240,11 +240,11 @@ Nmap done: 1 IP address (1 host up) scanned in 4.95 seconds
 Assume a 3-node ECS cluster this should all be fine.
 
 ```bash
->for i in `seq 100`; do curl -o /dev/null -s -w %{http_code}\\n -u $ECS_KEY:$ECS_SECRET -s 'https://api.ecs.cloudfeaster.com/v1.0/_noop'; done
+>for i in `seq 100`; do curl -o /dev/null -s -w %{http_code}\\n -u $ECS_KEY:$ECS_SECRET -s 'https://api.ecs.cloudfeaster.com/v1.1/_noop'; done
 ```
 
 Now target a single node in the ECS cluster and we should see 503s.
 
 ```bash
->for i in `seq 100`; do curl -o /dev/null -s -w %{http_code}\\n --insecure -u $ECS_KEY:$ECS_SECRET -H 'Host: api.ecs.cloudfeaster.com' 'https://104.197.39.251/v1.0/_noop'; done
+>for i in `seq 100`; do curl -o /dev/null -s -w %{http_code}\\n --insecure -u $ECS_KEY:$ECS_SECRET -H 'Host: api.ecs.cloudfeaster.com' 'https://104.197.39.251/v1.1/_noop'; done
 ```
