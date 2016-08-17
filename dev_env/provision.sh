@@ -8,6 +8,18 @@ set -e
 
 apt-get update -y
 
+#
+# this next set of commands installs and configures the latest
+# version of docker. all pretty straight forward / obvious stuff
+# except the while loop. the while loop was added when upgrading
+# to docker 1.12 and was introduced to fix a timing problem.
+# the final 'service docker restart' was failing because the
+# configuration change in the sed command was telling the docker
+# daemon to listen on docker0 (172.17.0.1) but docker0 had yet
+# to be created (theory is that the docker daemon creates
+# docker0 on daemon startup if docker0 doesn't already exist).
+# so, the while loops just gives the daemon time to create docker0.
+#
 apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | tee /etc/apt/sources.list.d/docker.list
 apt-get update
