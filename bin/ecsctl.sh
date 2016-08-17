@@ -500,7 +500,7 @@ deployment_inspect() {
     gcloud compute target-pools list --regexp ^$NETWORK_NAME.*$
 
     echo_if_verbose "Forwarding Rule(s)" "blue"
-    gcloud compute forwarding-rules list --region $(get_region) --regexp ^$NETWORK_NAME.*$
+    gcloud compute forwarding-rules list --regions $(get_region) --regexp ^$NETWORK_NAME.*$
 
     echo_if_verbose "Firewall Rule(s)" "blue"
     gcloud compute firewall-rules list --regexp ^$NETWORK_NAME.*$
