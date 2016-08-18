@@ -53,6 +53,7 @@ Fine grained list of to do's in order to make ```ecs``` production ready
 
 ### Nice to Have
 
+* support [WebSockets](http://www.tornadoweb.org/en/stable/websocket.html)
 * improve feedback on bad request response
   * CID style + log aggregation / access
   * include errors in response
