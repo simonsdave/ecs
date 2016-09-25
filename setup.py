@@ -45,7 +45,7 @@ setup(
     install_requires=[
         # using tornado.curl_httpclient.CurlAsyncHTTPClient
         'pycurl>=7.19.5.1',
-        'semantic-version==2.5.0',
+        'semantic-version==2.6.0',
         'tor-async-util==1.12.0',
         'tornado==4.4.1',
     ],
