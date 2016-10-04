@@ -1,6 +1,6 @@
 locustio==0.7.5
 # newrelic==2.62.0.47
 matplotlib==1.5.3
-numpy==1.11.1
+numpy==1.11.2
 python-dateutil==2.5.3
 # pyzmq==15.2.0
