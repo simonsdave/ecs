@@ -15,6 +15,10 @@ install:
   - nvm install 4.1.0
   - npm i -g raml2md
   - npm i -g raml2html
+  # per http://askubuntu.com/questions/505141/unable-to-install-import-tkinter, the
+  # install below was motivated by matplotlib failure with the suggestion
+  # "please install the python-tk package"
+  - sudo apt-get install -y python-tk
 script:
   - pep8
   - flake8
