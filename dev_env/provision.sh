@@ -20,7 +20,7 @@ apt-get update -y
 # docker0 on daemon startup if docker0 doesn't already exist).
 # so, the while loops just gives the daemon time to create docker0.
 #
-apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+until apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D; do echo '.'; done
 echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | tee /etc/apt/sources.list.d/docker.list
 apt-get update
 apt-get install -y docker-engine
