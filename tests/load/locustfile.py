@@ -70,6 +70,8 @@ def _get_random_credentials():
 # defines the relatively likihood that a locust will run a
 # particular taskset
 #
+
+
 _noop_weight = 5
 _version_weight = 5
 _quick_health_check_weight = 10
