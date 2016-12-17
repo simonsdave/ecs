@@ -85,7 +85,10 @@ do
         --logfile="$LOCUST_LOG_FILE" \
         >> "$LOCUST_OUTPUT_FILE" 2>&1
 
-    "$SCRIPT_DIR_NAME/analyze_load_test_tsv.py" < "$LOCUST_LOG_FILE"
+    ANALYZE_RESULTS_DOCKER_IMAGE=simonsdave/ecs-analyze-load-test-tsv:latest
+    docker pull $ANALYZE_RESULTS_DOCKER_IMAGE
+    docker run -v "$LOCUST_LOG_FILE":/locust-log $ANALYZE_RESULTS_DOCKER_IMAGE
+
 done
 
 if [ "${ECS_PID:-}" != "" ]; then
