@@ -4,7 +4,7 @@
 #
 # to run the image
 #
-#   docker run -v /tmp/tmp.75LLN1gtrF:/locust-log -v $PWD:/graphs simonsdave/ecs-analyze-load-test-tsv
+#   docker run -v /tmp/tmp.75LLN1gtrF:/locust-log -v $PWD:/graphs simonsdave/ecs-analyze-load-test-tsv analyze_load_test_tsv.sh
 #
 # for testing/debugging
 #
@@ -25,13 +25,11 @@ ADD requirements.txt /tmp/requirements.txt
 RUN pip install --requirement /tmp/requirements.txt
 
 ADD analyze_load_test_tsv.py /usr/local/bin/analyze_load_test_tsv.py
+ADD analyze_load_test_tsv.sh /usr/local/bin/analyze_load_test_tsv.sh
 
 # as per http://stackoverflow.com/questions/29073802/matplotlib-cannot-find-configuration-file-matplotlibrc
 RUN mkdir -p /root/.config/matplotlib
 ADD matplotlibrc /root/.config/matplotlib/matplotlibrc
 RUN chown --recursive root:root /root/.config
 
-# the command line syntax is derived from directions in
-# http://stackoverflow.com/questions/34632959/redirecting-command-output-in-docker
 RUN mkdir -p /graphs
-CMD ["/bin/sh", "-c", "analyze_load_test_tsv.py --graphs=/graphs/load-test-graphs.pdf < /locust-log"]

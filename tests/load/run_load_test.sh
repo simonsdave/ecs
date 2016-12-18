@@ -87,7 +87,7 @@ do
 
     ANALYZE_RESULTS_DOCKER_IMAGE=simonsdave/ecs-analyze-load-test-tsv:latest
     docker pull $ANALYZE_RESULTS_DOCKER_IMAGE
-    docker run -v "$LOCUST_LOG_FILE":/locust-log $ANALYZE_RESULTS_DOCKER_IMAGE
+    docker run -v "$LOCUST_LOG_FILE":/locust-log $ANALYZE_RESULTS_DOCKER_IMAGE analyze_load_test_tsv.sh
 
 done
 
