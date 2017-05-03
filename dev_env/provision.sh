@@ -35,8 +35,23 @@ sed -i -e 's|#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"|DOCKER_OPTS="-H tcp://17
 usermod -aG docker vagrant
 service docker restart
 
+#
+# install and configure git
+#
 apt-get install -y git
+if [ $# == 2 ]; then
+    su - vagrant -c "git config --global user.name \"${1:-}\""
+    su - vagrant -c "git config --global user.email \"${2:-}\""
+fi
 
+su vagrant <<'EOF'
+echo 'export VISUAL=vim' >> ~/.profile
+echo 'export EDITOR="$VISUAL"' >> ~/.profile
+EOF
+
+#
+#
+#
 apt-get install -y python-virtualenv
 apt-get install -y python-dev
 apt-get build-dep -y python-crypto
@@ -64,31 +79,65 @@ apt-get install -y nodejs
 npm i -g raml2md
 npm i -g raml2html
 
+#
+# install nginx
+#
 apt-get install -y nginx
 cp /vagrant/nginx.site /etc/nginx/sites-available/default
 mkdir -p /usr/share/nginx/ecs/html
 chown root:root /usr/share/nginx/ecs/html
 service nginx restart
 
-curl -s -L --output /usr/local/bin/jq 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64'
-chown root.root /usr/local/bin/jq
-chmod a+x /usr/local/bin/jq
+#
+# jq is just so generally useful
+#
+JQ_SOURCE=https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+JQ_BIN=/usr/local/bin/jq
+curl -s -L --output "$JQ_BIN" "$JQ_SOURCE"
+chown root.root "$JQ_BIN"
+chmod a+x "$JQ_BIN"
 
+#
 # instructions from https://cloud.google.com/sdk/#debubu
+#
 export CLOUD_SDK_REPO=cloud-sdk-`lsb_release -c -s`
 echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 apt-get update -y && apt-get install -y google-cloud-sdk
 
-cp /vagrant/.vimrc ~vagrant/.vimrc
-chown vagrant:vagrant ~vagrant/.vimrc
+#
+# customize vim
+#
+su vagrant <<'EOF'
+echo 'set ruler' > ~/.vimrc
+echo 'set hlsearch' >> ~/.vimrc
+echo 'filetype plugin on' >> ~/.vimrc
+echo 'filetype indent on' >> ~/.vimrc
+echo 'set ts=4' >> ~/.vimrc
+echo 'set sw=4' >> ~/.vimrc
+echo 'set expandtab' >> ~/.vimrc
+echo 'set encoding=UTF8' >> ~/.vimrc
+echo 'syntax on' >> ~/.vimrc
 
-echo 'export VISUAL=vim' >> ~vagrant/.profile
-echo 'export EDITOR="$VISUAL"' >> ~vagrant/.profile
+echo 'au BufNewFile,BufRead *.sh set filetype=shell' >> ~/.vimrc
+echo 'autocmd Filetype shell setlocal expandtab tabstop=4 shiftwidth=4' >> ~/.vimrc
 
-if [ $# == 2 ]; then
-    su - vagrant -c "git config --global user.name \"${1:-}\""
-    su - vagrant -c "git config --global user.email \"${2:-}\""
-fi
+echo 'au BufNewFile,BufRead *.json set filetype=json' >> ~/.vimrc
+echo 'autocmd FileType json setlocal expandtab tabstop=4 shiftwidth=4' >> ~/.vimrc
+
+echo 'au BufNewFile,BufRead *.py set filetype=python' >> ~/.vimrc
+echo 'autocmd FileType python setlocal expandtab tabstop=4 shiftwidth=4' >> ~/.vimrc
+
+echo 'au BufNewFile,BufRead *.raml set filetype=raml' >> ~/.vimrc
+echo 'autocmd FileType raml setlocal expandtab tabstop=2 shiftwidth=2' >> ~/.vimrc
+
+echo 'au BufNewFile,BufRead *.yaml set filetype=yaml' >> ~/.vimrc
+echo 'autocmd FileType yaml setlocal expandtab tabstop=2 shiftwidth=2' >> ~/.vimrc
+
+# install pathogen
+mkdir -p ~/.vim/autoload ~/.vim/bundle
+curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+sed -i '1s|^|execute pathogen#infect()\n|' ~/.vimrc
+EOF
 
 exit 0
