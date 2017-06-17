@@ -47,7 +47,7 @@ setup(
         'pycurl>=7.19.5.1',
         'semantic-version==2.6.0',
         'tor-async-util==1.13.0',
-        'tornado==4.5',
+        'tornado==4.5.1',
     ],
     dependency_links=[
         'https://github.com/simonsdave/tor-async-util/tarball/v1.12.0#egg=tor-async-util-1.12.0',
