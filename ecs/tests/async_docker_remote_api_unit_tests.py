@@ -137,8 +137,13 @@ class AsyncHealthCheckTestCase(unittest.TestCase):
             '1.22': True,
             '1.23': True,
             '1.24': True,
-            '1.25': False,
-            '1.25.1': False,
+            '1.25': True,
+            '1.26': True,
+            '1.27': True,
+            '1.28': True,
+            '1.29': True,
+            '1.30': False,
+            '1.30.1': False,
         }
         for (version, version_ok) in versions.iteritems():
             response = mock.Mock(
