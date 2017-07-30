@@ -1,8 +1,0 @@
-# see http://matplotlib.org/users/customizing.html#the-matplotlibrc-file
-# for general details on this file
-
-# the backend configuration option was added (the whole reason this file
-# was created actually) so that matplotlib could generate PNGs in a headless
-# Ubuntu 14.04 deployment as per the info in this article
-# http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
-backend : Agg

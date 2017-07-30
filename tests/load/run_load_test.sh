@@ -85,9 +85,11 @@ do
         --logfile="$LOCUST_LOG_FILE" \
         >> "$LOCUST_OUTPUT_FILE" 2>&1
 
-    ANALYZE_RESULTS_DOCKER_IMAGE=simonsdave/ecs-analyze-load-test-tsv:latest
+    ANALYZE_RESULTS_DOCKER_IMAGE=simonsdave/analyze-restful-api-load-test-results:latest
     docker pull $ANALYZE_RESULTS_DOCKER_IMAGE
-    docker run -v "$LOCUST_LOG_FILE":/locust-log $ANALYZE_RESULTS_DOCKER_IMAGE analyze_load_test_tsv.sh
+    cat "$LOCUST_LOG_FILE" | \
+        "$SCRIPT_DIR_NAME/parse_locust_output_file.py" | \
+        docker run -i "$ANALYZE_RESULTS_DOCKER_IMAGE" analyze_restful_api_load_test_results.sh
 
 done
 
