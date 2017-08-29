@@ -21,7 +21,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- tornado 4.5 -> 4.5.1
+- tornado 4.5 -> 4.5.2
 
 ### Removed
 
