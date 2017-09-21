@@ -1,2 +1,2 @@
-locustio==0.7.5
+locustio==0.8.1
 python-dateutil==2.6.1
