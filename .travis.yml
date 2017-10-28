@@ -16,7 +16,7 @@ install:
   - npm i -g raml2md
   - npm i -g raml2html
 script:
-  - pep8
+  - pycodestyle
   - flake8
   - tor_async_util_nosetests.py --with-coverage --cover-branches --cover-erase --cover-package ecs
   - coveralls >& /dev/null || true
