@@ -102,7 +102,7 @@ class Service(object):
                 response = requests.get(url)
                 if response.status_code == httplib.OK:
                     return self
-            except:
+            except Exception:
                 pass
 
             time.sleep(0.5)
