@@ -49,9 +49,6 @@ setup(
         'tor-async-util==1.13.0',
         'tornado==4.5.2',
     ],
-    dependency_links=[
-        'https://github.com/simonsdave/tor-async-util/tarball/v1.12.0#egg=tor-async-util-1.12.0',
-    ],
     include_package_data=True,
     version=version,
     description='Ephemeral Container Service',
