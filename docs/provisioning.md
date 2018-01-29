@@ -114,9 +114,10 @@ c808e5453a0c463ab316056f677d2249:8d12a5d97a3ca74f0260a0bb1b0facca
 ```
 
 Note - per [these](https://support.comodo.com/index.php?/Knowledgebase/Article/View/789/0/certificate-installation-nginx)
-instructions, if using [Comodo Positive SSL](PositiveSSL Certificates) from [SSLs.com](https://www.ssls.com/), be sure
+instructions, if using [Comodo Positive SSL](https://www.positivessl.com/) from [SSLs.com](https://www.ssls.com/), be sure
 to follow the instructions in the e-mail containing your certificate re generating a certificate bundle. The generated bundle
-should be used in the ```ecsctl.sh dep create``` command instead of the standalone certificate.
+should be used in the ```ecsctl.sh dep create``` command instead of the standalone certificate - [this](https://gist.github.com/bradmontgomery/6487319)
+goes into more detail about the certificate bundle.
 
 ## Configure DNS
 
